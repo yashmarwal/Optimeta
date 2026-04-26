@@ -1,4 +1,11 @@
 require('dotenv').config();
+
+// Verify critical env vars are present at startup
+console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? 'loaded' : 'MISSING');
+console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'loaded' : 'MISSING');
+console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? 'loaded' : 'MISSING');
+console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'loaded' : 'MISSING');
+
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
