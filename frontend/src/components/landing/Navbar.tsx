@@ -1,0 +1,115 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Menu, X, Zap } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+
+export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handler);
+    return () => window.removeEventListener('scroll', handler);
+  }, []);
+
+  return (
+    <motion.nav
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-bg-dark/90 backdrop-blur-xl border-b border-border-color'
+          : 'bg-transparent'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <Zap size={16} className="text-white" />
+            </div>
+            <span className="text-xl font-black gradient-text tracking-tight">OPTIMETA</span>
+          </Link>
+
+          <div className="hidden md:flex items-center gap-8">
+            <Link href="#features" className="text-sm text-text-secondary hover:text-white transition-colors">Features</Link>
+            <Link href="#how-it-works" className="text-sm text-text-secondary hover:text-white transition-colors">How it works</Link>
+            <Link href="/pricing" className="text-sm text-text-secondary hover:text-white transition-colors">Pricing</Link>
+            <Link href="/blog" className="text-sm text-text-secondary hover:text-white transition-colors">Blog</Link>
+          </div>
+
+          <div className="hidden md:flex items-center gap-3">
+            {user ? (
+              <Link href="/dashboard">
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  className="btn-gradient px-5 py-2 rounded-lg text-sm font-semibold"
+                >
+                  Dashboard →
+                </motion.button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <button className="text-sm text-text-secondary hover:text-white transition-colors px-4 py-2">
+                    Login
+                  </button>
+                </Link>
+                <Link href="/register">
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    className="btn-gradient px-5 py-2 rounded-lg text-sm font-semibold"
+                  >
+                    Get Started Free
+                  </motion.button>
+                </Link>
+              </>
+            )}
+          </div>
+
+          <button
+            className="md:hidden text-text-secondary hover:text-white"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
+      </div>
+
+      {menuOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:hidden bg-bg-card border-b border-border-color px-4 pb-4"
+        >
+          <div className="flex flex-col gap-3 pt-4">
+            <Link href="#features" className="text-sm text-text-secondary py-2" onClick={() => setMenuOpen(false)}>Features</Link>
+            <Link href="#how-it-works" className="text-sm text-text-secondary py-2" onClick={() => setMenuOpen(false)}>How it works</Link>
+            <Link href="/pricing" className="text-sm text-text-secondary py-2" onClick={() => setMenuOpen(false)}>Pricing</Link>
+            <Link href="/blog" className="text-sm text-text-secondary py-2" onClick={() => setMenuOpen(false)}>Blog</Link>
+            {user ? (
+              <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
+                <button className="btn-gradient w-full py-2.5 rounded-lg text-sm font-semibold">Dashboard →</button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" onClick={() => setMenuOpen(false)}>
+                  <button className="btn-ghost w-full py-2.5 rounded-lg text-sm">Login</button>
+                </Link>
+                <Link href="/register" onClick={() => setMenuOpen(false)}>
+                  <button className="btn-gradient w-full py-2.5 rounded-lg text-sm font-semibold">Get Started Free</button>
+                </Link>
+              </>
+            )}
+          </div>
+        </motion.div>
+      )}
+    </motion.nav>
+  );
+}

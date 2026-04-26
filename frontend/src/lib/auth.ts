@@ -1,0 +1,74 @@
+import api from './api';
+
+export interface User {
+  id: string;
+  email: string;
+  fullName: string;
+  plan: 'free' | 'pro' | 'ultra';
+  campaignsUsed: number;
+  billingCycleStart?: string;
+  createdAt?: string;
+}
+
+export const getCanvasFingerprint = (): string => {
+  try {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return 'no-canvas';
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillText('Optimeta fingerprint', 2, 2);
+    return canvas.toDataURL().slice(-50);
+  } catch {
+    return 'canvas-error';
+  }
+};
+
+export const getDeviceFingerprint = () => ({
+  screenResolution: `${window.screen.width}x${window.screen.height}`,
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  canvasHash: getCanvasFingerprint(),
+});
+
+export const login = async (email: string, password: string) => {
+  const { data } = await api.post('/api/auth/login', { email, password });
+  return data.data;
+};
+
+export const register = async (
+  email: string,
+  password: string,
+  fullName: string,
+  fingerprint: { screenResolution: string; timezone: string; canvasHash: string }
+) => {
+  const { data } = await api.post('/api/auth/register', {
+    email,
+    password,
+    fullName,
+    ...fingerprint,
+  });
+  return data.data;
+};
+
+export const logout = async () => {
+  await api.post('/api/auth/logout');
+};
+
+export const getMe = async (): Promise<User | null> => {
+  try {
+    const { data } = await api.get('/api/auth/me');
+    return data.data.user;
+  } catch {
+    return null;
+  }
+};
+
+export const updateProfile = async (fullName: string) => {
+  const { data } = await api.patch('/api/auth/profile', { fullName });
+  return data.data;
+};
+
+export const deleteAccount = async () => {
+  const { data } = await api.delete('/api/auth/account');
+  return data.data;
+};
