@@ -20,9 +20,11 @@ export default function Providers({ children }: { children: ReactNode }) {
   useEffect(() => {
     refresh();
 
-    // Re-validate auth when user returns to the tab (e.g. after campaign generation)
+    // Re-validate auth when user returns to the tab — but skip during campaign generation
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible') refresh();
+      if (document.visibilityState !== 'visible') return;
+      if (localStorage.getItem('generation_in_progress')) return;
+      refresh();
     };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, ArrowLeft, CheckCircle, Sparkles, Building2, Package, Target, Eye } from 'lucide-react';
@@ -87,7 +87,12 @@ export default function NewCampaignPage() {
     }));
   };
 
-  const startGeneration = async () => {
+  const startGeneration = async (inputsOverride?: BusinessInputs) => {
+    const inputsToUse = inputsOverride ?? inputs;
+
+    localStorage.setItem('generation_in_progress', 'true');
+    localStorage.setItem('generation_inputs', JSON.stringify(inputsToUse));
+
     setGenerating(true);
     setProgressWidth(0);
 
@@ -107,13 +112,15 @@ export default function NewCampaignPage() {
     try {
       const fingerprint = getDeviceFingerprint();
       const { data } = await api.post('/api/campaigns/generate', {
-        businessInputs: inputs,
+        businessInputs: inputsToUse,
         ...fingerprint,
       });
 
       clearInterval(msgTimer);
       clearInterval(progressTimer);
       setProgressWidth(100);
+      localStorage.removeItem('generation_in_progress');
+      localStorage.removeItem('generation_inputs');
 
       setTimeout(() => {
         router.push(`/dashboard/campaigns/${data.data.campaign.id}`);
@@ -122,10 +129,32 @@ export default function NewCampaignPage() {
       clearInterval(msgTimer);
       clearInterval(progressTimer);
       setGenerating(false);
+      localStorage.removeItem('generation_in_progress');
+      localStorage.removeItem('generation_inputs');
       const apiMsg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       toast.error(apiMsg || 'Generation failed. Please try again.');
     }
   };
+
+  // On mount: if generation was in-progress when the tab was last visible, resume it
+  useEffect(() => {
+    const inProgress = localStorage.getItem('generation_in_progress');
+    if (!inProgress) return;
+    const stored = localStorage.getItem('generation_inputs');
+    if (!stored) {
+      localStorage.removeItem('generation_in_progress');
+      return;
+    }
+    try {
+      const storedInputs: BusinessInputs = JSON.parse(stored);
+      setInputs(storedInputs);
+      startGeneration(storedInputs);
+    } catch {
+      localStorage.removeItem('generation_in_progress');
+      localStorage.removeItem('generation_inputs');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (generating) {
     return (

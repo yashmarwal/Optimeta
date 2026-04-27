@@ -301,6 +301,7 @@ const generateCampaignBlueprint = async (businessInputs) => {
       ? SYSTEM_PROMPT + '\n\nCRITICAL: Your previous response contained invalid JSON. Return ONLY a valid JSON object. No text before or after. No markdown. Start with { and end with }.'
       : SYSTEM_PROMPT;
 
+    console.log('Calling Claude API...');
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 8000,
@@ -308,6 +309,7 @@ const generateCampaignBlueprint = async (businessInputs) => {
       messages: [{ role: 'user', content: userPrompt }],
     });
 
+    console.log('Claude response received:', message.content[0].text.slice(0, 100));
     return message.content[0].text;
   };
 
@@ -316,6 +318,7 @@ const generateCampaignBlueprint = async (businessInputs) => {
     rawText = await callClaude(false);
     return parseBlueprint(rawText);
   } catch (firstErr) {
+    console.error('Claude API error:', firstErr.message, firstErr.status);
     // Retry once with stricter prompt if JSON parsing failed
     if (firstErr.message?.includes('JSON') || firstErr instanceof SyntaxError) {
       try {

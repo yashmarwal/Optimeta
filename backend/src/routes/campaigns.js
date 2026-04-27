@@ -59,6 +59,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/campaigns/generate — generate new campaign
 router.post('/generate', usageLimitMiddleware, async (req, res) => {
   try {
+    console.log('Generate route hit by user:', req.user.id);
     const { businessInputs, screenResolution, timezone, canvasHash } = req.body;
 
     if (!businessInputs) {
@@ -75,7 +76,7 @@ router.post('/generate', usageLimitMiddleware, async (req, res) => {
       }
     }
 
-    // Generate blueprint via Gemini
+    console.log('Calling AI service...');
     const blueprint = await generateCampaignBlueprint(businessInputs);
 
     // Save to DB
