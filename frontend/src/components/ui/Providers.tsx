@@ -11,7 +11,9 @@ export default function Providers({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     setLoading(true);
     const u = await getMe();
-    setUser(u);
+    // undefined = transient network error; keep existing user state so a blip
+    // during campaign generation doesn't silently log the user out
+    if (u !== undefined) setUser(u);
     setLoading(false);
   }, []);
 

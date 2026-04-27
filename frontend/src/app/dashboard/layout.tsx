@@ -12,7 +12,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      // Don't redirect if a token exists — Providers may still be refreshing
+      const hasToken = typeof window !== 'undefined' && localStorage.getItem('optimeta_token');
+      if (!hasToken) router.push('/login');
     }
   }, [user, loading, router]);
 

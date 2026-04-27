@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const supabase = require('../config/supabase');
-const { checkFingerprintAbuse } = require('../services/fingerprintService');
+const { checkFingerprintAbuse, storeFingerprint } = require('../services/fingerprintService');
 
 const generateToken = (userId) =>
   jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -29,20 +29,26 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
     }
 
-    // Fingerprint abuse check for free users
-    const ip = req.ip || req.connection.remoteAddress || '0.0.0.0';
+    // Real IP: use x-forwarded-for first (Render proxy), fall back to socket
+    const ip = (req.headers['x-forwarded-for']?.split(',')[0]?.trim()) ||
+               req.ip || req.socket?.remoteAddress || '0.0.0.0';
     const userAgent = req.headers['user-agent'] || '';
 
-    const { abused, reason } = await checkFingerprintAbuse({
-      ip,
-      userAgent,
-      screenResolution: screenResolution || 'unknown',
-      timezone: timezone || 'unknown',
-      email,
-    });
-
-    if (abused) {
-      return res.status(403).json({ success: false, message: reason || 'Free trial already used. Please upgrade to continue.' });
+    let fingerprintHash;
+    try {
+      const fpResult = await checkFingerprintAbuse({
+        ip,
+        userAgent,
+        screenResolution: screenResolution || 'unknown',
+        timezone: timezone || 'unknown',
+        email,
+      });
+      if (fpResult.abused) {
+        return res.status(403).json({ success: false, message: fpResult.reason || 'Free trial already used on this device. Please upgrade to continue.' });
+      }
+      fingerprintHash = fpResult.fingerprintHash;
+    } catch {
+      // Don't block registration if fingerprint service is unavailable
     }
 
     // Create user in Supabase Auth
@@ -70,6 +76,17 @@ router.post('/register', async (req, res) => {
     }, { onConflict: 'id', ignoreDuplicates: true });
 
     const token = generateToken(authData.user.id);
+
+    // Store fingerprint so subsequent registrations from same device are blocked
+    storeFingerprint({
+      userId: authData.user.id,
+      email,
+      ip,
+      userAgent,
+      screenResolution: screenResolution || 'unknown',
+      timezone: timezone || 'unknown',
+      fingerprintHash,
+    }).catch(() => {});
 
     res.cookie('optimeta_token', token, COOKIE_OPTIONS);
 

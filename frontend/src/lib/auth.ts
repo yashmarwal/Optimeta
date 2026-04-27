@@ -29,6 +29,8 @@ export const getCanvasFingerprint = (): string => {
 export const getDeviceFingerprint = () => ({
   screenResolution: `${window.screen.width}x${window.screen.height}`,
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  userAgent: navigator.userAgent,
+  language: navigator.language,
   canvasHash: getCanvasFingerprint(),
 });
 
@@ -59,12 +61,18 @@ export const logout = async () => {
   localStorage.removeItem(TOKEN_KEY);
 };
 
-export const getMe = async (): Promise<User | null> => {
+// Returns User on success, null on 401 (truly logged out), undefined on network error
+export const getMe = async (): Promise<User | null | undefined> => {
   try {
     const { data } = await api.get('/api/auth/me');
     return data.data.user;
-  } catch {
-    return null;
+  } catch (err: unknown) {
+    const status = (err as { response?: { status?: number } })?.response?.status;
+    if (status === 401) {
+      localStorage.removeItem(TOKEN_KEY);
+      return null;
+    }
+    return undefined; // transient error — caller should keep existing state
   }
 };
 
