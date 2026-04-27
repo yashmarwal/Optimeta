@@ -28,7 +28,7 @@ export const useAuthState = () => {
   const refresh = async () => {
     setLoading(true);
     const u = await getMe();
-    setUser(u);
+    if (u !== undefined) setUser(u);
     setLoading(false);
   };
 
