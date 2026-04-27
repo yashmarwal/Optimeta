@@ -30,8 +30,8 @@ export default function DashboardTopBar() {
           <div className="w-1.5 h-1.5 rounded-full bg-accent" />
           <span className="text-xs text-text-secondary">
             Plan:{' '}
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${planColors[user.plan] || 'badge-free'}`}>
-              {user.plan.toUpperCase()}
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${planColors[user.plan ?? 'free'] || 'badge-free'}`}>
+              {(user.plan ?? 'free').toUpperCase()}
             </span>
           </span>
         </div>

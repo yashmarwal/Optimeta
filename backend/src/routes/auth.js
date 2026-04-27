@@ -7,10 +7,12 @@ const { checkFingerprintAbuse } = require('../services/fingerprintService');
 const generateToken = (userId) =>
   jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
+const isProd = process.env.NODE_ENV === 'production';
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
+  secure: isProd,
+  // cross-origin (Vercel ↔ Render) requires sameSite:'none' + secure:true
+  sameSite: isProd ? 'none' : 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
@@ -78,6 +80,8 @@ router.post('/register', async (req, res) => {
           id: authData.user.id,
           email: authData.user.email,
           fullName,
+          plan: 'free',
+          campaignsUsed: 0,
         },
         token,
       },

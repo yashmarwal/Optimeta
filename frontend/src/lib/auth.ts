@@ -1,5 +1,7 @@
 import api from './api';
 
+export const TOKEN_KEY = 'optimeta_token';
+
 export interface User {
   id: string;
   email: string;
@@ -32,6 +34,7 @@ export const getDeviceFingerprint = () => ({
 
 export const login = async (email: string, password: string) => {
   const { data } = await api.post('/api/auth/login', { email, password });
+  if (data.data?.token) localStorage.setItem(TOKEN_KEY, data.data.token);
   return data.data;
 };
 
@@ -47,11 +50,13 @@ export const register = async (
     fullName,
     ...fingerprint,
   });
+  if (data.data?.token) localStorage.setItem(TOKEN_KEY, data.data.token);
   return data.data;
 };
 
 export const logout = async () => {
   await api.post('/api/auth/logout');
+  localStorage.removeItem(TOKEN_KEY);
 };
 
 export const getMe = async (): Promise<User | null> => {
