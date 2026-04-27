@@ -59,69 +59,62 @@ router.get('/:id', async (req, res) => {
 // POST /api/campaigns/generate — generate new campaign
 router.post('/generate', usageLimitMiddleware, async (req, res) => {
   try {
-    console.log('Generate route hit by user:', req.user.id);
-    const { businessInputs, screenResolution, timezone, canvasHash } = req.body;
+    console.log('=== GENERATE ROUTE HIT ===');
+    console.log('User ID:', req.user?.id || req.userId);
+    console.log('Body keys:', Object.keys(req.body));
 
-    if (!businessInputs) {
-      return res.status(400).json({ success: false, message: 'Business inputs are required.' });
-    }
+    const inputs = req.body;
 
-    const required = ['businessName', 'industry', 'businessDescription', 'productName',
-      'price', 'keyBenefit1', 'keyBenefit2', 'keyBenefit3', 'usp',
-      'targetAudience', 'campaignGoal', 'targetLocations', 'biggestChallenge'];
-
-    for (const field of required) {
-      if (!businessInputs[field]) {
-        return res.status(400).json({ success: false, message: `Missing required field: ${field}` });
-      }
+    if (!inputs.businessName || !inputs.businessDescription || !inputs.productName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: businessName, businessDescription, productName',
+      });
     }
 
     console.log('Calling AI service...');
-    const blueprint = await generateCampaignBlueprint(businessInputs);
+    const blueprint = await generateCampaignBlueprint(inputs);
+    console.log('Blueprint generated:', blueprint.campaign_name);
 
-    // Save to DB
+    const userId = req.user?.id || req.userId;
+
     const { data: campaign, error } = await supabase
       .from('campaigns')
       .insert({
-        user_id: req.userId,
-        campaign_name: blueprint.campaign_name,
-        business_inputs: businessInputs,
+        user_id: userId,
+        campaign_name: blueprint.campaign_name || `${inputs.businessName} Campaign`,
+        business_inputs: inputs,
         blueprint,
       })
       .select()
       .single();
 
-    if (error) throw error;
-
-    // Increment campaigns_used
-    await supabase
-      .from('profiles')
-      .update({ campaigns_used: (req.user.campaigns_used || 0) + 1 })
-      .eq('id', req.userId);
-
-    // Store fingerprint for free users
-    if (req.user.plan === 'free') {
-      const ip = req.ip || req.connection.remoteAddress || '0.0.0.0';
-      const userAgent = req.headers['user-agent'] || '';
-      await storeFingerprint({
-        userId: req.userId,
-        email: req.user.email,
-        ip,
-        userAgent,
-        screenResolution: screenResolution || 'unknown',
-        timezone: timezone || 'unknown',
-      });
+    if (error) {
+      console.error('DB save error:', error);
+      throw new Error('Failed to save campaign');
     }
 
-    return res.status(201).json({
-      success: true,
-      data: { campaign },
-    });
-  } catch (err) {
-    console.error('Campaign generation error:', err);
+    // Increment campaigns_used (fetch first to avoid race on raw SQL)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('campaigns_used')
+      .eq('id', userId)
+      .single();
+
+    await supabase
+      .from('profiles')
+      .update({ campaigns_used: (profile?.campaigns_used || 0) + 1 })
+      .eq('id', userId);
+
+    console.log('Campaign saved:', campaign.id);
+
+    return res.json({ success: true, data: campaign });
+  } catch (error) {
+    console.error('Generate error:', error.message);
+    console.error('Stack:', error.stack);
     return res.status(500).json({
       success: false,
-      message: err.message || 'Campaign generation failed. Please try again.',
+      message: error.message || 'Failed to generate campaign',
     });
   }
 });

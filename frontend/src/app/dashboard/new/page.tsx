@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, ArrowLeft, CheckCircle, Sparkles, Building2, Package, Target, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
-import { getDeviceFingerprint } from '@/lib/auth';
 
 interface BusinessInputs {
   // Step 1 — Business
@@ -87,12 +86,7 @@ export default function NewCampaignPage() {
     }));
   };
 
-  const startGeneration = async (inputsOverride?: BusinessInputs) => {
-    const inputsToUse = inputsOverride ?? inputs;
-
-    localStorage.setItem('generation_in_progress', 'true');
-    localStorage.setItem('generation_inputs', JSON.stringify(inputsToUse));
-
+  const executeGeneration = async (data: Record<string, unknown>) => {
     setGenerating(true);
     setProgressWidth(0);
 
@@ -110,20 +104,14 @@ export default function NewCampaignPage() {
     }, 400);
 
     try {
-      const fingerprint = getDeviceFingerprint();
-      const { data } = await api.post('/api/campaigns/generate', {
-        businessInputs: inputsToUse,
-        ...fingerprint,
-      });
-
+      const response = await api.post('/api/campaigns/generate', data);
       clearInterval(msgTimer);
       clearInterval(progressTimer);
       setProgressWidth(100);
       localStorage.removeItem('generation_in_progress');
       localStorage.removeItem('generation_inputs');
-
       setTimeout(() => {
-        router.push(`/dashboard/campaigns/${data.data.campaign.id}`);
+        router.push(`/dashboard/campaigns/${response.data.data.id}`);
       }, 600);
     } catch (err: unknown) {
       clearInterval(msgTimer);
@@ -136,7 +124,45 @@ export default function NewCampaignPage() {
     }
   };
 
-  // On mount: if generation was in-progress when the tab was last visible, resume it
+  const handleGenerate = async () => {
+    const cleanFormData = {
+      businessName: inputs.businessName || '',
+      industry: inputs.industry || '',
+      customIndustry: inputs.customIndustry || '',
+      businessDescription: inputs.businessDescription || '',
+      websiteUrl: inputs.websiteUrl || '',
+      monthlyBudget: inputs.monthlyAdBudget || '',
+      productName: inputs.productName || '',
+      pricePoint: inputs.price || '',
+      benefit1: inputs.keyBenefit1 || '',
+      benefit2: inputs.keyBenefit2 || '',
+      benefit3: inputs.keyBenefit3 || '',
+      usp: inputs.usp || '',
+      currentOffer: inputs.currentOffer || '',
+      codAvailable: inputs.codAvailable || false,
+      idealCustomer: inputs.targetAudience || '',
+      campaignGoal: inputs.campaignGoal || '',
+      targetLocations: inputs.targetLocations || '',
+      genderTargeting: inputs.genderTargeting || '',
+      ageGroup: inputs.ageGroup || '',
+      competitors: inputs.competitors || '',
+      adsExperience: inputs.hasMetaExperience ? 'Has run Meta ads before' : 'New to Meta ads',
+      previousChallenge: inputs.biggestChallenge || '',
+      availableAssets: Array.isArray(inputs.availableAssets) ? inputs.availableAssets : [],
+      pixelStatus: inputs.pixelStatus || '',
+    };
+
+    try {
+      localStorage.setItem('generation_in_progress', 'true');
+      localStorage.setItem('generation_inputs', JSON.stringify(cleanFormData));
+    } catch (e) {
+      console.error('localStorage error:', e);
+    }
+
+    await executeGeneration(cleanFormData);
+  };
+
+  // On mount: resume generation if tab was switched during an active request
   useEffect(() => {
     const inProgress = localStorage.getItem('generation_in_progress');
     if (!inProgress) return;
@@ -146,9 +172,8 @@ export default function NewCampaignPage() {
       return;
     }
     try {
-      const storedInputs: BusinessInputs = JSON.parse(stored);
-      setInputs(storedInputs);
-      startGeneration(storedInputs);
+      const storedData = JSON.parse(stored);
+      executeGeneration(storedData);
     } catch {
       localStorage.removeItem('generation_in_progress');
       localStorage.removeItem('generation_inputs');
@@ -236,7 +261,7 @@ export default function NewCampaignPage() {
           {step === 1 && <Step1 inputs={inputs} update={update} />}
           {step === 2 && <Step2 inputs={inputs} update={update} />}
           {step === 3 && <Step3 inputs={inputs} update={update} toggleAsset={toggleAsset} />}
-          {step === 4 && <Step4 inputs={inputs} onGenerate={startGeneration} />}
+          {step === 4 && <Step4 inputs={inputs} onGenerate={handleGenerate} />}
         </motion.div>
       </AnimatePresence>
 
@@ -489,7 +514,7 @@ function Step4({ inputs, onGenerate }: { inputs: BusinessInputs; onGenerate: () 
           <div className="text-xs text-text-muted">Claude AI will architect your blueprint in 15–30 seconds</div>
         </div>
       </div>
-      <motion.button whileTap={{ scale: 0.97 }} onClick={onGenerate} className="btn-gradient w-full py-4 rounded-xl font-black text-lg flex items-center justify-center gap-3 glow">
+      <motion.button whileTap={{ scale: 0.97 }} onClick={() => onGenerate()} className="btn-gradient w-full py-4 rounded-xl font-black text-lg flex items-center justify-center gap-3 glow">
         <Sparkles size={20} />
         Generate Campaign Blueprint →
       </motion.button>

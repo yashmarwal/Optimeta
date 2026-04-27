@@ -1,4 +1,7 @@
-const anthropic = require('../config/anthropic');
+const Anthropic = require('@anthropic-ai/sdk');
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+console.log('Anthropic client initialized:', process.env.ANTHROPIC_API_KEY ? 'API key loaded' : 'API KEY MISSING');
 
 const SYSTEM_PROMPT = `You are Optimeta AI — India's most advanced Meta Ad Campaign Architect.
 
@@ -241,95 +244,99 @@ Return exactly this JSON structure:
 }`;
 
 const buildUserPrompt = (inputs) => {
-  return `Generate a complete Meta ad campaign blueprint for this business:
+  const industry = inputs.industry === 'Other' ? (inputs.customIndustry || 'Other') : inputs.industry;
 
-BUSINESS DETAILS:
-- Business Name: ${inputs.businessName}
-- Industry: ${inputs.industry === 'Other' ? (inputs.customIndustry || 'Other') : inputs.industry}
+  return `Generate a complete Meta ad campaign blueprint for this business.
+Return ONLY a valid JSON object. No markdown. No explanation. Just the JSON.
+
+BUSINESS:
+- Name: ${inputs.businessName}
+- Industry: ${industry}
 - Description: ${inputs.businessDescription}
-- Website/Instagram: ${inputs.websiteUrl || 'Not provided'}
-- Monthly Ad Budget: ${inputs.monthlyBudget || inputs.monthlyAdBudget}
+- Website: ${inputs.websiteUrl || 'Not provided'}
+- Monthly Budget: ${inputs.monthlyBudget || inputs.monthlyAdBudget || 'Not specified'}
 
-PRODUCT/OFFER:
-- Product Name: ${inputs.productName}
-- Price Point: ${inputs.pricePoint ? '₹' + inputs.pricePoint : inputs.price ? '₹' + inputs.price : 'Not specified'}
-- Key Benefit 1: ${inputs.benefit1 || inputs.keyBenefit1}
-- Key Benefit 2: ${inputs.benefit2 || inputs.keyBenefit2}
-- Key Benefit 3: ${inputs.benefit3 || inputs.keyBenefit3}
+PRODUCT:
+- Name: ${inputs.productName}
+- Price: ${inputs.pricePoint ? '₹' + inputs.pricePoint : inputs.price ? '₹' + inputs.price : 'Not specified'}
+- Benefit 1: ${inputs.benefit1 || inputs.keyBenefit1 || ''}
+- Benefit 2: ${inputs.benefit2 || inputs.keyBenefit2 || ''}
+- Benefit 3: ${inputs.benefit3 || inputs.keyBenefit3 || ''}
 - USP: ${inputs.usp}
 - Current Offer: ${inputs.currentOffer || 'None'}
-- Cash on Delivery Available: ${inputs.codAvailable ? 'YES' : 'NO'}
+- COD Available: ${inputs.codAvailable ? 'YES' : 'NO'}
 
-AUDIENCE & GOALS:
-- Ideal Customer: ${inputs.idealCustomer || inputs.targetAudience}
+AUDIENCE:
+- Ideal Customer: ${inputs.idealCustomer || inputs.targetAudience || ''}
 - Campaign Goal: ${inputs.campaignGoal}
 - Target Locations: ${inputs.targetLocations}
-- Gender: ${inputs.genderTargeting || 'All genders'}
+- Gender: ${inputs.genderTargeting || 'All'}
 - Age Group: ${inputs.ageGroup || 'Not specified'}
 
-COMPETITIVE CONTEXT:
+CONTEXT:
 - Competitors: ${inputs.competitors || 'Not specified'}
-- Meta Ads Experience: ${inputs.adsExperience || (inputs.hasMetaExperience ? 'Has run ads before' : 'New to Meta ads')}
-- Previous Challenge: ${inputs.previousChallenge || inputs.biggestChallenge || 'N/A'}
-- Available Assets: ${Array.isArray(inputs.availableAssets) ? inputs.availableAssets.join(', ') : (inputs.availableAssets || 'None')}
-- Meta Pixel Status: ${inputs.pixelStatus || 'Unknown'}
+- Ads Experience: ${inputs.adsExperience || (inputs.hasMetaExperience ? 'Has run Meta ads before' : 'New to Meta ads')}
+- Previous Challenge: ${inputs.previousChallenge || inputs.biggestChallenge || 'None'}
+- Available Assets: ${Array.isArray(inputs.availableAssets) ? inputs.availableAssets.join(', ') : 'None'}
+- Pixel Status: ${inputs.pixelStatus || 'Unknown'}
 
-Generate the complete blueprint now.
-Return ONLY the JSON object. Nothing else.`.trim();
+Generate the complete JSON blueprint now.`.trim();
 };
 
-const parseBlueprint = (text) => {
-  const cleaned = text
-    .replace(/```json\n?/gi, '')
-    .replace(/```\n?/gi, '')
-    .trim();
+const generateCampaignBlueprint = async (inputs) => {
+  console.log('=== AI SERVICE CALLED ===');
+  console.log('Business:', inputs.businessName);
 
-  try {
-    return JSON.parse(cleaned);
-  } catch {
-    const match = cleaned.match(/\{[\s\S]*\}/);
-    if (match) return JSON.parse(match[0]);
-    throw new Error('Could not parse JSON from response');
-  }
-};
+  const userPrompt = buildUserPrompt(inputs);
 
-const generateCampaignBlueprint = async (businessInputs) => {
-  const userPrompt = buildUserPrompt(businessInputs);
+  let attempt = 0;
+  let lastError = null;
 
-  const callClaude = async (strictMode = false) => {
-    const systemPrompt = strictMode
-      ? SYSTEM_PROMPT + '\n\nCRITICAL: Your previous response contained invalid JSON. Return ONLY a valid JSON object. No text before or after. No markdown. Start with { and end with }.'
-      : SYSTEM_PROMPT;
+  while (attempt < 2) {
+    attempt++;
+    console.log(`Claude API attempt ${attempt}`);
 
-    console.log('Calling Claude API...');
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 8000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
-    });
+    try {
+      const message = await anthropic.messages.create({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 8000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: userPrompt }],
+      });
 
-    console.log('Claude response received:', message.content[0].text.slice(0, 100));
-    return message.content[0].text;
-  };
+      console.log('Claude responded. Stop reason:', message.stop_reason);
+      const rawText = message.content[0].text;
+      console.log('Raw response preview:', rawText.slice(0, 200));
 
-  let rawText;
-  try {
-    rawText = await callClaude(false);
-    return parseBlueprint(rawText);
-  } catch (firstErr) {
-    console.error('Claude API error:', firstErr.message, firstErr.status);
-    // Retry once with stricter prompt if JSON parsing failed
-    if (firstErr.message?.includes('JSON') || firstErr instanceof SyntaxError) {
-      try {
-        rawText = await callClaude(true);
-        return parseBlueprint(rawText);
-      } catch {
-        throw new Error('AI returned malformed JSON after retry. Please try again.');
+      let cleanJson = rawText
+        .replace(/^```json\s*/i, '')
+        .replace(/^```\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .trim();
+
+      const startIndex = cleanJson.indexOf('{');
+      const lastIndex = cleanJson.lastIndexOf('}');
+
+      if (startIndex === -1 || lastIndex === -1) {
+        throw new Error('No JSON object found in response');
+      }
+
+      cleanJson = cleanJson.slice(startIndex, lastIndex + 1);
+      const parsed = JSON.parse(cleanJson);
+      console.log('JSON parsed successfully. Campaign:', parsed.campaign_name);
+      return parsed;
+
+    } catch (error) {
+      console.error(`Attempt ${attempt} failed:`, error.message);
+      lastError = error;
+      if (attempt < 2) {
+        console.log('Retrying in 1s...');
+        await new Promise(r => setTimeout(r, 1000));
       }
     }
-    throw firstErr;
   }
+
+  throw new Error(`AI generation failed after 2 attempts: ${lastError?.message}`);
 };
 
 module.exports = { generateCampaignBlueprint };
