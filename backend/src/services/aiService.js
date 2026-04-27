@@ -65,6 +65,17 @@ INDIA-SPECIFIC INTELLIGENCE:
 - Generic copy without price/offer
 - Landing page mismatch with ad
 
+8. TARGETING RULES
+- Always use all three dimensions: Interests + Behaviors + Demographics
+- Interests: use EXACT names from Meta Ads Manager, not generic terms
+  (write 'Nykaa' not 'beauty apps', write 'Tanishq' not 'jewellery brands',
+   write 'Zepto' not 'quick commerce', write 'boAt' not 'electronics brands')
+- Behaviors: Always include 'Engaged Shoppers' for D2C products
+- Demographics: Always specify income level for premium products (₹1000+)
+- Provide 2-3 targeting combinations showing how to layer these together
+- For broad targeting: still provide interest/behavior seeds for Advantage+ to learn from
+- Life events only if genuinely relevant to the product (e.g. 'Recently married' for wedding services)
+
 STRICT OUTPUT RULES:
 1. Everything specific to THIS business
 2. Match strategy exactly to budget
@@ -119,11 +130,28 @@ Return exactly this JSON structure:
     "primary_audience": {
       "age_range": "string",
       "gender": "string",
-      "locations": ["array"],
-      "interests": ["8-10 specific interests"],
-      "behaviors": ["array"],
+      "locations": ["array of specific cities/states/regions"],
+      "interests": ["10-12 SPECIFIC interests exactly as they appear in Meta Ads Manager — use brand names like Nykaa, Myntra, Tanishq etc."],
+      "behaviors": ["6-8 specific Meta behaviors e.g. Engaged Shoppers, Online shoppers, Facebook access (mobile)"],
+      "demographics": {
+        "education": "string — e.g. College grad and above or All education levels",
+        "relationship_status": "string — only if relevant to product, else omit or null",
+        "life_events": ["array — only if relevant e.g. Recently married, New parents, Starting a new job"],
+        "income_level": "string — Top 10%/25%/50% of earners or All income levels",
+        "parental_status": "string — only if relevant to product, else omit or null"
+      },
       "income_targeting": "string"
     },
+    "detailed_targeting_combinations": [
+      {
+        "combination_name": "string — e.g. Premium Buyer Cluster",
+        "logic": "AND",
+        "interests": ["array"],
+        "behaviors": ["array"],
+        "demographics": "string",
+        "why_this_combination": "string"
+      }
+    ],
     "lookalike_strategy": "string",
     "retargeting_strategy": "string",
     "retargeting_window_days": 7,
@@ -217,7 +245,7 @@ const buildUserPrompt = (inputs) => {
 
 BUSINESS DETAILS:
 - Business Name: ${inputs.businessName}
-- Industry: ${inputs.industry}
+- Industry: ${inputs.industry === 'Other' ? (inputs.customIndustry || 'Other') : inputs.industry}
 - Description: ${inputs.businessDescription}
 - Website/Instagram: ${inputs.websiteUrl || 'Not provided'}
 - Monthly Ad Budget: ${inputs.monthlyBudget || inputs.monthlyAdBudget}
@@ -274,7 +302,7 @@ const generateCampaignBlueprint = async (businessInputs) => {
       : SYSTEM_PROMPT;
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-5',
       max_tokens: 8000,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],

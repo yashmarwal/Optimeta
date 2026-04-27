@@ -54,8 +54,23 @@ interface Blueprint {
       locations: string[];
       interests: string[];
       behaviors: string[];
+      demographics?: {
+        education?: string;
+        relationship_status?: string;
+        life_events?: string[];
+        income_level?: string;
+        parental_status?: string;
+      };
       income_targeting?: string;
     };
+    detailed_targeting_combinations?: Array<{
+      combination_name: string;
+      logic: string;
+      interests: string[];
+      behaviors: string[];
+      demographics: string;
+      why_this_combination: string;
+    }>;
     lookalike_strategy: string;
     retargeting_strategy: string;
     retargeting_window_days?: number;
@@ -560,6 +575,112 @@ export default function CampaignViewPage() {
                 </div>
               ))}
             </div>
+
+            {/* Demographics */}
+            {bp.targeting?.primary_audience?.demographics && (() => {
+              const d = bp.targeting.primary_audience.demographics;
+              const hasAny = d.education || d.income_level || d.relationship_status || d.parental_status || (d.life_events && d.life_events.length > 0);
+              return hasAny ? (
+                <div className="bg-bg-dark rounded-xl p-4 border border-border-color mb-4">
+                  <div className="text-xs text-text-muted mb-3 uppercase tracking-wide">Demographics</div>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {d.education && (
+                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-500/10 text-purple-300 border border-purple-500/25">
+                        🎓 {d.education}
+                      </span>
+                    )}
+                    {d.income_level && (
+                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">
+                        💰 {d.income_level}
+                      </span>
+                    )}
+                    {d.relationship_status && (
+                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-pink-500/10 text-pink-300 border border-pink-500/25">
+                        ❤️ {d.relationship_status}
+                      </span>
+                    )}
+                    {d.parental_status && (
+                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-sky-500/10 text-sky-300 border border-sky-500/25">
+                        👨‍👩‍👧 {d.parental_status}
+                      </span>
+                    )}
+                  </div>
+                  {d.life_events && d.life_events.length > 0 && (
+                    <div>
+                      <div className="text-xs text-text-muted mb-2">Life Events</div>
+                      <div className="flex flex-wrap gap-2">
+                        {d.life_events.map((ev: string) => (
+                          <span key={ev} className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/25">
+                            ✨ {ev}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null;
+            })()}
+
+            {/* Detailed Targeting Combinations */}
+            {bp.targeting?.detailed_targeting_combinations && bp.targeting.detailed_targeting_combinations.length > 0 && (
+              <div className="mb-4">
+                <div className="text-xs text-text-muted mb-3 uppercase tracking-wide">Detailed Targeting Combinations</div>
+                <div className="space-y-3">
+                  {bp.targeting.detailed_targeting_combinations.map((combo, i) => {
+                    const comboText = [
+                      `Combination: ${combo.combination_name}`,
+                      `Logic: ${combo.logic}`,
+                      combo.interests?.length ? `Interests: ${combo.interests.join(', ')}` : '',
+                      combo.behaviors?.length ? `Behaviors: ${combo.behaviors.join(', ')}` : '',
+                      combo.demographics ? `Demographics: ${combo.demographics}` : '',
+                      combo.why_this_combination ? `Why: ${combo.why_this_combination}` : '',
+                    ].filter(Boolean).join('\n');
+                    return (
+                      <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
+                        className="bg-bg-dark rounded-xl p-4 border border-border-color">
+                        <div className="flex items-center gap-2 mb-3 flex-wrap">
+                          <span className="font-semibold text-white text-sm">{combo.combination_name}</span>
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                            {combo.logic}
+                          </span>
+                          <CopyButton text={comboText} size={12} />
+                        </div>
+                        {combo.interests?.length > 0 && (
+                          <div className="mb-2">
+                            <div className="text-xs text-text-muted mb-1.5">Interests</div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {combo.interests.map((item: string) => (
+                                <span key={item} className="px-2 py-0.5 rounded-full text-xs bg-primary/10 text-accent border border-primary/25">{item}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {combo.behaviors?.length > 0 && (
+                          <div className="mb-2">
+                            <div className="text-xs text-text-muted mb-1.5">Behaviors</div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {combo.behaviors.map((item: string) => (
+                                <span key={item} className="px-2 py-0.5 rounded-full text-xs bg-blue-500/10 text-blue-400 border border-blue-500/25">{item}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {combo.demographics && (
+                          <div className="mb-2">
+                            <div className="text-xs text-text-muted mb-1">Demographics</div>
+                            <div className="text-xs text-text-secondary">{combo.demographics}</div>
+                          </div>
+                        )}
+                        {combo.why_this_combination && (
+                          <p className="text-xs text-text-muted italic mt-2 leading-relaxed">{combo.why_this_combination}</p>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="grid sm:grid-cols-2 gap-4 mb-4">
               <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
                 <div className="text-xs text-text-muted mb-2">Lookalike Strategy</div>

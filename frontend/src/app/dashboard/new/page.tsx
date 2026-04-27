@@ -12,6 +12,7 @@ interface BusinessInputs {
   // Step 1 — Business
   businessName: string;
   industry: string;
+  customIndustry: string;
   businessDescription: string;
   websiteUrl: string;
   monthlyAdBudget: string;
@@ -66,7 +67,7 @@ export default function NewCampaignPage() {
   const router = useRouter();
 
   const [inputs, setInputs] = useState<BusinessInputs>({
-    businessName: '', industry: '', businessDescription: '', websiteUrl: '', monthlyAdBudget: '',
+    businessName: '', industry: '', customIndustry: '', businessDescription: '', websiteUrl: '', monthlyAdBudget: '',
     productName: '', price: '', keyBenefit1: '', keyBenefit2: '', keyBenefit3: '',
     usp: '', currentOffer: '', codAvailable: false,
     targetAudience: '', campaignGoal: '', targetLocations: '',
@@ -235,6 +236,9 @@ function validateStep(step: number, inputs: BusinessInputs): boolean {
   if (step === 1 && (!inputs.businessName || !inputs.industry || !inputs.businessDescription || !inputs.monthlyAdBudget)) {
     toast.error('Please fill in all required fields.'); return false;
   }
+  if (step === 1 && inputs.industry === 'Other' && !inputs.customIndustry.trim()) {
+    toast.error('Please describe your industry / business type.'); return false;
+  }
   if (step === 2 && (!inputs.productName || !inputs.price || !inputs.keyBenefit1 || !inputs.keyBenefit2 || !inputs.keyBenefit3 || !inputs.usp)) {
     toast.error('Please fill in all required fields.'); return false;
   }
@@ -272,6 +276,19 @@ function Step1({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof B
           {['D2C Product', 'Fashion & Apparel', 'Beauty & Skincare', 'Jewellery', 'Health & Wellness', 'Food & Beverage', 'SaaS', 'Coaching & Education', 'Local Service', 'Agency', 'Dropshipping', 'Other'].map((i) => <option key={i} value={i}>{i}</option>)}
         </select>
       </FormField>
+      {inputs.industry === 'Other' && (
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+          <FormField label="Describe your industry / business type" required>
+            <input
+              className="input-field w-full px-4 py-3 text-sm"
+              value={inputs.customIndustry}
+              onChange={(e) => update('customIndustry', e.target.value)}
+              placeholder="e.g. Pet care products, Wedding photography, Online tutoring..."
+              autoFocus
+            />
+          </FormField>
+        </motion.div>
+      )}
       <FormField label="Business Description" required>
         <textarea className="input-field w-full px-4 py-3 text-sm h-28 resize-none" value={inputs.businessDescription} onChange={(e) => update('businessDescription', e.target.value)} placeholder="Describe your business, what you sell, who you serve, and what makes you unique..." />
       </FormField>
