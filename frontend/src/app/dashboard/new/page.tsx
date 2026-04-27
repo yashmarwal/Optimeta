@@ -9,11 +9,13 @@ import api from '@/lib/api';
 import { getDeviceFingerprint } from '@/lib/auth';
 
 interface BusinessInputs {
+  // Step 1 — Business
   businessName: string;
   industry: string;
   businessDescription: string;
   websiteUrl: string;
   monthlyAdBudget: string;
+  // Step 2 — Product
   productName: string;
   price: string;
   keyBenefit1: string;
@@ -21,9 +23,16 @@ interface BusinessInputs {
   keyBenefit3: string;
   usp: string;
   currentOffer: string;
+  codAvailable: boolean;
+  // Step 3 — Audience
   targetAudience: string;
   campaignGoal: string;
   targetLocations: string;
+  genderTargeting: string;
+  ageGroup: string;
+  competitors: string;
+  availableAssets: string[];
+  pixelStatus: string;
   hasMetaExperience: boolean;
   biggestChallenge: string;
 }
@@ -37,13 +46,17 @@ const STEPS = [
 
 const loadingMessages = [
   'Analyzing your business model...',
+  'Studying India market dynamics...',
   'Identifying your ideal audience...',
   'Building targeting clusters...',
   'Crafting your ad angles...',
   'Writing high-converting copy...',
   'Architecting your campaign structure...',
+  'Calibrating budget allocation...',
   'Finalizing your blueprint...',
 ];
+
+const ASSET_OPTIONS = ['Product photos', 'Short videos', 'Customer testimonials', 'UGC content', 'Brand story video', 'None yet'];
 
 export default function NewCampaignPage() {
   const [step, setStep] = useState(1);
@@ -54,12 +67,23 @@ export default function NewCampaignPage() {
 
   const [inputs, setInputs] = useState<BusinessInputs>({
     businessName: '', industry: '', businessDescription: '', websiteUrl: '', monthlyAdBudget: '',
-    productName: '', price: '', keyBenefit1: '', keyBenefit2: '', keyBenefit3: '', usp: '', currentOffer: '',
-    targetAudience: '', campaignGoal: '', targetLocations: '', hasMetaExperience: false, biggestChallenge: '',
+    productName: '', price: '', keyBenefit1: '', keyBenefit2: '', keyBenefit3: '',
+    usp: '', currentOffer: '', codAvailable: false,
+    targetAudience: '', campaignGoal: '', targetLocations: '',
+    genderTargeting: 'All', ageGroup: '18-45', competitors: '',
+    availableAssets: [], pixelStatus: 'Not installed', hasMetaExperience: false, biggestChallenge: '',
   });
 
-  const update = (field: keyof BusinessInputs, value: string | boolean) => {
+  const update = (field: keyof BusinessInputs, value: string | boolean | string[]) =>
     setInputs((prev) => ({ ...prev, [field]: value }));
+
+  const toggleAsset = (asset: string) => {
+    setInputs((prev) => ({
+      ...prev,
+      availableAssets: prev.availableAssets.includes(asset)
+        ? prev.availableAssets.filter((a) => a !== asset)
+        : [...prev.availableAssets, asset],
+    }));
   };
 
   const startGeneration = async () => {
@@ -70,11 +94,11 @@ export default function NewCampaignPage() {
     const msgTimer = setInterval(() => {
       msgIdx = (msgIdx + 1) % loadingMessages.length;
       setLoadingMsg(msgIdx);
-    }, 2500);
+    }, 2200);
 
     let progress = 0;
     const progressTimer = setInterval(() => {
-      progress += Math.random() * 8;
+      progress += Math.random() * 6;
       if (progress > 90) progress = 90;
       setProgressWidth(progress);
     }, 400);
@@ -111,7 +135,6 @@ export default function NewCampaignPage() {
         </div>
 
         <div className="relative z-10 flex flex-col items-center max-w-md w-full px-8">
-          {/* Pulsing logo */}
           <motion.div
             animate={{ scale: [1, 1.1, 1], boxShadow: ['0 0 30px rgba(123,47,190,0.35)', '0 0 60px rgba(192,38,211,0.5)', '0 0 30px rgba(123,47,190,0.35)'] }}
             transition={{ duration: 2, repeat: Infinity }}
@@ -121,18 +144,12 @@ export default function NewCampaignPage() {
           </motion.div>
 
           <h2 className="text-2xl font-black text-white mb-2">Architecting Your Campaign</h2>
-          <p className="text-text-muted text-sm mb-10 text-center">Our AI is building your complete Meta ad blueprint</p>
+          <p className="text-text-muted text-sm mb-10 text-center">Claude AI is building your complete Meta ad blueprint</p>
 
-          {/* Progress bar */}
           <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden mb-4">
-            <motion.div
-              className="h-full progress-bar"
-              style={{ width: `${progressWidth}%` }}
-              transition={{ duration: 0.3 }}
-            />
+            <motion.div className="h-full progress-bar" style={{ width: `${progressWidth}%` }} transition={{ duration: 0.3 }} />
           </div>
 
-          {/* Rotating messages */}
           <AnimatePresence mode="wait">
             <motion.p
               key={loadingMsg}
@@ -151,7 +168,7 @@ export default function NewCampaignPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Progress bar */}
+      {/* Step progress */}
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           {STEPS.map((s, i) => (
@@ -162,15 +179,12 @@ export default function NewCampaignPage() {
                   step === s.id ? 'bg-gradient-to-br from-primary to-accent glow' :
                   'bg-bg-card border border-border-color'
                 }`}>
-                  {step > s.id ? (
-                    <CheckCircle size={18} className="text-white" />
-                  ) : (
-                    <s.icon size={16} className={step >= s.id ? 'text-white' : 'text-text-muted'} />
-                  )}
+                  {step > s.id
+                    ? <CheckCircle size={18} className="text-white" />
+                    : <s.icon size={16} className={step >= s.id ? 'text-white' : 'text-text-muted'} />
+                  }
                 </div>
-                <span className={`text-xs mt-2 hidden sm:block font-medium ${step >= s.id ? 'text-white' : 'text-text-muted'}`}>
-                  {s.label}
-                </span>
+                <span className={`text-xs mt-2 hidden sm:block font-medium ${step >= s.id ? 'text-white' : 'text-text-muted'}`}>{s.label}</span>
               </div>
               {i < STEPS.length - 1 && (
                 <div className={`flex-1 h-px mx-2 transition-all duration-500 ${step > s.id ? 'bg-primary' : 'bg-border-color'}`} />
@@ -180,7 +194,6 @@ export default function NewCampaignPage() {
         </div>
       </div>
 
-      {/* Step content */}
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
@@ -192,35 +205,25 @@ export default function NewCampaignPage() {
         >
           {step === 1 && <Step1 inputs={inputs} update={update} />}
           {step === 2 && <Step2 inputs={inputs} update={update} />}
-          {step === 3 && <Step3 inputs={inputs} update={update} />}
+          {step === 3 && <Step3 inputs={inputs} update={update} toggleAsset={toggleAsset} />}
           {step === 4 && <Step4 inputs={inputs} onGenerate={startGeneration} />}
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation */}
       <div className="flex justify-between mt-6">
         {step > 1 ? (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setStep((s) => s - 1)}
-            className="btn-ghost px-6 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2"
-          >
-            <ArrowLeft size={15} />
-            Back
+          <motion.button whileTap={{ scale: 0.97 }} onClick={() => setStep((s) => s - 1)} className="btn-ghost px-6 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2">
+            <ArrowLeft size={15} /> Back
           </motion.button>
         ) : <div />}
 
         {step < 4 && (
           <motion.button
             whileTap={{ scale: 0.97 }}
-            onClick={() => {
-              if (!validateStep(step, inputs)) return;
-              setStep((s) => s + 1);
-            }}
+            onClick={() => { if (!validateStep(step, inputs)) return; setStep((s) => s + 1); }}
             className="btn-gradient px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"
           >
-            Next Step
-            <ArrowRight size={15} />
+            Next Step <ArrowRight size={15} />
           </motion.button>
         )}
       </div>
@@ -229,36 +232,31 @@ export default function NewCampaignPage() {
 }
 
 function validateStep(step: number, inputs: BusinessInputs): boolean {
-  if (step === 1) {
-    if (!inputs.businessName || !inputs.industry || !inputs.businessDescription || !inputs.monthlyAdBudget) {
-      toast.error('Please fill in all required fields.'); return false;
-    }
+  if (step === 1 && (!inputs.businessName || !inputs.industry || !inputs.businessDescription || !inputs.monthlyAdBudget)) {
+    toast.error('Please fill in all required fields.'); return false;
   }
-  if (step === 2) {
-    if (!inputs.productName || !inputs.price || !inputs.keyBenefit1 || !inputs.keyBenefit2 || !inputs.keyBenefit3 || !inputs.usp) {
-      toast.error('Please fill in all required fields.'); return false;
-    }
+  if (step === 2 && (!inputs.productName || !inputs.price || !inputs.keyBenefit1 || !inputs.keyBenefit2 || !inputs.keyBenefit3 || !inputs.usp)) {
+    toast.error('Please fill in all required fields.'); return false;
   }
-  if (step === 3) {
-    if (!inputs.targetAudience || !inputs.campaignGoal || !inputs.targetLocations || !inputs.biggestChallenge) {
-      toast.error('Please fill in all required fields.'); return false;
-    }
+  if (step === 3 && (!inputs.targetAudience || !inputs.campaignGoal || !inputs.targetLocations || !inputs.biggestChallenge)) {
+    toast.error('Please fill in all required fields.'); return false;
   }
   return true;
 }
 
-function FormField({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function FormField({ label, required, hint, children }: { label: string; required?: boolean; hint?: string; children: React.ReactNode }) {
   return (
     <div>
       <label className="block text-sm font-medium text-text-secondary mb-2">
         {label} {required && <span className="text-accent">*</span>}
+        {hint && <span className="text-text-muted font-normal ml-1 text-xs">— {hint}</span>}
       </label>
       {children}
     </div>
   );
 }
 
-function Step1({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof BusinessInputs, v: string | boolean) => void }) {
+function Step1({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof BusinessInputs, v: string | boolean | string[]) => void }) {
   return (
     <div className="space-y-6">
       <div>
@@ -271,26 +269,26 @@ function Step1({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof B
       <FormField label="Industry" required>
         <select className="input-field w-full px-4 py-3 text-sm" value={inputs.industry} onChange={(e) => update('industry', e.target.value)}>
           <option value="">Select your industry</option>
-          {['D2C Product', 'SaaS', 'Coaching', 'Local Service', 'Agency', 'Dropshipping', 'Other'].map((i) => <option key={i} value={i}>{i}</option>)}
+          {['D2C Product', 'Fashion & Apparel', 'Beauty & Skincare', 'Jewellery', 'Health & Wellness', 'Food & Beverage', 'SaaS', 'Coaching & Education', 'Local Service', 'Agency', 'Dropshipping', 'Other'].map((i) => <option key={i} value={i}>{i}</option>)}
         </select>
       </FormField>
       <FormField label="Business Description" required>
-        <textarea className="input-field w-full px-4 py-3 text-sm h-28 resize-none" value={inputs.businessDescription} onChange={(e) => update('businessDescription', e.target.value)} placeholder="Describe your business, what you do, who you serve, and what makes you unique..." />
+        <textarea className="input-field w-full px-4 py-3 text-sm h-28 resize-none" value={inputs.businessDescription} onChange={(e) => update('businessDescription', e.target.value)} placeholder="Describe your business, what you sell, who you serve, and what makes you unique..." />
       </FormField>
-      <FormField label="Website URL">
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.websiteUrl} onChange={(e) => update('websiteUrl', e.target.value)} placeholder="https://yourstore.com (optional)" />
+      <FormField label="Website or Instagram URL" hint="optional">
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.websiteUrl} onChange={(e) => update('websiteUrl', e.target.value)} placeholder="https://yourstore.com or @yourhandle" />
       </FormField>
       <FormField label="Monthly Ad Budget" required>
         <select className="input-field w-full px-4 py-3 text-sm" value={inputs.monthlyAdBudget} onChange={(e) => update('monthlyAdBudget', e.target.value)}>
           <option value="">Select your budget range</option>
-          {['Under ₹10k', '₹10k–₹25k', '₹25k–₹50k', '₹50k–₹1L', 'Above ₹1L'].map((b) => <option key={b} value={b}>{b}</option>)}
+          {['Under ₹5k', '₹5k–₹15k', '₹15k–₹30k', '₹30k–₹75k', '₹75k–₹1.5L', 'Above ₹1.5L'].map((b) => <option key={b} value={b}>{b}</option>)}
         </select>
       </FormField>
     </div>
   );
 }
 
-function Step2({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof BusinessInputs, v: string | boolean) => void }) {
+function Step2({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof BusinessInputs, v: string | boolean | string[]) => void }) {
   return (
     <div className="space-y-6">
       <div>
@@ -310,57 +308,101 @@ function Step2({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof B
         <input className="input-field w-full px-4 py-3 text-sm" value={inputs.keyBenefit2} onChange={(e) => update('keyBenefit2', e.target.value)} placeholder="e.g. 100% natural ingredients" />
       </FormField>
       <FormField label="Key Benefit 3" required>
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.keyBenefit3} onChange={(e) => update('keyBenefit3', e.target.value)} placeholder="e.g. Dermatologist tested" />
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.keyBenefit3} onChange={(e) => update('keyBenefit3', e.target.value)} placeholder="e.g. Dermatologist tested, fragrance free" />
       </FormField>
       <FormField label="Unique Selling Proposition" required>
         <textarea className="input-field w-full px-4 py-3 text-sm h-24 resize-none" value={inputs.usp} onChange={(e) => update('usp', e.target.value)} placeholder="What makes you different from every competitor? Be specific..." />
       </FormField>
-      <FormField label="Current Offer / Discount">
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.currentOffer} onChange={(e) => update('currentOffer', e.target.value)} placeholder="e.g. 30% off for first 100 orders, free shipping above ₹999 (optional)" />
+      <FormField label="Current Offer / Discount" hint="optional">
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.currentOffer} onChange={(e) => update('currentOffer', e.target.value)} placeholder="e.g. 30% off for first 100 orders, free shipping above ₹999" />
+      </FormField>
+      <FormField label="Cash on Delivery Available?" hint="affects targeting cities and ad copy">
+        <div className="flex gap-3 mt-1">
+          {[true, false].map((val) => (
+            <button key={String(val)} type="button" onClick={() => update('codAvailable', val)}
+              className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all border ${
+                inputs.codAvailable === val ? 'bg-primary/20 border-primary text-white' : 'bg-bg-dark border-border-color text-text-muted hover:border-primary/50'
+              }`}>
+              {val ? 'Yes, COD available' : 'No, prepaid only'}
+            </button>
+          ))}
+        </div>
       </FormField>
     </div>
   );
 }
 
-function Step3({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof BusinessInputs, v: string | boolean) => void }) {
+function Step3({ inputs, update, toggleAsset }: {
+  inputs: BusinessInputs;
+  update: (f: keyof BusinessInputs, v: string | boolean | string[]) => void;
+  toggleAsset: (a: string) => void;
+}) {
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-black text-white mb-1">Audience & Goals</h2>
         <p className="text-text-muted text-sm">Who are your customers and what do you want to achieve?</p>
       </div>
-      <FormField label="Target Audience Description" required>
+      <FormField label="Ideal Customer Description" required>
         <textarea className="input-field w-full px-4 py-3 text-sm h-28 resize-none" value={inputs.targetAudience} onChange={(e) => update('targetAudience', e.target.value)} placeholder="Describe your ideal customer — age, gender, income, interests, pain points, lifestyle..." />
       </FormField>
+      <div className="grid sm:grid-cols-2 gap-4">
+        <FormField label="Gender Targeting" required>
+          <select className="input-field w-full px-4 py-3 text-sm" value={inputs.genderTargeting} onChange={(e) => update('genderTargeting', e.target.value)}>
+            {['All', 'Women only', 'Men only', 'Primarily women', 'Primarily men'].map((g) => <option key={g} value={g}>{g}</option>)}
+          </select>
+        </FormField>
+        <FormField label="Age Group" required>
+          <select className="input-field w-full px-4 py-3 text-sm" value={inputs.ageGroup} onChange={(e) => update('ageGroup', e.target.value)}>
+            {['13-17', '18-24', '25-34', '18-35', '25-45', '30-50', '35-55', '45-65', '18-65 (broad)'].map((a) => <option key={a} value={a}>{a}</option>)}
+          </select>
+        </FormField>
+      </div>
       <FormField label="Campaign Goal" required>
         <select className="input-field w-full px-4 py-3 text-sm" value={inputs.campaignGoal} onChange={(e) => update('campaignGoal', e.target.value)}>
           <option value="">Select campaign goal</option>
-          {['Sales', 'Leads', 'Brand Awareness', 'App Installs', 'Traffic'].map((g) => <option key={g} value={g}>{g}</option>)}
+          {['Sales / Purchases', 'Lead Generation', 'Brand Awareness', 'Website Traffic', 'App Installs', 'WhatsApp Messages'].map((g) => <option key={g} value={g}>{g}</option>)}
         </select>
       </FormField>
       <FormField label="Target Cities / States" required>
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.targetLocations} onChange={(e) => update('targetLocations', e.target.value)} placeholder="e.g. Mumbai, Delhi, Bangalore, Pune — or All India" />
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.targetLocations} onChange={(e) => update('targetLocations', e.target.value)} placeholder="e.g. Mumbai, Delhi, Bangalore — or All India — or Tier 2 cities" />
       </FormField>
-      <FormField label="Meta Ads Experience">
-        <div className="flex gap-4 mt-1">
-          {[true, false].map((val) => (
-            <button
-              key={String(val)}
-              type="button"
-              onClick={() => update('hasMetaExperience', val)}
-              className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all border ${
-                inputs.hasMetaExperience === val
+      <FormField label="Meta Pixel Status" hint="critical for strategy">
+        <select className="input-field w-full px-4 py-3 text-sm" value={inputs.pixelStatus} onChange={(e) => update('pixelStatus', e.target.value)}>
+          {['Not installed', 'Installed but no data yet', 'Installed with Purchase events', 'Installed with Lead events', 'Not sure'].map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+      </FormField>
+      <FormField label="Main Competitors" hint="optional but improves targeting">
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.competitors} onChange={(e) => update('competitors', e.target.value)} placeholder="e.g. Mamaearth, Minimalist, The Ordinary" />
+      </FormField>
+      <FormField label="Available Creative Assets" hint="select all that apply">
+        <div className="flex flex-wrap gap-2 mt-1">
+          {ASSET_OPTIONS.map((asset) => (
+            <button key={asset} type="button" onClick={() => toggleAsset(asset)}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
+                inputs.availableAssets.includes(asset)
                   ? 'bg-primary/20 border-primary text-white'
                   : 'bg-bg-dark border-border-color text-text-muted hover:border-primary/50'
-              }`}
-            >
-              {val ? 'Yes, I\'ve run ads before' : 'No, I\'m new to Meta ads'}
+              }`}>
+              {asset}
+            </button>
+          ))}
+        </div>
+      </FormField>
+      <FormField label="Meta Ads Experience" hint="helps calibrate complexity">
+        <div className="flex gap-3 mt-1">
+          {[true, false].map((val) => (
+            <button key={String(val)} type="button" onClick={() => update('hasMetaExperience', val)}
+              className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all border ${
+                inputs.hasMetaExperience === val ? 'bg-primary/20 border-primary text-white' : 'bg-bg-dark border-border-color text-text-muted hover:border-primary/50'
+              }`}>
+              {val ? "Yes, I've run ads before" : "No, I'm new to Meta ads"}
             </button>
           ))}
         </div>
       </FormField>
       <FormField label="Biggest Challenge with Meta Ads" required>
-        <textarea className="input-field w-full px-4 py-3 text-sm h-24 resize-none" value={inputs.biggestChallenge} onChange={(e) => update('biggestChallenge', e.target.value)} placeholder="What's your #1 challenge? (e.g. low ROAS, don't know who to target, creatives not working, high CPMs...)" />
+        <textarea className="input-field w-full px-4 py-3 text-sm h-24 resize-none" value={inputs.biggestChallenge} onChange={(e) => update('biggestChallenge', e.target.value)} placeholder="e.g. low ROAS, don't know who to target, creatives not working, high CPMs..." />
       </FormField>
     </div>
   );
@@ -368,30 +410,9 @@ function Step3({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof B
 
 function Step4({ inputs, onGenerate }: { inputs: BusinessInputs; onGenerate: () => void }) {
   const sections = [
-    {
-      label: 'Business',
-      fields: [
-        { key: 'Business Name', val: inputs.businessName },
-        { key: 'Industry', val: inputs.industry },
-        { key: 'Budget', val: inputs.monthlyAdBudget },
-      ],
-    },
-    {
-      label: 'Product',
-      fields: [
-        { key: 'Product', val: inputs.productName },
-        { key: 'Price', val: `₹${inputs.price}` },
-        { key: 'USP', val: inputs.usp },
-      ],
-    },
-    {
-      label: 'Campaign',
-      fields: [
-        { key: 'Goal', val: inputs.campaignGoal },
-        { key: 'Locations', val: inputs.targetLocations },
-        { key: 'Experience', val: inputs.hasMetaExperience ? 'Yes' : 'No' },
-      ],
-    },
+    { label: 'Business', fields: [{ key: 'Name', val: inputs.businessName }, { key: 'Industry', val: inputs.industry }, { key: 'Budget', val: inputs.monthlyAdBudget }] },
+    { label: 'Product', fields: [{ key: 'Product', val: inputs.productName }, { key: 'Price', val: `₹${inputs.price}` }, { key: 'COD', val: inputs.codAvailable ? 'Yes' : 'No' }] },
+    { label: 'Campaign', fields: [{ key: 'Goal', val: inputs.campaignGoal }, { key: 'Locations', val: inputs.targetLocations }, { key: 'Pixel', val: inputs.pixelStatus }] },
   ];
 
   return (
@@ -400,7 +421,6 @@ function Step4({ inputs, onGenerate }: { inputs: BusinessInputs; onGenerate: () 
         <h2 className="text-2xl font-black text-white mb-1">Review & Generate</h2>
         <p className="text-text-muted text-sm">Confirm your inputs, then let Optimeta architect your campaign.</p>
       </div>
-
       <div className="grid sm:grid-cols-3 gap-4">
         {sections.map((s) => (
           <div key={s.label} className="bg-bg-dark rounded-xl p-4 border border-border-color">
@@ -416,20 +436,14 @@ function Step4({ inputs, onGenerate }: { inputs: BusinessInputs; onGenerate: () 
           </div>
         ))}
       </div>
-
       <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-center gap-3">
         <Sparkles size={18} className="text-accent flex-shrink-0" />
         <div>
           <div className="text-sm font-semibold text-white">Ready to generate</div>
-          <div className="text-xs text-text-muted">Blueprint generation takes 10–20 seconds</div>
+          <div className="text-xs text-text-muted">Claude AI will architect your blueprint in 15–30 seconds</div>
         </div>
       </div>
-
-      <motion.button
-        whileTap={{ scale: 0.97 }}
-        onClick={onGenerate}
-        className="btn-gradient w-full py-4 rounded-xl font-black text-lg flex items-center justify-center gap-3 glow"
-      >
+      <motion.button whileTap={{ scale: 0.97 }} onClick={onGenerate} className="btn-gradient w-full py-4 rounded-xl font-black text-lg flex items-center justify-center gap-3 glow">
         <Sparkles size={20} />
         Generate Campaign Blueprint →
       </motion.button>

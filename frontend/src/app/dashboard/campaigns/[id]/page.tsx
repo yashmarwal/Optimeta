@@ -1,41 +1,149 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileDown, ArrowLeft, Copy, Check, TrendingUp, Target, DollarSign, Users,
-  Layers, MessageSquare, Palette, CheckSquare, BarChart3, Sparkles, BookOpen
+  Layers, MessageSquare, Palette, CheckSquare, BarChart3, Sparkles, BookOpen,
+  AlertTriangle, Zap, Calendar, Eye, Layout, ChevronRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface Blueprint {
   campaign_name: string;
   executive_summary: string;
-  campaign_objective: { recommended: string; reason: string };
-  funnel_strategy: { stage: string; approach: string; cold_warm_split: string };
-  budget_strategy: { recommended_daily_budget_inr: string; split: { awareness: string; consideration: string; conversion: string }; scaling_logic: string };
-  targeting: { primary_audience: { age_range: string; gender: string; locations: string[]; interests: string[]; behaviors: string[] }; lookalike_strategy: string; retargeting_strategy: string; audience_exclusions: string[] };
-  ad_sets: Array<{ ad_set_name: string; audience_type: string; objective: string; budget_allocation: string; targeting_focus: string }>;
-  ad_angles: Array<{ angle_type: string; angle_name: string; core_message: string; why_it_works: string }>;
-  ad_copies: Array<{ angle: string; primary_text: string; headline: string; sub_headline: string; cta: string; placement: string }>;
-  creative_direction: { visual_style: string; color_palette: string; content_formats: string[]; hooks: string[]; do: string[]; dont: string[] };
-  launch_checklist: string[];
-  performance_benchmarks: { expected_ctr: string; expected_cpc_inr: string; expected_cpm_inr: string; roas_target: string };
+  market_insight?: string;
+  campaign_objective: {
+    recommended: string;
+    meta_objective_name?: string;
+    reason: string;
+    what_to_avoid?: string;
+  };
+  funnel_strategy: {
+    stage: string;
+    approach: string;
+    cold_warm_split: string;
+    budget_note?: string;
+  };
+  budget_strategy: {
+    recommended_daily_budget_inr: string;
+    total_monthly_inr?: string;
+    split: Record<string, string>;
+    scaling_logic: string;
+    warning?: string;
+  };
+  campaign_structure?: {
+    recommended_num_campaigns: number;
+    recommended_num_adsets: number;
+    recommended_num_ads: number;
+    structure_reason: string;
+    use_advantage_plus: boolean;
+    advantage_plus_reason: string;
+  };
+  targeting: {
+    approach?: string;
+    approach_reason?: string;
+    primary_audience: {
+      age_range: string;
+      gender: string;
+      locations: string[];
+      interests: string[];
+      behaviors: string[];
+      income_targeting?: string;
+    };
+    lookalike_strategy: string;
+    retargeting_strategy: string;
+    retargeting_window_days?: number;
+    audience_exclusions: string[];
+    cod_targeting_note?: string;
+  };
+  ad_sets: Array<{
+    ad_set_name: string;
+    audience_type: string;
+    objective: string;
+    budget_allocation?: string;
+    daily_budget_inr?: string;
+    targeting_focus: string;
+    why_this_audience?: string;
+  }>;
+  ad_angles: Array<{
+    angle_type: string;
+    angle_name: string;
+    core_message: string;
+    why_it_works?: string;
+    why_it_works_for_this_brand?: string;
+    best_for?: string;
+  }>;
+  ad_copies: Array<{
+    angle: string;
+    placement: string;
+    hook?: string;
+    primary_text: string;
+    headline: string;
+    sub_headline: string;
+    cta: string;
+    why_this_works?: string;
+  }>;
+  creative_direction: {
+    priority_format?: string;
+    visual_style: string;
+    color_palette: string;
+    content_formats: string[];
+    hooks?: string[];
+    video_hooks?: Array<{ hook_text: string; visual_direction: string; why_it_works: string }>;
+    ugc_brief?: string;
+    do: string[];
+    dont: string[];
+  };
+  pixel_recommendation?: {
+    current_status: string;
+    immediate_action: string;
+    capi_needed: boolean;
+    optimization_event: string;
+  };
+  launch_checklist: Array<{ step: number; action: string; why: string; time_estimate: string } | string>;
+  first_7_days_plan?: {
+    day_1_3: string;
+    day_4_7: string;
+    when_to_edit: string;
+    green_flags: string[];
+    red_flags: string[];
+  };
+  performance_benchmarks: {
+    category_average_roas?: string;
+    your_target_roas?: string;
+    expected_ctr?: string;
+    expected_ctr_feed?: string;
+    expected_ctr_reels?: string;
+    expected_cpc_inr: string;
+    expected_cpm_inr: string;
+    expected_cpa_inr?: string;
+    roas_target?: string;
+    learning_phase_duration?: string;
+    break_even_roas?: string;
+  };
+  budget_warning?: string | null;
 }
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const NAV_SECTIONS = [
   { id: 'summary', label: 'Executive Summary', icon: BookOpen },
-  { id: 'objective', label: 'Campaign Objective', icon: Target },
-  { id: 'funnel', label: 'Funnel Strategy', icon: TrendingUp },
-  { id: 'budget', label: 'Budget Strategy', icon: DollarSign },
+  { id: 'objective', label: 'Objective', icon: Target },
+  { id: 'funnel-budget', label: 'Funnel & Budget', icon: DollarSign },
+  { id: 'structure', label: 'Structure', icon: Layout },
   { id: 'targeting', label: 'Targeting', icon: Users },
   { id: 'adsets', label: 'Ad Sets', icon: Layers },
   { id: 'angles', label: 'Ad Angles', icon: Sparkles },
   { id: 'copies', label: 'Ad Copies', icon: MessageSquare },
   { id: 'creative', label: 'Creative Direction', icon: Palette },
+  { id: 'pixel', label: 'Pixel', icon: Zap },
+  { id: 'first7days', label: 'First 7 Days', icon: Calendar },
   { id: 'checklist', label: 'Launch Checklist', icon: CheckSquare },
   { id: 'benchmarks', label: 'Performance', icon: BarChart3 },
 ];
@@ -52,37 +160,65 @@ const ANGLE_COLORS: Record<string, string> = {
   trust: 'bg-green-500/10 text-green-400 border-green-500/30',
   curiosity: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
   social_proof: 'bg-teal-500/10 text-teal-400 border-teal-500/30',
+  price_value: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+  urgency: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
 };
 
-function CopyButton({ text }: { text: string }) {
+const PLACEMENT_COLORS: Record<string, string> = {
+  Feed: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
+  Reel: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
+  Story: 'bg-pink-500/15 text-pink-300 border-pink-500/30',
+};
+
+// ─── Micro Components ─────────────────────────────────────────────────────────
+
+function CopyButton({ text, size = 14 }: { text: string; size?: number }) {
   const [copied, setCopied] = useState(false);
-  const handleCopy = () => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
   return (
-    <button onClick={handleCopy} className="p-2 rounded-lg bg-white/5 hover:bg-primary/20 transition-all text-text-muted hover:text-white" title="Copy">
-      {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+    <button
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+      className="p-2 rounded-lg bg-white/5 hover:bg-primary/20 transition-all text-text-muted hover:text-white flex-shrink-0"
+      title="Copy"
+    >
+      {copied ? <Check size={size} className="text-green-400" /> : <Copy size={size} />}
     </button>
   );
 }
 
-function SectionCard({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+function Tag({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${className || 'bg-primary/10 text-accent border-primary/25'}`}>{children}</span>;
+}
+
+function SectionCard({ id, children, delay = 0 }: { id: string; children: React.ReactNode; delay?: number }) {
   return (
     <motion.div
       id={id}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.4 }}
-      className="glass-card p-8 mb-6"
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.45, delay }}
+      className="glass-card p-6 sm:p-8 mb-6"
     >
-      <h2 className="text-lg font-black gradient-text mb-6 pb-4 border-b border-border-color">{title}</h2>
       {children}
     </motion.div>
   );
 }
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <h2 className="text-base font-black gradient-text mb-5 pb-4 border-b border-border-color uppercase tracking-wide">{children}</h2>;
+}
+
+function MetricBox({ label, value, sub, highlight }: { label: string; value: string; sub?: string; highlight?: boolean }) {
+  return (
+    <div className={`rounded-xl p-4 border text-center ${highlight ? 'bg-primary/10 border-primary/30' : 'bg-bg-dark border-border-color'}`}>
+      <div className={`text-2xl font-black mb-1 ${highlight ? 'gradient-text' : 'text-white'}`}>{value}</div>
+      {sub && <div className="text-xs text-text-muted mb-0.5">{sub}</div>}
+      <div className="text-xs text-text-muted">{label}</div>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function CampaignViewPage() {
   const { id } = useParams();
@@ -93,73 +229,100 @@ export default function CampaignViewPage() {
   const [activeSection, setActiveSection] = useState('summary');
   const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
   const [exporting, setExporting] = useState(false);
+  const [allChecked, setAllChecked] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
-    const savedChecks = localStorage.getItem(`checklist-${id}`);
-    if (savedChecks) setCheckedItems(JSON.parse(savedChecks));
+    const saved = localStorage.getItem(`checklist-${id}`);
+    if (saved) setCheckedItems(JSON.parse(saved));
   }, [id]);
 
   useEffect(() => {
-    const fetchCampaign = async () => {
-      try {
-        const { data } = await api.get(`/api/campaigns/${id}`);
-        setCampaign(data.data.campaign);
-      } catch {
-        toast.error('Campaign not found.');
-        router.push('/dashboard');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCampaign();
+    api.get(`/api/campaigns/${id}`)
+      .then(({ data }) => setCampaign(data.data.campaign))
+      .catch(() => { toast.error('Campaign not found.'); router.push('/dashboard'); })
+      .finally(() => setLoading(false));
   }, [id, router]);
 
-  const toggleCheck = (i: number) => {
-    const next = { ...checkedItems, [i]: !checkedItems[i] };
-    setCheckedItems(next);
-    localStorage.setItem(`checklist-${id}`, JSON.stringify(next));
-  };
+  // Scroll spy
+  useEffect(() => {
+    if (!campaign) return;
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) setActiveSection(e.target.id);
+        }
+      },
+      { rootMargin: '-30% 0px -60% 0px', threshold: 0 }
+    );
+    NAV_SECTIONS.forEach(({ id: sid }) => {
+      const el = document.getElementById(sid);
+      if (el) observerRef.current?.observe(el);
+    });
+    return () => observerRef.current?.disconnect();
+  }, [campaign]);
+
+  const toggleCheck = useCallback((i: number, total: number) => {
+    setCheckedItems((prev) => {
+      const next = { ...prev, [i]: !prev[i] };
+      localStorage.setItem(`checklist-${id}`, JSON.stringify(next));
+      const done = Object.values(next).filter(Boolean).length;
+      if (done === total && !allChecked) {
+        setAllChecked(true);
+        toast.success('🎉 Launch checklist complete! Time to go live.');
+      }
+      return next;
+    });
+  }, [id, allChecked]);
 
   const handleExport = async () => {
-    if (user?.plan === 'free') {
-      toast.error('PDF export is available on Pro and Ultra plans.');
-      return;
-    }
+    if (user?.plan === 'free') { toast.error('PDF export is available on Pro and Ultra plans.'); return; }
     setExporting(true);
     try {
       const response = await api.get(`/api/campaigns/${id}/export`, { responseType: 'blob' });
       const url = URL.createObjectURL(new Blob([response.data], { type: 'text/html' }));
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `optimeta-blueprint-${id}.html`;
-      a.click();
+      const a = document.createElement('a'); a.href = url;
+      a.download = `optimeta-blueprint-${id}.html`; a.click();
       URL.revokeObjectURL(url);
       toast.success('Blueprint exported!');
-    } catch {
-      toast.error('Export failed.');
-    } finally {
-      setExporting(false);
-    }
+    } catch { toast.error('Export failed.'); }
+    finally { setExporting(false); }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-32">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <p className="text-text-muted text-sm">Loading blueprint...</p>
-        </div>
+  if (loading) return (
+    <div className="flex items-center justify-center py-32">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        <p className="text-text-muted text-sm">Loading blueprint...</p>
       </div>
-    );
-  }
+    </div>
+  );
 
   if (!campaign) return null;
 
   const bp = campaign.blueprint;
+  const checklistItems = bp.launch_checklist || [];
+  const checkedCount = Object.values(checkedItems).filter(Boolean).length;
+  const checklistProgress = checklistItems.length > 0 ? Math.round((checkedCount / checklistItems.length) * 100) : 0;
+
+  const budgetSplitEntries = Object.entries(bp.budget_strategy?.split || {});
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header */}
+
+      {/* Budget Warning Banner */}
+      {bp.budget_warning && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+          className="mb-6 flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300">
+          <AlertTriangle size={18} className="flex-shrink-0 mt-0.5" />
+          <div>
+            <div className="text-sm font-semibold mb-0.5">Budget Advisory</div>
+            <div className="text-xs leading-relaxed">{bp.budget_warning}</div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Sticky top bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-4">
           <button onClick={() => router.back()} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all">
@@ -172,38 +335,33 @@ export default function CampaignViewPage() {
             </p>
           </div>
         </div>
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={handleExport}
-          disabled={exporting}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-            user?.plan === 'free'
-              ? 'bg-white/5 border border-border-color text-text-muted cursor-not-allowed'
-              : 'btn-gradient'
-          }`}
-        >
-          <FileDown size={15} />
-          {exporting ? 'Exporting...' : user?.plan === 'free' ? 'Export (Pro)' : 'Export Blueprint'}
-        </motion.button>
+        <div className="flex items-center gap-3">
+          <button onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success('Link copied!'); }}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium btn-ghost">
+            <Copy size={14} /> Copy Link
+          </button>
+          <motion.button whileTap={{ scale: 0.97 }} onClick={handleExport} disabled={exporting}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              user?.plan === 'free' ? 'bg-white/5 border border-border-color text-text-muted cursor-not-allowed' : 'btn-gradient'
+            }`}>
+            <FileDown size={15} />
+            {exporting ? 'Exporting...' : user?.plan === 'free' ? 'Export (Pro)' : 'Export Blueprint'}
+          </motion.button>
+        </div>
       </div>
 
       <div className="flex gap-6">
-        {/* Left sidebar nav */}
+        {/* Sidebar nav */}
         <div className="hidden xl:block w-52 flex-shrink-0">
-          <div className="sticky top-24 glass-card p-3 space-y-1">
+          <div className="sticky top-24 glass-card p-3 space-y-0.5">
             {NAV_SECTIONS.map((s) => (
-              <a
-                key={s.id}
-                href={`#${s.id}`}
-                onClick={() => setActiveSection(s.id)}
+              <a key={s.id} href={`#${s.id}`}
                 className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-all ${
-                  activeSection === s.id
-                    ? 'bg-primary/15 text-white border border-primary/30'
-                    : 'text-text-muted hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <s.icon size={13} />
+                  activeSection === s.id ? 'bg-primary/15 text-white border border-primary/30' : 'text-text-muted hover:text-white hover:bg-white/5'
+                }`}>
+                <s.icon size={12} />
                 {s.label}
+                {activeSection === s.id && <ChevronRight size={10} className="ml-auto" />}
               </a>
             ))}
           </div>
@@ -212,136 +370,238 @@ export default function CampaignViewPage() {
         {/* Main content */}
         <div className="flex-1 min-w-0">
 
-          {/* Executive Summary */}
-          <SectionCard id="summary" title="Executive Summary">
-            <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-xl p-6">
-              <p className="text-text-secondary leading-relaxed">{bp.executive_summary}</p>
+          {/* 1. Executive Summary */}
+          <SectionCard id="summary">
+            <div className="bg-gradient-to-br from-primary/15 via-accent/10 to-transparent border border-primary/20 rounded-2xl p-6 mb-4">
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <h2 className="text-2xl font-black text-white leading-tight">{bp.campaign_name}</h2>
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-accent/20 text-accent border border-accent/30 flex-shrink-0">Blueprint Ready</span>
+              </div>
+              <p className="text-text-secondary leading-relaxed text-sm">{bp.executive_summary}</p>
             </div>
+            {bp.market_insight && (
+              <div className="border-l-4 border-primary pl-5 py-2">
+                <div className="text-xs text-accent font-semibold mb-1 uppercase tracking-wide">India Market Insight</div>
+                <p className="text-text-secondary text-sm leading-relaxed italic">{bp.market_insight}</p>
+              </div>
+            )}
           </SectionCard>
 
-          {/* Campaign Objective */}
-          <SectionCard id="objective" title="Campaign Objective">
-            <div className="grid sm:grid-cols-2 gap-4">
+          {/* 2. Campaign Objective */}
+          <SectionCard id="objective" delay={0.05}>
+            <SectionTitle>Campaign Objective</SectionTitle>
+            <div className="grid sm:grid-cols-2 gap-4 mb-4">
               <div className="bg-bg-dark rounded-xl p-5 border border-border-color">
-                <div className="text-xs text-text-muted mb-2 uppercase tracking-wide">Recommended</div>
-                <div className="text-lg font-bold gradient-text">{bp.campaign_objective?.recommended}</div>
+                <div className="text-xs text-text-muted mb-2 uppercase tracking-wide">Recommended Objective</div>
+                <div className="text-xl font-black gradient-text mb-1">{bp.campaign_objective?.recommended}</div>
+                {bp.campaign_objective?.meta_objective_name && (
+                  <div className="flex items-center gap-2 mt-3">
+                    <span className="text-xs text-text-muted">In Meta Ads Manager, select:</span>
+                    <div className="flex items-center gap-1.5">
+                      <code className="px-2 py-0.5 rounded bg-primary/15 text-accent text-xs font-mono border border-primary/25">
+                        {bp.campaign_objective.meta_objective_name}
+                      </code>
+                      <CopyButton text={bp.campaign_objective.meta_objective_name} size={12} />
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="bg-bg-dark rounded-xl p-5 border border-border-color">
                 <div className="text-xs text-text-muted mb-2 uppercase tracking-wide">Why This Objective</div>
-                <div className="text-sm text-text-secondary leading-relaxed">{bp.campaign_objective?.reason}</div>
+                <p className="text-sm text-text-secondary leading-relaxed">{bp.campaign_objective?.reason}</p>
               </div>
             </div>
+            {bp.campaign_objective?.what_to_avoid && (
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/5 border border-red-500/20">
+                <AlertTriangle size={16} className="text-red-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="text-xs text-red-400 font-semibold mb-1">What to Avoid</div>
+                  <p className="text-sm text-text-secondary">{bp.campaign_objective.what_to_avoid}</p>
+                </div>
+              </div>
+            )}
           </SectionCard>
 
-          {/* Funnel Strategy */}
-          <SectionCard id="funnel" title="Funnel Strategy">
-            <div className="flex flex-col sm:flex-row gap-3 mb-5">
-              {['TOFU', 'MOFU', 'BOFU'].map((stage, i) => (
-                <div key={stage} className={`flex-1 rounded-xl p-4 border text-center ${
-                  i === 0 ? 'bg-blue-500/10 border-blue-500/30' :
-                  i === 1 ? 'bg-orange-500/10 border-orange-500/30' :
-                  'bg-red-500/10 border-red-500/30'
-                }`}>
-                  <div className="text-xs font-bold text-white mb-1">{stage}</div>
-                  <div className={`text-xs ${i === 0 ? 'text-blue-400' : i === 1 ? 'text-orange-400' : 'text-red-400'}`}>
-                    {i === 0 ? 'Awareness' : i === 1 ? 'Consideration' : 'Conversion'}
+          {/* 3. Funnel & Budget (side by side on desktop) */}
+          <div id="funnel-budget" className="grid sm:grid-cols-2 gap-6 mb-6">
+            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: 0.05 }} className="glass-card p-6">
+              <SectionTitle>Funnel Strategy</SectionTitle>
+              <div className="flex gap-2 mb-5">
+                {['TOFU', 'MOFU', 'BOFU'].map((stage, i) => (
+                  <div key={stage} className={`flex-1 rounded-xl p-3 border text-center ${
+                    i === 0 ? 'bg-blue-500/10 border-blue-500/30' : i === 1 ? 'bg-orange-500/10 border-orange-500/30' : 'bg-red-500/10 border-red-500/30'
+                  }`}>
+                    <div className="text-xs font-black text-white">{stage}</div>
+                    <div className={`text-xs mt-0.5 ${i === 0 ? 'text-blue-400' : i === 1 ? 'text-orange-400' : 'text-red-400'}`}>
+                      {i === 0 ? 'Awareness' : i === 1 ? 'Consider' : 'Convert'}
+                    </div>
                   </div>
+                ))}
+              </div>
+              <div className="space-y-3">
+                <div className="bg-bg-dark rounded-xl p-3 border border-border-color">
+                  <div className="text-xs text-text-muted mb-1">Stage Focus</div>
+                  <div className="text-sm font-semibold text-white">{bp.funnel_strategy?.stage}</div>
                 </div>
-              ))}
-            </div>
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
-                <div className="text-xs text-text-muted mb-2">Stage</div>
-                <div className="text-sm font-semibold text-white">{bp.funnel_strategy?.stage}</div>
-              </div>
-              <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
-                <div className="text-xs text-text-muted mb-2">Cold / Warm Split</div>
-                <div className="text-sm font-semibold text-white">{bp.funnel_strategy?.cold_warm_split}</div>
-              </div>
-              <div className="sm:col-span-1 bg-bg-dark rounded-xl p-4 border border-border-color col-span-full">
-                <div className="text-xs text-text-muted mb-2">Approach</div>
-                <div className="text-sm text-text-secondary leading-relaxed">{bp.funnel_strategy?.approach}</div>
-              </div>
-            </div>
-          </SectionCard>
-
-          {/* Budget Strategy */}
-          <SectionCard id="budget" title="Budget Strategy">
-            <div className="text-center mb-6 p-6 bg-bg-dark rounded-xl border border-border-color">
-              <div className="text-xs text-text-muted mb-2">Recommended Daily Budget</div>
-              <div className="text-4xl font-black gradient-text">₹{bp.budget_strategy?.recommended_daily_budget_inr}</div>
-              <div className="text-xs text-text-muted mt-1">per day</div>
-            </div>
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              {[
-                { label: 'Awareness', val: bp.budget_strategy?.split?.awareness, color: '#7B2FBE' },
-                { label: 'Consideration', val: bp.budget_strategy?.split?.consideration, color: '#9B3FDE' },
-                { label: 'Conversion', val: bp.budget_strategy?.split?.conversion, color: '#C026D3' },
-              ].map((item) => (
-                <div key={item.label} className="bg-bg-dark rounded-xl p-4 border border-border-color text-center">
-                  <div className="text-2xl font-black mb-1" style={{ color: item.color }}>{item.val}</div>
-                  <div className="text-xs text-text-muted">{item.label}</div>
+                <div className="bg-bg-dark rounded-xl p-3 border border-border-color">
+                  <div className="text-xs text-text-muted mb-1">Cold / Warm Split</div>
+                  <div className="text-sm font-semibold gradient-text">{bp.funnel_strategy?.cold_warm_split}</div>
                 </div>
-              ))}
-            </div>
-            <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
-              <div className="text-xs text-text-muted mb-2">Scaling Logic</div>
-              <p className="text-sm text-text-secondary leading-relaxed">{bp.budget_strategy?.scaling_logic}</p>
-            </div>
-          </SectionCard>
+                <div className="bg-bg-dark rounded-xl p-3 border border-border-color">
+                  <div className="text-xs text-text-muted mb-1">Approach</div>
+                  <p className="text-sm text-text-secondary leading-relaxed">{bp.funnel_strategy?.approach}</p>
+                </div>
+                {bp.funnel_strategy?.budget_note && (
+                  <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                    <p className="text-xs text-amber-300 leading-relaxed">{bp.funnel_strategy.budget_note}</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
 
-          {/* Targeting */}
-          <SectionCard id="targeting" title="Audience Targeting">
+            <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: 0.1 }} className="glass-card p-6">
+              <SectionTitle>Budget Strategy</SectionTitle>
+              <div className="text-center mb-5 p-5 bg-gradient-to-b from-primary/15 to-transparent rounded-xl border border-primary/20">
+                <div className="text-xs text-text-muted mb-1">Recommended Daily Budget</div>
+                <div className="text-4xl font-black gradient-text">₹{bp.budget_strategy?.recommended_daily_budget_inr}</div>
+                {bp.budget_strategy?.total_monthly_inr && (
+                  <div className="text-xs text-text-muted mt-1">≈ ₹{bp.budget_strategy.total_monthly_inr} / month</div>
+                )}
+              </div>
+              <div className="space-y-2 mb-4">
+                {budgetSplitEntries.map(([key, val]) => (
+                  <div key={key} className="flex items-center justify-between p-3 bg-bg-dark rounded-xl border border-border-color">
+                    <span className="text-xs text-text-muted capitalize">{key.replace(/_/g, ' ')}</span>
+                    <span className="text-sm font-black gradient-text">{val}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-bg-dark rounded-xl p-3 border border-border-color mb-3">
+                <div className="text-xs text-text-muted mb-1">Scaling Logic</div>
+                <p className="text-sm text-text-secondary leading-relaxed">{bp.budget_strategy?.scaling_logic}</p>
+              </div>
+              {bp.budget_strategy?.warning && (
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                  <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-300 leading-relaxed">{bp.budget_strategy.warning}</p>
+                </div>
+              )}
+            </motion.div>
+          </div>
+
+          {/* 4. Campaign Structure */}
+          {bp.campaign_structure && (
+            <SectionCard id="structure" delay={0.05}>
+              <SectionTitle>Campaign Structure</SectionTitle>
+              <div className="grid grid-cols-3 gap-4 mb-5">
+                <MetricBox label="Campaigns" value={String(bp.campaign_structure.recommended_num_campaigns)} />
+                <MetricBox label="Ad Sets" value={String(bp.campaign_structure.recommended_num_adsets)} highlight />
+                <MetricBox label="Ads" value={String(bp.campaign_structure.recommended_num_ads)} />
+              </div>
+              <div className={`flex items-start gap-4 p-4 rounded-xl border mb-4 ${
+                bp.campaign_structure.use_advantage_plus ? 'bg-green-500/5 border-green-500/20' : 'bg-bg-dark border-border-color'
+              }`}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                  bp.campaign_structure.use_advantage_plus ? 'bg-green-500/20' : 'bg-bg-card'
+                }`}>
+                  {bp.campaign_structure.use_advantage_plus ? <Check size={16} className="text-green-400" /> : <Eye size={16} className="text-text-muted" />}
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-white mb-0.5">
+                    Advantage+ Shopping: {bp.campaign_structure.use_advantage_plus ? 'Recommended' : 'Not recommended'}
+                  </div>
+                  <p className="text-xs text-text-secondary leading-relaxed">{bp.campaign_structure.advantage_plus_reason}</p>
+                </div>
+              </div>
+              <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
+                <div className="text-xs text-text-muted mb-1">Why this structure</div>
+                <p className="text-sm text-text-secondary leading-relaxed">{bp.campaign_structure.structure_reason}</p>
+              </div>
+            </SectionCard>
+          )}
+
+          {/* 5. Targeting */}
+          <SectionCard id="targeting" delay={0.05}>
+            <SectionTitle>Audience Targeting</SectionTitle>
+            {bp.targeting.approach && (
+              <div className="flex items-center gap-3 mb-5 p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                <Tag className="bg-primary/20 text-accent border-primary/30">{bp.targeting.approach}</Tag>
+                <p className="text-xs text-text-secondary leading-relaxed">{bp.targeting.approach_reason}</p>
+              </div>
+            )}
             <div className="grid sm:grid-cols-2 gap-4 mb-4">
               <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
-                <div className="text-xs text-text-muted mb-2">Age Range</div>
+                <div className="text-xs text-text-muted mb-1">Age Range</div>
                 <div className="text-sm font-semibold text-white">{bp.targeting?.primary_audience?.age_range}</div>
               </div>
               <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
-                <div className="text-xs text-text-muted mb-2">Gender</div>
+                <div className="text-xs text-text-muted mb-1">Gender</div>
                 <div className="text-sm font-semibold text-white">{bp.targeting?.primary_audience?.gender}</div>
               </div>
             </div>
-            <div className="space-y-4">
+            {bp.targeting?.primary_audience?.income_targeting && (
+              <div className="bg-bg-dark rounded-xl p-4 border border-border-color mb-4">
+                <div className="text-xs text-text-muted mb-1">Income Targeting</div>
+                <div className="text-sm text-text-secondary">{bp.targeting.primary_audience.income_targeting}</div>
+              </div>
+            )}
+            <div className="space-y-4 mb-4">
               {[
-                { label: 'Locations', items: bp.targeting?.primary_audience?.locations },
-                { label: 'Interests', items: bp.targeting?.primary_audience?.interests },
-                { label: 'Behaviors', items: bp.targeting?.primary_audience?.behaviors },
-                { label: 'Audience Exclusions', items: bp.targeting?.audience_exclusions },
-              ].map((group) => (
-                <div key={group.label} className="bg-bg-dark rounded-xl p-4 border border-border-color">
-                  <div className="text-xs text-text-muted mb-3">{group.label}</div>
+                { label: 'Target Locations', items: bp.targeting?.primary_audience?.locations, tagClass: 'bg-blue-500/10 text-blue-400 border-blue-500/25' },
+                { label: 'Interests', items: bp.targeting?.primary_audience?.interests, tagClass: 'bg-primary/10 text-accent border-primary/25' },
+                { label: 'Behaviors', items: bp.targeting?.primary_audience?.behaviors, tagClass: 'bg-teal-500/10 text-teal-400 border-teal-500/25' },
+                { label: 'Audience Exclusions', items: bp.targeting?.audience_exclusions, tagClass: 'bg-red-500/10 text-red-400 border-red-500/25' },
+              ].map(({ label, items, tagClass }) => (
+                <div key={label} className="bg-bg-dark rounded-xl p-4 border border-border-color">
+                  <div className="text-xs text-text-muted mb-3">{label}</div>
                   <div className="flex flex-wrap gap-2">
-                    {(group.items || []).map((item: string) => (
-                      <span key={item} className="tag">{item}</span>
-                    ))}
+                    {(items || []).map((item: string) => <Tag key={item} className={tagClass}>{item}</Tag>)}
                   </div>
                 </div>
               ))}
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
-                  <div className="text-xs text-text-muted mb-2">Lookalike Strategy</div>
-                  <p className="text-sm text-text-secondary leading-relaxed">{bp.targeting?.lookalike_strategy}</p>
-                </div>
-                <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
-                  <div className="text-xs text-text-muted mb-2">Retargeting Strategy</div>
-                  <p className="text-sm text-text-secondary leading-relaxed">{bp.targeting?.retargeting_strategy}</p>
-                </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4 mb-4">
+              <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
+                <div className="text-xs text-text-muted mb-2">Lookalike Strategy</div>
+                <p className="text-sm text-text-secondary leading-relaxed">{bp.targeting?.lookalike_strategy}</p>
+              </div>
+              <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
+                <div className="text-xs text-text-muted mb-2">Retargeting Strategy</div>
+                {bp.targeting?.retargeting_window_days && (
+                  <span className="inline-block mb-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/25">
+                    {bp.targeting.retargeting_window_days}-day window
+                  </span>
+                )}
+                <p className="text-sm text-text-secondary leading-relaxed">{bp.targeting?.retargeting_strategy}</p>
               </div>
             </div>
+            {bp.targeting?.cod_targeting_note && (
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-green-500/5 border border-green-500/20">
+                <Check size={15} className="text-green-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="text-xs text-green-400 font-semibold mb-1">COD Targeting Note</div>
+                  <p className="text-sm text-text-secondary leading-relaxed">{bp.targeting.cod_targeting_note}</p>
+                </div>
+              </div>
+            )}
           </SectionCard>
 
-          {/* Ad Sets */}
-          <SectionCard id="adsets" title="Ad Sets">
+          {/* 6. Ad Sets */}
+          <SectionCard id="adsets" delay={0.05}>
+            <SectionTitle>Ad Sets</SectionTitle>
             <div className="space-y-4">
               {(bp.ad_sets || []).map((set, i) => (
-                <div key={i} className="bg-bg-dark rounded-xl p-5 border border-border-color">
-                  <div className="flex items-center gap-3 mb-3">
+                <motion.div key={i} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                  className="bg-bg-dark rounded-xl p-5 border border-border-color">
+                  <div className="flex items-center gap-3 mb-3 flex-wrap">
                     <span className="font-bold text-white">{set.ad_set_name}</span>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${AUDIENCE_COLORS[set.audience_type] || ''}`}>
+                    <CopyButton text={set.ad_set_name} size={12} />
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${AUDIENCE_COLORS[set.audience_type] || AUDIENCE_COLORS.cold}`}>
                       {set.audience_type?.toUpperCase()}
                     </span>
-                    <span className="ml-auto text-sm font-bold gradient-text">{set.budget_allocation}</span>
+                    <span className="ml-auto text-sm font-black gradient-text">
+                      {set.daily_budget_inr ? `₹${set.daily_budget_inr}/day` : set.budget_allocation}
+                    </span>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-3">
                     <div>
@@ -352,67 +612,127 @@ export default function CampaignViewPage() {
                       <div className="text-xs text-text-muted mb-1">Targeting Focus</div>
                       <div className="text-sm text-text-secondary">{set.targeting_focus}</div>
                     </div>
+                    {set.why_this_audience && (
+                      <div className="sm:col-span-2 mt-1 p-3 bg-bg-card rounded-lg border border-border-color">
+                        <div className="text-xs text-text-muted mb-1">Why this audience</div>
+                        <div className="text-sm text-text-secondary italic">{set.why_this_audience}</div>
+                      </div>
+                    )}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </SectionCard>
 
-          {/* Ad Angles */}
-          <SectionCard id="angles" title="Ad Angles">
+          {/* 7. Ad Angles */}
+          <SectionCard id="angles" delay={0.05}>
+            <SectionTitle>Ad Angles</SectionTitle>
             <div className="grid sm:grid-cols-2 gap-4">
               {(bp.ad_angles || []).map((angle, i) => (
-                <div key={i} className="bg-bg-dark rounded-xl p-5 border border-border-color">
-                  <div className="flex items-center gap-2 mb-3">
+                <motion.div key={i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
+                  className="bg-bg-dark rounded-xl p-5 border border-border-color">
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${ANGLE_COLORS[angle.angle_type] || ''}`}>
-                      {angle.angle_type?.toUpperCase()}
+                      {angle.angle_type?.replace(/_/g, ' ').toUpperCase()}
                     </span>
-                    <span className="font-semibold text-white text-sm">{angle.angle_name}</span>
+                    {angle.best_for && (
+                      <span className={`px-2 py-0.5 rounded-full text-xs border ${AUDIENCE_COLORS[angle.best_for] || ''}`}>
+                        {angle.best_for}
+                      </span>
+                    )}
                   </div>
-                  <div className="mb-2">
+                  <div className="font-semibold text-white text-sm mb-2">{angle.angle_name}</div>
+                  <div className="mb-3">
                     <div className="text-xs text-text-muted mb-1">Core Message</div>
                     <div className="text-sm text-text-secondary italic">&quot;{angle.core_message}&quot;</div>
                   </div>
                   <div>
-                    <div className="text-xs text-text-muted mb-1">Why It Works</div>
-                    <div className="text-sm text-text-secondary">{angle.why_it_works}</div>
+                    <div className="text-xs text-text-muted mb-1">Why it works</div>
+                    <div className="text-xs text-text-secondary leading-relaxed">{angle.why_it_works_for_this_brand || angle.why_it_works}</div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </SectionCard>
 
-          {/* Ad Copies */}
-          <SectionCard id="copies" title="Ad Copies">
-            <div className="space-y-5">
+          {/* 8. Ad Copies — hero subsection */}
+          <SectionCard id="copies" delay={0.05}>
+            <SectionTitle>Ad Copies</SectionTitle>
+            <div className="space-y-6">
               {(bp.ad_copies || []).map((copy, i) => (
-                <div key={i} className="bg-bg-dark rounded-xl border border-border-color overflow-hidden">
+                <motion.div key={i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
+                  className="bg-bg-dark rounded-2xl border border-border-color overflow-hidden">
+                  {/* Copy header */}
                   <div className="flex items-center gap-2 px-5 py-3 border-b border-border-color bg-white/2">
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/15 text-accent border border-primary/30">
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${PLACEMENT_COLORS[copy.placement] || 'bg-primary/15 text-accent border-primary/30'}`}>
                       {copy.placement}
                     </span>
                     <span className="text-xs text-text-muted">{copy.angle}</span>
-                    <div className="ml-auto">
-                      <CopyButton text={`Headline: ${copy.headline}\n\nPrimary Text:\n${copy.primary_text}\n\nSub-headline: ${copy.sub_headline}\n\nCTA: ${copy.cta}`} />
+                    <div className="ml-auto flex items-center gap-1">
+                      <CopyButton text={`HOOK: ${copy.hook || ''}\n\nHEADLINE: ${copy.headline}\n\nPRIMARY TEXT:\n${copy.primary_text}\n\nSUB-HEADLINE: ${copy.sub_headline}\n\nCTA: ${copy.cta}`} />
                     </div>
                   </div>
-                  <div className="p-5">
-                    <div className="text-xl font-bold text-white mb-2">{copy.headline}</div>
-                    <div className="text-sm text-text-muted mb-3">{copy.sub_headline}</div>
-                    <div className="text-sm text-text-secondary leading-relaxed mb-4 p-4 bg-bg-card rounded-xl border border-border-color">
-                      {copy.primary_text}
+
+                  <div className="p-5 space-y-4">
+                    {/* Hook */}
+                    {copy.hook && (
+                      <div className="p-4 bg-gradient-to-r from-accent/10 to-primary/5 border border-accent/25 rounded-xl">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">🎯</span>
+                            <span className="text-xs font-bold text-accent uppercase tracking-wide">Hook — First 3 Seconds</span>
+                          </div>
+                          <CopyButton text={copy.hook} size={12} />
+                        </div>
+                        <div className="text-base font-bold text-white leading-snug">{copy.hook}</div>
+                      </div>
+                    )}
+
+                    {/* Headline */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-text-muted uppercase tracking-wide">Headline</span>
+                        <CopyButton text={copy.headline} size={12} />
+                      </div>
+                      <div className="text-xl font-black text-white">{copy.headline}</div>
+                      {copy.sub_headline && <div className="text-sm text-text-muted mt-1">{copy.sub_headline}</div>}
                     </div>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/30">
-                      CTA: {copy.cta}
-                    </span>
+
+                    {/* Primary text */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-text-muted uppercase tracking-wide">Primary Text</span>
+                        <CopyButton text={copy.primary_text} size={12} />
+                      </div>
+                      <div className="text-sm text-text-secondary leading-relaxed p-4 bg-bg-card rounded-xl border border-border-color whitespace-pre-wrap">
+                        {copy.primary_text}
+                      </div>
+                    </div>
+
+                    {/* CTA + Why */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold bg-green-500/15 text-green-300 border border-green-500/25">
+                        {copy.cta}
+                      </span>
+                      {copy.why_this_works && (
+                        <span className="text-xs text-text-muted italic flex-1">— {copy.why_this_works}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </SectionCard>
 
-          {/* Creative Direction */}
-          <SectionCard id="creative" title="Creative Direction">
+          {/* 9. Creative Direction */}
+          <SectionCard id="creative" delay={0.05}>
+            <SectionTitle>Creative Direction</SectionTitle>
+            {bp.creative_direction?.priority_format && (
+              <div className="flex items-center gap-3 mb-5 p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                <span className="text-xs text-text-muted">Priority Format:</span>
+                <Tag className="bg-accent/20 text-accent border-accent/30 font-bold">{bp.creative_direction.priority_format}</Tag>
+              </div>
+            )}
             <div className="grid sm:grid-cols-2 gap-4 mb-5">
               <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
                 <div className="text-xs text-text-muted mb-2">Visual Style</div>
@@ -423,44 +743,80 @@ export default function CampaignViewPage() {
                 <div className="text-sm text-white">{bp.creative_direction?.color_palette}</div>
               </div>
             </div>
-            <div className="bg-bg-dark rounded-xl p-4 border border-border-color mb-4">
+            <div className="bg-bg-dark rounded-xl p-4 border border-border-color mb-5">
               <div className="text-xs text-text-muted mb-3">Content Formats</div>
               <div className="flex flex-wrap gap-2">
-                {(bp.creative_direction?.content_formats || []).map((f: string) => (
-                  <span key={f} className="tag">{f}</span>
-                ))}
+                {(bp.creative_direction?.content_formats || []).map((f: string) => <Tag key={f}>{f}</Tag>)}
               </div>
             </div>
-            <div className="bg-bg-dark rounded-xl p-4 border border-border-color mb-4">
-              <div className="text-xs text-text-muted mb-3">Scroll-Stopping Hooks</div>
-              <div className="space-y-2">
-                {(bp.creative_direction?.hooks || []).map((h: string, i: number) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-accent flex-shrink-0 mt-0.5">{i + 1}</div>
-                    <div className="text-sm text-text-secondary italic">&quot;{h}&quot;</div>
+
+            {/* Video hooks */}
+            {bp.creative_direction?.video_hooks && bp.creative_direction.video_hooks.length > 0 ? (
+              <div className="mb-5">
+                <div className="text-xs text-text-muted font-semibold uppercase tracking-wide mb-3">Video Hooks</div>
+                <div className="space-y-3">
+                  {bp.creative_direction.video_hooks.map((h, i) => (
+                    <div key={i} className="bg-bg-dark rounded-xl p-4 border border-border-color">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="text-base font-bold text-white leading-snug">&quot;{h.hook_text}&quot;</div>
+                        <CopyButton text={h.hook_text} size={12} />
+                      </div>
+                      <div className="text-xs text-text-muted mb-1">Visual direction</div>
+                      <div className="text-xs text-text-secondary mb-2">{h.visual_direction}</div>
+                      <div className="text-xs text-accent italic">{h.why_it_works}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : bp.creative_direction?.hooks && (
+              <div className="bg-bg-dark rounded-xl p-4 border border-border-color mb-5">
+                <div className="text-xs text-text-muted mb-3">Scroll-Stopping Hooks</div>
+                <div className="space-y-2">
+                  {bp.creative_direction.hooks.map((h: string, i: number) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-accent flex-shrink-0 mt-0.5">{i + 1}</div>
+                      <div className="flex-1 flex items-start justify-between gap-2">
+                        <div className="text-sm text-text-secondary italic">&quot;{h}&quot;</div>
+                        <CopyButton text={h} size={12} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* UGC Brief */}
+            {bp.creative_direction?.ugc_brief && (
+              <div className="mb-5 bg-bg-dark rounded-xl p-5 border border-primary/20">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <div className="text-xs text-accent font-bold uppercase tracking-wide">UGC Creator Brief</div>
+                    <div className="text-xs text-text-muted">Send this exact brief to your UGC creator</div>
                   </div>
-                ))}
+                  <CopyButton text={bp.creative_direction.ugc_brief} />
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed">{bp.creative_direction.ugc_brief}</p>
               </div>
-            </div>
+            )}
+
+            {/* Do / Don't */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="bg-green-500/5 rounded-xl p-4 border border-green-500/20">
-                <div className="text-xs text-green-400 font-semibold mb-3 uppercase tracking-wide">DO ✓</div>
+                <div className="text-xs text-green-400 font-bold mb-3 uppercase tracking-wide">✓ DO</div>
                 <div className="space-y-2">
                   {(bp.creative_direction?.do || []).map((item: string, i: number) => (
                     <div key={i} className="flex items-start gap-2 text-sm text-text-secondary">
-                      <span className="text-green-400 flex-shrink-0">✓</span>
-                      {item}
+                      <span className="text-green-400 flex-shrink-0 font-bold">✓</span>{item}
                     </div>
                   ))}
                 </div>
               </div>
               <div className="bg-red-500/5 rounded-xl p-4 border border-red-500/20">
-                <div className="text-xs text-red-400 font-semibold mb-3 uppercase tracking-wide">DON&apos;T ✗</div>
+                <div className="text-xs text-red-400 font-bold mb-3 uppercase tracking-wide">✗ DON&apos;T</div>
                 <div className="space-y-2">
                   {(bp.creative_direction?.dont || []).map((item: string, i: number) => (
                     <div key={i} className="flex items-start gap-2 text-sm text-text-secondary">
-                      <span className="text-red-400 flex-shrink-0">✗</span>
-                      {item}
+                      <span className="text-red-400 flex-shrink-0 font-bold">✗</span>{item}
                     </div>
                   ))}
                 </div>
@@ -468,51 +824,176 @@ export default function CampaignViewPage() {
             </div>
           </SectionCard>
 
-          {/* Launch Checklist */}
-          <SectionCard id="checklist" title="Launch Checklist">
-            <div className="space-y-3">
-              {(bp.launch_checklist || []).map((item: string, i: number) => (
-                <motion.div
-                  key={i}
-                  onClick={() => toggleCheck(i)}
-                  whileTap={{ scale: 0.99 }}
-                  className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
-                    checkedItems[i]
-                      ? 'bg-green-500/5 border-green-500/30'
-                      : 'bg-bg-dark border-border-color hover:border-primary/40'
-                  }`}
-                >
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 transition-all border ${
-                    checkedItems[i] ? 'bg-green-500 border-green-500' : 'border-border-color bg-bg-dark'
-                  }`}>
-                    {checkedItems[i] && <Check size={13} className="text-white" />}
+          {/* 10. Pixel Recommendation */}
+          {bp.pixel_recommendation && (
+            <SectionCard id="pixel" delay={0.05}>
+              <SectionTitle>Pixel Recommendation</SectionTitle>
+              <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
+                  <div className="text-xs text-text-muted mb-2">Current Status</div>
+                  <div className="text-sm font-semibold text-white">{bp.pixel_recommendation.current_status}</div>
+                </div>
+                <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
+                  <div className="text-xs text-text-muted mb-2">Optimization Event</div>
+                  <code className="text-sm text-accent font-mono">{bp.pixel_recommendation.optimization_event}</code>
+                </div>
+              </div>
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 mb-4">
+                <div className="text-xs text-accent font-bold mb-2 uppercase tracking-wide">Immediate Action Required</div>
+                <p className="text-sm text-text-secondary leading-relaxed">{bp.pixel_recommendation.immediate_action}</p>
+              </div>
+              {bp.pixel_recommendation.capi_needed && (
+                <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/5 border border-amber-500/25">
+                  <AlertTriangle size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-xs text-amber-400 font-bold mb-1">Conversions API (CAPI) Required</div>
+                    <p className="text-xs text-text-secondary leading-relaxed">Server-side tracking is essential at your scale to avoid data loss from iOS restrictions and ad blockers. Set up CAPI via Shopify app or GTM before launching.</p>
                   </div>
-                  <span className={`text-sm leading-relaxed ${checkedItems[i] ? 'text-text-muted line-through' : 'text-text-secondary'}`}>
-                    {item}
-                  </span>
-                </motion.div>
-              ))}
+                </div>
+              )}
+            </SectionCard>
+          )}
+
+          {/* 11. First 7 Days Plan */}
+          {bp.first_7_days_plan && (
+            <SectionCard id="first7days" delay={0.05}>
+              <SectionTitle>First 7 Days Plan</SectionTitle>
+              <div className="grid sm:grid-cols-2 gap-4 mb-5">
+                <div className="bg-bg-dark rounded-xl p-5 border border-border-color">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-xs font-black text-blue-400">1-3</div>
+                    <div className="text-sm font-bold text-white">Days 1–3: Launch</div>
+                  </div>
+                  <p className="text-sm text-text-secondary leading-relaxed">{bp.first_7_days_plan.day_1_3}</p>
+                </div>
+                <div className="bg-bg-dark rounded-xl p-5 border border-border-color">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-xs font-black text-purple-400">4-7</div>
+                    <div className="text-sm font-bold text-white">Days 4–7: Observe</div>
+                  </div>
+                  <p className="text-sm text-text-secondary leading-relaxed">{bp.first_7_days_plan.day_4_7}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/5 border border-amber-500/25 mb-5">
+                <AlertTriangle size={15} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="text-xs text-amber-400 font-bold mb-1">When to Edit</div>
+                  <p className="text-sm text-text-secondary leading-relaxed">{bp.first_7_days_plan.when_to_edit}</p>
+                </div>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="bg-green-500/5 rounded-xl p-4 border border-green-500/20">
+                  <div className="text-xs text-green-400 font-bold mb-3 uppercase tracking-wide">🟢 Green Flags</div>
+                  <div className="space-y-2">
+                    {(bp.first_7_days_plan.green_flags || []).map((f: string, i: number) => (
+                      <div key={i} className="flex items-start gap-2 text-sm text-text-secondary">
+                        <span className="text-green-400 font-bold flex-shrink-0">✓</span>{f}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-red-500/5 rounded-xl p-4 border border-red-500/20">
+                  <div className="text-xs text-red-400 font-bold mb-3 uppercase tracking-wide">🔴 Red Flags</div>
+                  <div className="space-y-2">
+                    {(bp.first_7_days_plan.red_flags || []).map((f: string, i: number) => (
+                      <div key={i} className="flex items-start gap-2 text-sm text-text-secondary">
+                        <span className="text-red-400 font-bold flex-shrink-0">✗</span>{f}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </SectionCard>
+          )}
+
+          {/* 12. Launch Checklist */}
+          <SectionCard id="checklist" delay={0.05}>
+            <SectionTitle>Launch Checklist</SectionTitle>
+            {/* Progress bar */}
+            <div className="mb-5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-text-muted">{checkedCount} of {checklistItems.length} completed</span>
+                <span className="text-xs font-bold gradient-text">{checklistProgress}%</span>
+              </div>
+              <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                <motion.div className="h-full progress-bar" animate={{ width: `${checklistProgress}%` }} transition={{ duration: 0.4 }} />
+              </div>
             </div>
-            <div className="mt-4 text-xs text-text-muted">
-              {Object.values(checkedItems).filter(Boolean).length} of {bp.launch_checklist?.length || 0} items completed
+
+            <div className="space-y-3">
+              {checklistItems.map((item, i) => {
+                const isObj = typeof item === 'object' && item !== null;
+                const action = isObj ? item.action : item as string;
+                const why = isObj ? item.why : undefined;
+                const time = isObj ? item.time_estimate : undefined;
+                const stepNum = isObj ? item.step : i + 1;
+
+                return (
+                  <motion.div key={i} whileTap={{ scale: 0.99 }} onClick={() => toggleCheck(i, checklistItems.length)}
+                    className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                      checkedItems[i] ? 'bg-green-500/5 border-green-500/25' : 'bg-bg-dark border-border-color hover:border-primary/40'
+                    }`}>
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all border ${
+                      checkedItems[i] ? 'bg-green-500 border-green-500' : 'border-border-color bg-bg-dark'
+                    }`}>
+                      {checkedItems[i]
+                        ? <Check size={13} className="text-white" />
+                        : <span className="text-xs font-bold text-text-muted">{stepNum}</span>
+                      }
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`text-sm font-medium leading-relaxed ${checkedItems[i] ? 'text-text-muted line-through' : 'text-white'}`}>
+                        {action}
+                      </div>
+                      {why && <div className="text-xs text-text-muted mt-1 leading-relaxed">{why}</div>}
+                    </div>
+                    {time && (
+                      <span className="text-xs text-text-muted bg-bg-card px-2 py-0.5 rounded-lg border border-border-color flex-shrink-0">{time}</span>
+                    )}
+                  </motion.div>
+                );
+              })}
             </div>
           </SectionCard>
 
-          {/* Performance Benchmarks */}
-          <SectionCard id="benchmarks" title="Performance Benchmarks">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {/* 13. Performance Benchmarks */}
+          <SectionCard id="benchmarks" delay={0.05}>
+            <SectionTitle>Performance Benchmarks</SectionTitle>
+
+            {/* ROAS comparison */}
+            {(bp.performance_benchmarks?.category_average_roas || bp.performance_benchmarks?.your_target_roas) && (
+              <div className="grid grid-cols-2 gap-4 mb-5">
+                {bp.performance_benchmarks.category_average_roas && (
+                  <MetricBox label="Category Avg ROAS" value={bp.performance_benchmarks.category_average_roas} />
+                )}
+                {(bp.performance_benchmarks.your_target_roas || bp.performance_benchmarks.roas_target) && (
+                  <MetricBox label="Your Target ROAS" value={bp.performance_benchmarks.your_target_roas || bp.performance_benchmarks.roas_target || ''} highlight />
+                )}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
               {[
-                { label: 'Expected CTR', val: bp.performance_benchmarks?.expected_ctr },
-                { label: 'Expected CPC', val: `₹${bp.performance_benchmarks?.expected_cpc_inr}` },
-                { label: 'Expected CPM', val: `₹${bp.performance_benchmarks?.expected_cpm_inr}` },
-                { label: 'ROAS Target', val: bp.performance_benchmarks?.roas_target },
-              ].map((m) => (
-                <div key={m.label} className="bg-bg-dark rounded-xl p-5 border border-border-color text-center">
-                  <div className="text-2xl font-black gradient-text mb-2">{m.val}</div>
-                  <div className="text-xs text-text-muted">{m.label}</div>
-                </div>
+                { label: 'CTR (Feed)', val: bp.performance_benchmarks?.expected_ctr_feed || bp.performance_benchmarks?.expected_ctr },
+                { label: 'CTR (Reels)', val: bp.performance_benchmarks?.expected_ctr_reels },
+                { label: 'CPC', val: bp.performance_benchmarks?.expected_cpc_inr ? `₹${bp.performance_benchmarks.expected_cpc_inr}` : undefined },
+                { label: 'CPM', val: bp.performance_benchmarks?.expected_cpm_inr ? `₹${bp.performance_benchmarks.expected_cpm_inr}` : undefined },
+                { label: 'CPA', val: bp.performance_benchmarks?.expected_cpa_inr ? `₹${bp.performance_benchmarks.expected_cpa_inr}` : undefined },
+                { label: 'Learning Phase', val: bp.performance_benchmarks?.learning_phase_duration },
+              ].filter((m) => m.val).map((m) => (
+                <MetricBox key={m.label} label={m.label} value={m.val!} />
               ))}
             </div>
+
+            {bp.performance_benchmarks?.break_even_roas && (
+              <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/25 flex items-center justify-between">
+                <div>
+                  <div className="text-xs text-amber-400 font-bold uppercase tracking-wide mb-0.5">Break-Even ROAS</div>
+                  <div className="text-xs text-text-muted">Don&apos;t scale below this number</div>
+                </div>
+                <div className="text-2xl font-black text-amber-300">{bp.performance_benchmarks.break_even_roas}</div>
+              </div>
+            )}
           </SectionCard>
 
         </div>
