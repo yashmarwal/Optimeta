@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Zap, Twitter, Linkedin, Instagram } from 'lucide-react';
+import { Zap, Twitter, Linkedin, Instagram, Mail } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -53,21 +53,39 @@ export default function Footer() {
 
           <div>
             <div className="text-white font-semibold text-sm mb-4">Follow Us</div>
-            <div className="flex gap-3">
-              {[
-                { icon: Twitter, label: 'Twitter' },
-                { icon: Linkedin, label: 'LinkedIn' },
-                { icon: Instagram, label: 'Instagram' },
-              ].map((s) => (
-                <button
-                  key={s.label}
-                  className="w-9 h-9 rounded-lg bg-white/5 border border-border-color flex items-center justify-center hover:bg-primary/20 hover:border-primary/50 transition-all"
-                  aria-label={s.label}
-                >
-                  <s.icon size={16} className="text-text-muted" />
-                </button>
-              ))}
+            <div className="flex gap-3 mb-4">
+              <button
+                className="w-9 h-9 rounded-lg bg-white/5 border border-border-color flex items-center justify-center hover:bg-primary/20 hover:border-primary/50 transition-all"
+                aria-label="Twitter"
+              >
+                <Twitter size={16} className="text-text-muted" />
+              </button>
+              <a
+                href="https://www.linkedin.com/company/optimeta-ai-meta-ads-generator/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-lg bg-white/5 border border-border-color flex items-center justify-center hover:bg-primary/20 hover:border-primary/50 transition-all"
+                aria-label="LinkedIn"
+              >
+                <Linkedin size={16} className="text-text-muted" />
+              </a>
+              <a
+                href="https://www.instagram.com/optimeta.tech?igsh=MWJ1ZWwyOXR6c3JnNg=="
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-lg bg-white/5 border border-border-color flex items-center justify-center hover:bg-primary/20 hover:border-primary/50 transition-all"
+                aria-label="Instagram"
+              >
+                <Instagram size={16} className="text-text-muted" />
+              </a>
             </div>
+            <a
+              href="mailto:optimeta@outlook.com"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/50 text-white text-sm font-medium hover:bg-gradient-to-r hover:from-primary hover:to-accent hover:border-transparent transition-all"
+            >
+              <Mail size={14} />
+              Contact Us
+            </a>
           </div>
         </div>
 

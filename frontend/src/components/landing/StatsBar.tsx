@@ -5,10 +5,10 @@ import { useRef } from 'react';
 import CountUp from 'react-countup';
 
 const stats = [
-  { value: 2.4, prefix: '₹', suffix: 'Cr+', label: 'Ad Spend Optimized', decimals: 1 },
-  { value: 1200, prefix: '', suffix: '+', label: 'Campaigns Generated', decimals: 0 },
+  { value: 1000, prefix: '', suffix: '+', label: 'Campaigns Generated', decimals: 0 },
   { value: 4.2, prefix: '', suffix: 'x', label: 'Avg ROAS Improvement', decimals: 1 },
-  { value: 500, prefix: '', suffix: '+', label: 'Indian Brands', decimals: 0 },
+  { value: 200, prefix: '', suffix: '+', label: 'Indian Brands', decimals: 0 },
+  { value: 15, prefix: '', suffix: ' Min', label: 'Avg Setup Time', decimals: 0 },
 ];
 
 export default function StatsBar() {

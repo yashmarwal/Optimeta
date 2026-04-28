@@ -60,6 +60,15 @@ export default function FinalCTA() {
                 </motion.button>
               </Link>
               <p className="text-white/50 text-sm mt-4">No credit card required. 1 free blueprint included.</p>
+              <p className="text-white/50 text-sm mt-3">
+                Have questions?{' '}
+                <a
+                  href="mailto:optimeta@outlook.com"
+                  className="text-white/80 underline underline-offset-2 hover:text-white transition-colors"
+                >
+                  Contact us at optimeta@outlook.com
+                </a>
+              </p>
             </motion.div>
           </div>
         </motion.div>
