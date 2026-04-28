@@ -478,9 +478,9 @@ export default function CampaignViewPage() {
               <SectionTitle>Budget Strategy</SectionTitle>
               <div className="text-center mb-5 p-5 bg-gradient-to-b from-primary/15 to-transparent rounded-xl border border-primary/20">
                 <div className="text-xs text-text-muted mb-1">Recommended Daily Budget</div>
-                <div className="text-4xl font-black gradient-text">₹{bp.budget_strategy?.recommended_daily_budget_inr}</div>
+                <div className="text-4xl font-black gradient-text">{bp.budget_strategy?.recommended_daily_budget_inr}</div>
                 {bp.budget_strategy?.total_monthly_inr && (
-                  <div className="text-xs text-text-muted mt-1">≈ ₹{bp.budget_strategy.total_monthly_inr} / month</div>
+                  <div className="text-xs text-text-muted mt-1">≈ {bp.budget_strategy.total_monthly_inr} / month</div>
                 )}
               </div>
               <div className="space-y-2 mb-4">
@@ -721,7 +721,7 @@ export default function CampaignViewPage() {
                       {set.audience_type?.toUpperCase()}
                     </span>
                     <span className="ml-auto text-sm font-black gradient-text">
-                      {set.daily_budget_inr ? `₹${set.daily_budget_inr}/day` : set.budget_allocation}
+                      {set.daily_budget_inr ? `${set.daily_budget_inr}/day` : set.budget_allocation}
                     </span>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-3">
@@ -1097,9 +1097,9 @@ export default function CampaignViewPage() {
               {[
                 { label: 'CTR (Feed)', val: bp.performance_benchmarks?.expected_ctr_feed || bp.performance_benchmarks?.expected_ctr },
                 { label: 'CTR (Reels)', val: bp.performance_benchmarks?.expected_ctr_reels },
-                { label: 'CPC', val: bp.performance_benchmarks?.expected_cpc_inr ? `₹${bp.performance_benchmarks.expected_cpc_inr}` : undefined },
-                { label: 'CPM', val: bp.performance_benchmarks?.expected_cpm_inr ? `₹${bp.performance_benchmarks.expected_cpm_inr}` : undefined },
-                { label: 'CPA', val: bp.performance_benchmarks?.expected_cpa_inr ? `₹${bp.performance_benchmarks.expected_cpa_inr}` : undefined },
+                { label: 'CPC', val: bp.performance_benchmarks?.expected_cpc_inr },
+                { label: 'CPM', val: bp.performance_benchmarks?.expected_cpm_inr },
+                { label: 'CPA', val: bp.performance_benchmarks?.expected_cpa_inr },
                 { label: 'Learning Phase', val: bp.performance_benchmarks?.learning_phase_duration },
               ].filter((m) => m.val).map((m) => (
                 <MetricBox key={m.label} label={m.label} value={m.val!} />
