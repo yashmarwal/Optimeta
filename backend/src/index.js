@@ -38,6 +38,8 @@ app.use(limiter);
 // CORS
 const allowedOrigins = [
   'https://optimeta-pink.vercel.app',
+  'https://optimeta.tech',
+  'https://www.optimeta.tech',
   'http://localhost:3000',
 ];
 if (process.env.FRONTEND_URL) allowedOrigins.push(process.env.FRONTEND_URL);
