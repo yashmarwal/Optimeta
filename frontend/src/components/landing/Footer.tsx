@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Zap, Twitter, Linkedin, Instagram, Mail } from 'lucide-react';
+import { Zap, Linkedin, Instagram, Mail } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -54,12 +54,6 @@ export default function Footer() {
           <div>
             <div className="text-white font-semibold text-sm mb-4">Follow Us</div>
             <div className="flex gap-3 mb-4">
-              <button
-                className="w-9 h-9 rounded-lg bg-white/5 border border-border-color flex items-center justify-center hover:bg-primary/20 hover:border-primary/50 transition-all"
-                aria-label="Twitter"
-              >
-                <Twitter size={16} className="text-text-muted" />
-              </button>
               <a
                 href="https://www.linkedin.com/company/optimeta-ai-meta-ads-generator/"
                 target="_blank"
