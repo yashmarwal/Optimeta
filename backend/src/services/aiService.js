@@ -306,61 +306,100 @@ CONTEXT:
 Generate the complete JSON blueprint now.`.trim();
 };
 
+// Repair a truncated JSON string by trimming back to the last clean boundary
+// and closing any unclosed brackets/braces.
+const repairTruncatedJson = (text) => {
+  let repaired = text.trim();
+
+  // Walk backwards one char at a time until we are no longer inside a string,
+  // then close whatever brackets/braces are still open.
+  for (let trimmed = 0; trimmed < 300; trimmed++) {
+    if (trimmed > 0) repaired = repaired.slice(0, -1);
+
+    // Strip trailing comma / colon / whitespace before closing
+    const candidate = repaired.replace(/[,:\s]+$/, '');
+
+    let braces = 0, brackets = 0;
+    let inStr = false, esc = false;
+
+    for (const c of candidate) {
+      if (esc)              { esc = false; continue; }
+      if (c === '\\' && inStr) { esc = true;  continue; }
+      if (c === '"')        { inStr = !inStr; continue; }
+      if (inStr)            continue;
+      if (c === '{') braces++;
+      else if (c === '}') braces--;
+      else if (c === '[') brackets++;
+      else if (c === ']') brackets--;
+    }
+
+    if (inStr || braces < 0 || brackets < 0) continue; // not at a clean boundary yet
+
+    let closed = candidate;
+    while (brackets > 0) { closed += ']'; brackets--; }
+    while (braces   > 0) { closed += '}'; braces--;   }
+
+    try {
+      const parsed = JSON.parse(closed);
+      console.log(`[aiService] JSON repaired after trimming ${trimmed} chars`);
+      return parsed;
+    } catch {
+      // keep trimming
+    }
+  }
+
+  throw new Error('Could not repair truncated JSON response from Claude');
+};
+
 const generateCampaignBlueprint = async (inputs) => {
   console.log('=== AI SERVICE CALLED ===');
   console.log('Business:', inputs.businessName);
 
   const userPrompt = buildUserPrompt(inputs);
+  console.log('Calling Claude API...');
 
-  let attempt = 0;
-  let lastError = null;
+  const message = await anthropic.messages.create({
+    model: 'claude-sonnet-4-5',
+    max_tokens: 6000,
+    temperature: 0.7,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: 'user', content: userPrompt }],
+  });
 
-  while (attempt < 2) {
-    attempt++;
-    console.log(`Claude API attempt ${attempt}`);
+  console.log('Claude responded. Stop reason:', message.stop_reason, '| Response length:', message.content[0].text.length, 'chars');
 
-    try {
-      const message = await anthropic.messages.create({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 4000,
-        temperature: 0.7,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: userPrompt }],
-      });
+  const rawText = message.content[0].text;
+  console.log('Preview:', rawText.slice(0, 150));
 
-      console.log('Claude responded. Stop reason:', message.stop_reason);
-      const rawText = message.content[0].text;
-      console.log('Raw response preview:', rawText.slice(0, 200));
+  // Strip markdown fences if present
+  let cleanJson = rawText
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
 
-      let cleanJson = rawText
-        .replace(/^```json\s*/i, '')
-        .replace(/^```\s*/i, '')
-        .replace(/\s*```$/i, '')
-        .trim();
+  const startIndex = cleanJson.indexOf('{');
+  if (startIndex === -1) throw new Error('No JSON object found in Claude response');
+  cleanJson = cleanJson.slice(startIndex);
 
-      const startIndex = cleanJson.indexOf('{');
-      const lastIndex = cleanJson.lastIndexOf('}');
-
-      if (startIndex === -1 || lastIndex === -1) {
-        throw new Error('No JSON object found in response');
-      }
-
-      cleanJson = cleanJson.slice(startIndex, lastIndex + 1);
-      const parsed = JSON.parse(cleanJson);
-      console.log('JSON parsed successfully. Campaign:', parsed.campaign_name);
-      return parsed;
-
-    } catch (error) {
-      console.error(`Attempt ${attempt} failed:`, error.message);
-      lastError = error;
-      if (attempt < 2) {
-        console.log('Retrying in 1s...');
-        await new Promise(r => setTimeout(r, 1000));
-      }
-    }
+  // If Claude hit the token limit, or normal parse fails → repair
+  if (message.stop_reason === 'max_tokens') {
+    console.warn('[aiService] Response truncated by max_tokens — repairing JSON...');
+    return repairTruncatedJson(cleanJson);
   }
 
-  throw new Error(`AI generation failed after 2 attempts: ${lastError?.message}`);
+  // Normal path: trim to the last closing brace and parse
+  const lastIndex = cleanJson.lastIndexOf('}');
+  if (lastIndex !== -1) cleanJson = cleanJson.slice(0, lastIndex + 1);
+
+  try {
+    const parsed = JSON.parse(cleanJson);
+    console.log('JSON parsed successfully. Campaign:', parsed.campaign_name);
+    return parsed;
+  } catch (parseErr) {
+    console.warn('[aiService] Unexpected parse error — attempting repair:', parseErr.message);
+    return repairTruncatedJson(cleanJson);
+  }
 };
 
 module.exports = { generateCampaignBlueprint };
