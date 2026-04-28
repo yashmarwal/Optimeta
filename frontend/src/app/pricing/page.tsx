@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 const COMPARISON = [
-  { feature: 'Campaign Blueprints', free: '1 lifetime', pro: '15 / month', ultra: '50 / month' },
+  { feature: 'Campaign Blueprints', free: '1 lifetime', pro: '10 / month', ultra: '30 / month' },
   { feature: 'AI-Generated Strategy', free: '✓', pro: '✓', ultra: '✓' },
   { feature: 'Audience Targeting Clusters', free: '✓', pro: '✓', ultra: '✓' },
   { feature: 'Ad Copy Generation', free: '✓', pro: '✓', ultra: '✓' },
@@ -20,7 +20,7 @@ const COMPARISON = [
   { feature: 'PDF Export', free: '—', pro: '✓', ultra: '✓' },
   { feature: 'Campaign History', free: '—', pro: '✓', ultra: '✓' },
   { feature: 'Priority Support', free: '—', pro: '✓', ultra: '✓' },
-  { feature: 'Dedicated Onboarding', free: '—', pro: '—', ultra: '✓' },
+  { feature: 'Advanced Targeting Insights', free: '—', pro: '—', ultra: '✓' },
 ];
 
 export default function PricingPage() {

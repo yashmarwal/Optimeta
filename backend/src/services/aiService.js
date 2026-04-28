@@ -241,7 +241,30 @@ Return exactly this JSON structure:
     "break_even_roas": "string"
   },
   "budget_warning": null
-}`;
+}
+
+RESPONSE EFFICIENCY RULES:
+- Be precise and concise throughout
+- Zero repetition — never repeat a point already made
+- Zero padding — every word must add value
+- ad_copies: exactly 3 copies (Feed, Reel, Story — one each)
+- ad_angles: exactly 4 angles (pain, desire, trust, social_proof)
+- video_hooks: exactly 3 hooks
+- launch_checklist: exactly 8 steps
+- detailed_targeting_combinations: exactly 2 combinations
+- All explanation fields: maximum 2 sentences
+- executive_summary: maximum 3 sentences
+- market_insight: maximum 2 sentences
+- first_7_days_plan fields: maximum 3 sentences each
+- green_flags: maximum 4 items
+- red_flags: maximum 4 items
+- do: exactly 5 items
+- dont: exactly 5 items
+- content_formats: maximum 4 items
+- audience_exclusions: maximum 4 items
+- interests: exactly 10 items
+- behaviors: exactly 6 items
+- life_events: maximum 3 items`;
 
 const buildUserPrompt = (inputs) => {
   const industry = inputs.industry === 'Other' ? (inputs.customIndustry || 'Other') : inputs.industry;
@@ -299,7 +322,8 @@ const generateCampaignBlueprint = async (inputs) => {
     try {
       const message = await anthropic.messages.create({
         model: 'claude-sonnet-4-5',
-        max_tokens: 8000,
+        max_tokens: 4000,
+        temperature: 0.7,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userPrompt }],
       });

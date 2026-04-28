@@ -63,6 +63,7 @@ export default function NewCampaignPage() {
   const [generating, setGenerating] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState(0);
   const [progressWidth, setProgressWidth] = useState(0);
+  const [usageInfo, setUsageInfo] = useState<{ remaining: number; limit: number } | null>(null);
   const router = useRouter();
 
   const [inputs, setInputs] = useState<BusinessInputs>({
@@ -161,6 +162,13 @@ export default function NewCampaignPage() {
 
     await executeGeneration(cleanFormData);
   };
+
+  // Fetch usage info on mount to show remaining campaigns in review step
+  useEffect(() => {
+    api.get('/api/usage')
+      .then(res => setUsageInfo({ remaining: res.data.data.remaining, limit: res.data.data.limit }))
+      .catch(() => {});
+  }, []);
 
   // On mount: resume generation if tab was switched during an active request
   useEffect(() => {
@@ -261,7 +269,7 @@ export default function NewCampaignPage() {
           {step === 1 && <Step1 inputs={inputs} update={update} />}
           {step === 2 && <Step2 inputs={inputs} update={update} />}
           {step === 3 && <Step3 inputs={inputs} update={update} toggleAsset={toggleAsset} />}
-          {step === 4 && <Step4 inputs={inputs} onGenerate={handleGenerate} />}
+          {step === 4 && <Step4 inputs={inputs} onGenerate={handleGenerate} usageInfo={usageInfo} />}
         </motion.div>
       </AnimatePresence>
 
@@ -479,7 +487,7 @@ function Step3({ inputs, update, toggleAsset }: {
   );
 }
 
-function Step4({ inputs, onGenerate }: { inputs: BusinessInputs; onGenerate: () => void }) {
+function Step4({ inputs, onGenerate, usageInfo }: { inputs: BusinessInputs; onGenerate: () => void; usageInfo: { remaining: number; limit: number } | null }) {
   const sections = [
     { label: 'Business', fields: [{ key: 'Name', val: inputs.businessName }, { key: 'Industry', val: inputs.industry }, { key: 'Budget', val: inputs.monthlyAdBudget }] },
     { label: 'Product', fields: [{ key: 'Product', val: inputs.productName }, { key: 'Price', val: `₹${inputs.price}` }, { key: 'COD', val: inputs.codAvailable ? 'Yes' : 'No' }] },
@@ -514,6 +522,18 @@ function Step4({ inputs, onGenerate }: { inputs: BusinessInputs; onGenerate: () 
           <div className="text-xs text-text-muted">Claude AI will architect your blueprint in 15–30 seconds</div>
         </div>
       </div>
+      {usageInfo !== null && (
+        <div className="flex items-center justify-between px-4 py-3 bg-bg-dark rounded-xl border border-border-color">
+          <span className="text-sm text-text-muted">Campaigns remaining</span>
+          <span className={`text-sm font-bold ${
+            usageInfo.remaining === 0 ? 'text-red-400' :
+            usageInfo.remaining <= 2 ? 'text-amber-400' :
+            'gradient-text'
+          }`}>
+            {usageInfo.remaining} of {usageInfo.limit}
+          </span>
+        </div>
+      )}
       <motion.button whileTap={{ scale: 0.97 }} onClick={() => onGenerate()} className="btn-gradient w-full py-4 rounded-xl font-black text-lg flex items-center justify-center gap-3 glow">
         <Sparkles size={20} />
         Generate Campaign Blueprint →

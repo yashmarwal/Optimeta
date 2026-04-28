@@ -3,7 +3,7 @@ const router = express.Router();
 const supabase = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
 
-const PLAN_LIMITS = { free: 1, pro: 15, ultra: 50 };
+const PLAN_LIMITS = { free: 1, pro: 10, ultra: 30 };
 
 // GET /api/usage — get current usage stats
 router.get('/', authMiddleware, async (req, res) => {

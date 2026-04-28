@@ -69,7 +69,7 @@ export default function DashboardPage() {
 
   const stats = [
     { label: 'Total Generated', value: campaigns.length, icon: LayoutGrid },
-    { label: 'Remaining This Month', value: usage?.remaining ?? '—', icon: Sparkles },
+    { label: 'Campaigns Left', value: usage ? `${usage.remaining} / ${usage.limit}` : '—', icon: Sparkles },
     { label: 'Current Plan', value: user?.plan?.toUpperCase() || '—', icon: Calendar },
     { label: 'Member Since', value: user?.createdAt ? new Date(user.createdAt).getFullYear().toString() : '—', icon: Calendar },
   ];
