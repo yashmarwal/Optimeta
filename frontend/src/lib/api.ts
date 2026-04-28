@@ -18,13 +18,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+const PUBLIC_PATHS = ['/', '/pricing', '/blog', '/login', '/register', '/forgot-password', '/reset-password'];
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-        localStorage.removeItem(TOKEN_KEY);
-        window.location.href = '/login';
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname;
+        const isPublic = PUBLIC_PATHS.includes(path) || path.startsWith('/blog/');
+        if (!isPublic) {
+          localStorage.removeItem(TOKEN_KEY);
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

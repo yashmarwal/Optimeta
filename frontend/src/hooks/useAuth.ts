@@ -6,6 +6,7 @@ import { User, getMe } from '@/lib/auth';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  authChecked: boolean;
   setUser: (user: User | null) => void;
   refresh: () => Promise<void>;
 }
@@ -15,6 +16,7 @@ import { createContext as createReactContext } from 'react';
 export const AuthContext = createReactContext<AuthContextType>({
   user: null,
   loading: true,
+  authChecked: false,
   setUser: () => {},
   refresh: async () => {},
 });

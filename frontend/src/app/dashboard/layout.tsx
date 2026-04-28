@@ -6,30 +6,31 @@ import { useAuth } from '@/hooks/useAuth';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import DashboardTopBar from '@/components/dashboard/DashboardTopBar';
 
+const Spinner = () => (
+  <div className="min-h-screen bg-bg-dark flex items-center justify-center">
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <p className="text-text-muted text-sm">Loading Optimeta...</p>
+    </div>
+  </div>
+);
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, authChecked } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
-      // Don't redirect if a token exists — Providers may still be refreshing
+    // Wait for the first auth check to complete before deciding to redirect.
+    // This prevents a flash-redirect on mobile where getMe() is slow.
+    if (!authChecked) return;
+    if (!user) {
       const hasToken = typeof window !== 'undefined' && localStorage.getItem('optimeta_token');
       if (!hasToken) router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, authChecked, router]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-bg-dark flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <p className="text-text-muted text-sm">Loading Optimeta...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) return null;
+  // Show spinner until auth has been checked at least once
+  if (!authChecked || loading) return <Spinner />;
 
   return (
     <div className="min-h-screen bg-bg-dark flex">
