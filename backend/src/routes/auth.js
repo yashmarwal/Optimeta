@@ -231,6 +231,62 @@ router.patch('/profile', async (req, res) => {
   }
 });
 
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required.' });
+
+    const frontendUrl = process.env.FRONTEND_URL || 'https://optimeta.tech';
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${frontendUrl}/reset-password`,
+    });
+
+    return res.json({
+      success: true,
+      message: 'If this email exists, a reset link has been sent.',
+    });
+  } catch {
+    // Always return success — never reveal whether email exists
+    return res.json({
+      success: true,
+      message: 'If this email exists, a reset link has been sent.',
+    });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { access_token, new_password } = req.body;
+    if (!access_token || !new_password) {
+      return res.status(400).json({ success: false, message: 'Token and new password are required.' });
+    }
+    if (new_password.length < 8) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
+    }
+
+    // Verify the token and get the user
+    const { data: userData, error: userError } = await supabase.auth.getUser(access_token);
+    if (userError || !userData?.user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset link. Please request a new one.' });
+    }
+
+    // Update password via admin API
+    const { error } = await supabase.auth.admin.updateUserById(userData.user.id, {
+      password: new_password,
+    });
+
+    if (error) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
+
+    return res.json({ success: true, message: 'Password updated successfully.' });
+  } catch {
+    return res.status(500).json({ success: false, message: 'Password reset failed. Please try again.' });
+  }
+});
+
 // DELETE /api/auth/account
 router.delete('/account', async (req, res) => {
   try {

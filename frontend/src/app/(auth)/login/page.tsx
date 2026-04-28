@@ -95,9 +95,9 @@ export default function LoginPage() {
             </div>
 
             <div className="flex justify-end">
-              <button type="button" className="text-xs text-primary hover:text-accent transition-colors">
+              <Link href="/forgot-password" className="text-xs text-primary hover:text-accent transition-colors">
                 Forgot password?
-              </button>
+              </Link>
             </div>
 
             <motion.button
