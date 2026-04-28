@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Play, Sparkles, TrendingUp } from 'lucide-react';
+import { ArrowRight, Play, Sparkles, TrendingUp, Banknote, MessageCircle, Target } from 'lucide-react';
 
 const avatars = ['R', 'P', 'A', 'V', 'K'];
 
@@ -116,81 +116,130 @@ export default function Hero() {
           >
             <div className="animate-float">
               <div className="glass-card p-2 glow-lg" style={{ borderRadius: '20px' }}>
-                {/* Fake Meta Ads Manager UI */}
-                <div
-                  className="w-full rounded-2xl overflow-hidden"
-                  style={{ width: '520px', background: '#0F0F1A' }}
-                >
-                  {/* Header */}
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border-color">
+                <div className="rounded-2xl overflow-hidden" style={{ width: '520px', background: '#0F0F1A' }}>
+
+                  {/* Browser chrome */}
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-white/8">
                     <div className="flex gap-1.5">
                       <div className="w-3 h-3 rounded-full bg-red-500/70" />
                       <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
                       <div className="w-3 h-3 rounded-full bg-green-500/70" />
                     </div>
-                    <div className="flex-1 mx-4 h-6 bg-bg-dark rounded-md flex items-center px-3">
-                      <span className="text-xs text-text-muted">optimeta.in/dashboard</span>
+                    <div className="flex-1 mx-3 h-5 bg-white/5 rounded flex items-center px-3">
+                      <span className="text-[10px] text-text-muted">optimeta.tech/dashboard/campaign-blueprint/bulk-fabric-leads</span>
                     </div>
                   </div>
+
                   {/* Content */}
-                  <div className="p-5 space-y-4">
-                    <div className="flex items-center justify-between">
+                  <div className="p-4 space-y-3">
+
+                    {/* Back link */}
+                    <div className="text-[10px] text-text-muted">← Back to Campaigns</div>
+
+                    {/* Title row */}
+                    <div className="flex items-start justify-between gap-2">
                       <div>
-                        <div className="text-xs text-text-muted mb-1">Campaign Blueprint</div>
-                        <div className="text-lg font-bold text-white">Zura Skincare — Q1 2026</div>
+                        <div className="text-sm font-black text-white leading-tight">Tanish Creations — Bulk Fabric Leads</div>
+                        <div className="text-[10px] text-text-muted mt-0.5">Strategy & Performance Overview: Mar 27 – Apr 25, 2026</div>
                       </div>
-                      <div className="px-3 py-1 rounded-full text-xs font-semibold bg-green-500/15 text-green-400 border border-green-500/30">
-                        ✓ Ready
+                      <div className="flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/30 whitespace-nowrap">
+                        ✓ Active & Scaling
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3">
+                    {/* Top metric cards */}
+                    <div className="grid grid-cols-3 gap-2">
                       {[
-                        { label: 'Expected ROAS', value: '4.2x', color: '#C026D3' },
-                        { label: 'Daily Budget', value: '₹2,500', color: '#7B2FBE' },
-                        { label: 'Audience Size', value: '1.2M', color: '#C026D3' },
-                      ].map((m) => (
-                        <div key={m.label} className="bg-bg-dark rounded-xl p-3 border border-border-color">
-                          <div className="text-xs text-text-muted mb-1">{m.label}</div>
-                          <div className="text-lg font-bold" style={{ color: m.color }}>{m.value}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
-                      <div className="text-xs text-text-muted mb-3 flex items-center gap-1.5">
-                        <TrendingUp size={12} className="text-accent" />
-                        Budget Split
-                      </div>
-                      {[
-                        { label: 'Awareness', pct: 30, color: '#7B2FBE' },
-                        { label: 'Consideration', pct: 40, color: '#9B3FDE' },
-                        { label: 'Conversion', pct: 30, color: '#C026D3' },
-                      ].map((bar) => (
-                        <div key={bar.label} className="mb-2">
-                          <div className="flex justify-between text-xs text-text-secondary mb-1">
-                            <span>{bar.label}</span>
-                            <span className="font-semibold">{bar.pct}%</span>
+                        { label: 'Total Ad Spend', value: '₹1,669.33', Icon: Banknote },
+                        { label: 'Conversations Started', value: '322', Icon: MessageCircle },
+                        { label: 'Avg. Cost per Conversion', value: '₹5.91', Icon: Target },
+                      ].map(({ label, value, Icon }) => (
+                        <div key={label} className="rounded-xl p-3 border border-white/8" style={{ background: '#161624' }}>
+                          <div className="flex items-start justify-between mb-1.5">
+                            <span className="text-[9px] text-text-muted leading-tight">{label}</span>
+                            <Icon size={13} className="text-white/20 flex-shrink-0 mt-0.5" />
                           </div>
-                          <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full rounded-full progress-bar" style={{ width: `${bar.pct}%`, background: bar.color }} />
-                          </div>
+                          <div className="text-base font-black" style={{ color: '#C026D3' }}>{value}</div>
                         </div>
                       ))}
                     </div>
 
-                    <div className="space-y-2">
+                    {/* Trend cards with sparklines */}
+                    <div className="grid grid-cols-3 gap-2">
                       {[
-                        'Pain-point ad: "Tired of dull skin..."',
-                        'Desire ad: "Glow that stops traffic"',
-                        'Trust ad: "10,000 happy customers"',
-                      ].map((copy, i) => (
-                        <div key={i} className="flex items-center gap-3 bg-bg-dark rounded-lg p-2.5 border border-border-color">
-                          <div className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" />
-                          <span className="text-xs text-text-secondary">{copy}</span>
+                        {
+                          label: 'Reach Trend', value: '13K',
+                          path: 'M0,28 L10,26 L20,25 L30,24 L40,26 L50,23 L60,20 L70,18 L80,10 L90,6 L100,2',
+                        },
+                        {
+                          label: 'CPC Trend (All)', value: '₹1.34',
+                          path: 'M0,18 L10,14 L20,18 L30,12 L40,16 L50,10 L60,16 L70,22 L80,16 L90,14 L100,18',
+                        },
+                        {
+                          label: 'Spend Trend', value: '₹1.1K',
+                          path: 'M0,26 L10,25 L20,24 L30,25 L40,24 L50,23 L60,22 L70,20 L80,14 L90,8 L100,2',
+                        },
+                      ].map(({ label, value, path }) => (
+                        <div key={label} className="rounded-xl p-3 border border-white/8" style={{ background: '#161624' }}>
+                          <div className="text-[9px] text-text-muted mb-1">{label}</div>
+                          <div className="text-sm font-black text-white mb-2">{value}</div>
+                          <svg viewBox="0 0 100 30" className="w-full h-8" preserveAspectRatio="none">
+                            <defs>
+                              <linearGradient id={`g-${label}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#C026D3" stopOpacity="0.3" />
+                                <stop offset="100%" stopColor="#C026D3" stopOpacity="0" />
+                              </linearGradient>
+                            </defs>
+                            <path d={`${path} L100,30 L0,30 Z`} fill={`url(#g-${label})`} />
+                            <path d={path} fill="none" stroke="#C026D3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
                         </div>
                       ))}
                     </div>
+
+                    {/* Budget split */}
+                    <div className="rounded-xl p-3 border border-white/8" style={{ background: '#161624' }}>
+                      <div className="flex items-center gap-1.5 mb-2.5">
+                        <TrendingUp size={11} className="text-accent" />
+                        <span className="text-[10px] font-semibold text-white">Refined Budget Split</span>
+                      </div>
+                      {[
+                        { label: 'Awareness', pct: 20 },
+                        { label: 'Consideration', pct: 30 },
+                        { label: 'Conversion (Focus)', pct: 50 },
+                      ].map(({ label, pct }) => (
+                        <div key={label} className="flex items-center gap-2 mb-1.5 last:mb-0">
+                          <span className="text-[9px] text-text-muted w-28 flex-shrink-0">{label}</span>
+                          <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#7B2FBE,#C026D3)' }} />
+                          </div>
+                          <span className="text-[9px] text-text-muted w-6 text-right">{pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Ad angle cards */}
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { type: 'Pain-point ad:', copy: '"Struggling to find real bulk fabric buyers?"' },
+                        { type: 'Desire ad:', copy: '"Your bulk fabric inventory, sold at scale."' },
+                        { type: 'Trust ad:', copy: '"Over 15,000 textile businesses count on Tanish Creations\' leads."' },
+                      ].map(({ type, copy }) => (
+                        <div key={type} className="rounded-xl p-2.5 border border-white/8" style={{ background: '#161624' }}>
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#C026D3' }} />
+                            <span className="text-[9px] text-text-muted">{type}</span>
+                          </div>
+                          <p className="text-[9px] text-white leading-relaxed">{copy}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="text-right">
+                      <span className="text-[9px] text-text-muted">Powered by Optimeta</span>
+                    </div>
+
                   </div>
                 </div>
               </div>
