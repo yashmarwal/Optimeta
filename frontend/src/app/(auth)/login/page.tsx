@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Zap, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { login } from '@/lib/auth';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,9 +52,7 @@ export default function LoginPage() {
       >
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center glow">
-              <Zap size={20} className="text-white" />
-            </div>
+            <Image src="/logo.png" alt="Optimeta" width={40} height={40} className="object-contain" />
             <span className="text-2xl font-black gradient-text">OPTIMETA</span>
           </Link>
           <h1 className="text-3xl font-black text-white mb-2">Welcome back</h1>

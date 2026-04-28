@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Menu, X, Zap } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function Navbar() {
@@ -31,9 +32,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Zap size={16} className="text-white" />
-            </div>
+            <Image src="/logo.png" alt="Optimeta" width={32} height={32} className="object-contain" />
             <span className="text-xl font-black gradient-text tracking-tight">OPTIMETA</span>
           </Link>
 

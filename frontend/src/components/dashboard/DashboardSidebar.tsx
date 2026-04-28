@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Plus, LayoutGrid, Settings, LogOut, X, Menu, ChevronRight } from 'lucide-react';
+import { Plus, LayoutGrid, Settings, LogOut, X, Menu, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { logout } from '@/lib/auth';
 import toast from 'react-hot-toast';
@@ -33,9 +34,7 @@ export default function DashboardSidebar() {
       {/* Logo */}
       <div className="px-5 py-6 border-b border-border-color">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center glow-sm">
-            <Zap size={16} className="text-white" />
-          </div>
+          <Image src="/logo.png" alt="Optimeta" width={32} height={32} className="object-contain" />
           <span className="text-lg font-black gradient-text">OPTIMETA</span>
         </Link>
       </div>

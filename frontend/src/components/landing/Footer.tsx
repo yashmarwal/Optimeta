@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Zap, Linkedin, Instagram, Mail } from 'lucide-react';
+import { Linkedin, Instagram, Mail } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -10,9 +11,7 @@ export default function Footer() {
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-10 mb-12">
           <div>
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Zap size={16} className="text-white" />
-              </div>
+              <Image src="/logo.png" alt="Optimeta" width={32} height={32} className="object-contain" />
               <span className="text-xl font-black gradient-text">OPTIMETA</span>
             </Link>
             <p className="text-text-muted text-sm leading-relaxed">
