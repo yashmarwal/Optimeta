@@ -13,6 +13,7 @@ const authMiddleware = async (req, res, next) => {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
+      console.warn(`[Auth] Token verify failed: ${err.message} | JWT_SECRET length: ${process.env.JWT_SECRET?.length ?? 'MISSING'} | token prefix: ${token.slice(0, 20)}`);
       return res.status(401).json({ success: false, message: 'Invalid or expired token.' });
     }
 

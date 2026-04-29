@@ -3,7 +3,7 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { Check, Zap, Star, Crown } from 'lucide-react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
 const plans = [
@@ -77,7 +77,27 @@ export default function PricingSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-50px' });
   const { user } = useAuth();
-  const isLoggedInFree = !!user && user.plan === 'free';
+  const router = useRouter();
+
+  const handleCTAClick = (plan: typeof plans[0]) => {
+    if (plan.name === 'Free') {
+      router.push(user ? '/dashboard' : '/register');
+      return;
+    }
+    // Read user at click time — not at render time — so auth state is always current
+    if (user) {
+      router.push(`/dashboard/upgrade?plan=${plan.name.toLowerCase()}`);
+    } else {
+      router.push(plan.href);
+    }
+  };
+
+  const getLabel = (plan: typeof plans[0]) => {
+    if (plan.name === 'Free') return user ? 'Go to Dashboard' : plan.cta;
+    if (user && user.plan === plan.name.toLowerCase()) return 'Current Plan';
+    if (user) return `Upgrade to ${plan.name}`;
+    return plan.cta;
+  };
 
   return (
     <section id="pricing" ref={ref} className="py-24">
@@ -138,22 +158,17 @@ export default function PricingSection() {
                 </div>
               </div>
 
-              <Link href={
-                isLoggedInFree && plan.name !== 'Free'
-                  ? `/dashboard/upgrade?plan=${plan.name.toLowerCase()}`
-                  : plan.href
-              }>
-                <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  className={`w-full py-3 rounded-xl font-bold text-sm mb-8 transition-all ${
-                    plan.highlighted
-                      ? 'btn-gradient glow'
-                      : 'btn-ghost'
-                  }`}
-                >
-                  {isLoggedInFree && plan.name !== 'Free' ? `Upgrade to ${plan.name}` : plan.cta}
-                </motion.button>
-              </Link>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => handleCTAClick(plan)}
+                className={`w-full py-3 rounded-xl font-bold text-sm mb-8 transition-all ${
+                  plan.highlighted
+                    ? 'btn-gradient glow'
+                    : 'btn-ghost'
+                }`}
+              >
+                {getLabel(plan)}
+              </motion.button>
 
               <div className="space-y-3">
                 {plan.features.map((f) => (

@@ -134,6 +134,8 @@ router.post('/login', async (req, res) => {
 
     const token = generateToken(authData.user.id);
 
+    console.log(`[Auth] Login: ${profile.email} | JWT_SECRET length: ${process.env.JWT_SECRET?.length ?? 'MISSING'}`);
+
     res.cookie('optimeta_token', token, COOKIE_OPTIONS);
 
     return res.json({
@@ -169,7 +171,8 @@ router.get('/me', async (req, res) => {
     let decoded;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch {
+    } catch (err) {
+      console.warn(`[Auth] /me verify failed: ${err.message} | JWT_SECRET length: ${process.env.JWT_SECRET?.length ?? 'MISSING'} | token prefix: ${token.slice(0, 20)}`);
       return res.status(401).json({ success: false, message: 'Invalid token.' });
     }
 
