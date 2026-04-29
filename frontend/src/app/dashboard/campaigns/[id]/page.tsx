@@ -371,25 +371,23 @@ export default function CampaignViewPage() {
       </div>
 
       {/* Mobile horizontal pill nav */}
-      <div className="xl:hidden mb-4 -mx-4 sm:-mx-6 lg:-mx-8">
-        <div className="flex gap-2 px-4 sm:px-6 lg:px-8 py-2 overflow-x-auto border-b border-border-color/30" style={{ scrollbarWidth: 'none' }}>
-          {NAV_SECTIONS.map((s) => (
-            <a key={s.id} href={`#${s.id}`}
-              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all border whitespace-nowrap min-h-[36px] ${
-                activeSection === s.id
-                  ? 'bg-primary/20 text-white border-primary/50'
-                  : 'bg-bg-card text-text-muted border-border-color hover:text-white'
-              }`}>
-              <s.icon size={10} />
-              {s.label}
-            </a>
-          ))}
-        </div>
+      <div className="flex md:hidden overflow-x-auto gap-2 p-4 sticky top-16 z-10 bg-[#0A0A0F]/90 backdrop-blur-md -mx-4 sm:-mx-6 mb-4" style={{ scrollbarWidth: 'none' }}>
+        {NAV_SECTIONS.map((s) => (
+          <a key={s.id} href={`#${s.id}`}
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm whitespace-nowrap border cursor-pointer transition-all ${
+              activeSection === s.id
+                ? 'bg-gradient-to-r from-[#7B2FBE] to-[#C026D3] text-white border-transparent'
+                : 'bg-[#0F0F1A] border-[#1E1E3A] text-[#A0A0C0]'
+            }`}>
+            <s.icon size={11} />
+            {s.label}
+          </a>
+        ))}
       </div>
 
       <div className="flex gap-6">
         {/* Sidebar nav */}
-        <div className="hidden xl:block w-52 flex-shrink-0">
+        <div className="hidden md:block w-52 flex-shrink-0">
           <div className="sticky top-24 glass-card p-3 space-y-0.5">
             {NAV_SECTIONS.map((s) => (
               <a key={s.id} href={`#${s.id}`}
@@ -427,7 +425,7 @@ export default function CampaignViewPage() {
           {/* 2. Campaign Objective */}
           <SectionCard id="objective" delay={0.05}>
             <SectionTitle>Campaign Objective</SectionTitle>
-            <div className="grid sm:grid-cols-2 gap-4 mb-4">
+            <div className="grid md:grid-cols-2 gap-4 mb-4">
               <div className="bg-bg-dark rounded-xl p-5 border border-border-color">
                 <div className="text-xs text-text-muted mb-2 uppercase tracking-wide">Recommended Objective</div>
                 <div className="text-xl font-black gradient-text mb-1">{bp.campaign_objective?.recommended}</div>
@@ -460,7 +458,7 @@ export default function CampaignViewPage() {
           </SectionCard>
 
           {/* 3. Funnel & Budget */}
-          <div id="funnel-budget" className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+          <div id="funnel-budget" className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
             <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: 0.05 }} className="glass-card p-6">
               <SectionTitle>Funnel Strategy</SectionTitle>
               <div className="flex gap-2 mb-5">
@@ -530,7 +528,7 @@ export default function CampaignViewPage() {
           {bp.campaign_structure && (
             <SectionCard id="structure" delay={0.05}>
               <SectionTitle>Campaign Structure</SectionTitle>
-              <div className="grid grid-cols-3 gap-4 mb-5">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-5">
                 <MetricBox label="Campaigns" value={String(bp.campaign_structure.recommended_num_campaigns)} />
                 <MetricBox label="Ad Sets" value={String(bp.campaign_structure.recommended_num_adsets)} highlight />
                 <MetricBox label="Ads" value={String(bp.campaign_structure.recommended_num_ads)} />
@@ -566,7 +564,7 @@ export default function CampaignViewPage() {
                 <p className="text-xs text-text-secondary leading-relaxed">{bp.targeting.approach_reason}</p>
               </div>
             )}
-            <div className="grid sm:grid-cols-2 gap-4 mb-4">
+            <div className="grid md:grid-cols-2 gap-4 mb-4">
               <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
                 <div className="text-xs text-text-muted mb-1">Age Range</div>
                 <div className="text-sm font-semibold text-white">{bp.targeting?.primary_audience?.age_range}</div>
@@ -703,7 +701,7 @@ export default function CampaignViewPage() {
               </div>
             )}
 
-            <div className="grid sm:grid-cols-2 gap-4 mb-4">
+            <div className="grid md:grid-cols-2 gap-4 mb-4">
               <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
                 <div className="text-xs text-text-muted mb-2">Lookalike Strategy</div>
                 <p className="text-sm text-text-secondary leading-relaxed">{bp.targeting?.lookalike_strategy}</p>
@@ -748,7 +746,7 @@ export default function CampaignViewPage() {
                       {set.daily_budget_inr ? `${set.daily_budget_inr}/day` : set.budget_allocation}
                     </span>
                   </div>
-                  <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="grid md:grid-cols-2 gap-3">
                     <div>
                       <div className="text-xs text-text-muted mb-1">Objective</div>
                       <div className="text-sm text-text-secondary">{set.objective}</div>
@@ -758,7 +756,7 @@ export default function CampaignViewPage() {
                       <div className="text-sm text-text-secondary">{set.targeting_focus}</div>
                     </div>
                     {set.why_this_audience && (
-                      <div className="sm:col-span-2 mt-1 p-3 bg-bg-card rounded-lg border border-border-color">
+                      <div className="md:col-span-2 mt-1 p-3 bg-bg-card rounded-lg border border-border-color">
                         <div className="text-xs text-text-muted mb-1">Why this audience</div>
                         <div className="text-sm text-text-secondary italic">{set.why_this_audience}</div>
                       </div>
@@ -772,7 +770,7 @@ export default function CampaignViewPage() {
           {/* 7. Ad Angles */}
           <SectionCard id="angles" delay={0.05}>
             <SectionTitle>Ad Angles</SectionTitle>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {(bp.ad_angles || []).map((angle, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
                   className="bg-bg-dark rounded-xl p-5 border border-border-color">
@@ -878,7 +876,7 @@ export default function CampaignViewPage() {
                 <Tag className="bg-accent/20 text-accent border-accent/30 font-bold">{bp.creative_direction.priority_format}</Tag>
               </div>
             )}
-            <div className="grid sm:grid-cols-2 gap-4 mb-5">
+            <div className="grid md:grid-cols-2 gap-4 mb-5">
               <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
                 <div className="text-xs text-text-muted mb-2">Visual Style</div>
                 <div className="text-sm text-white">{bp.creative_direction?.visual_style}</div>
@@ -945,7 +943,7 @@ export default function CampaignViewPage() {
             )}
 
             {/* Do / Don't */}
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-green-500/5 rounded-xl p-4 border border-green-500/20">
                 <div className="text-xs text-green-400 font-bold mb-3 uppercase tracking-wide">✓ DO</div>
                 <div className="space-y-2">
@@ -973,7 +971,7 @@ export default function CampaignViewPage() {
           {bp.pixel_recommendation && (
             <SectionCard id="pixel" delay={0.05}>
               <SectionTitle>Pixel Recommendation</SectionTitle>
-              <div className="grid sm:grid-cols-2 gap-4 mb-4">
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
                   <div className="text-xs text-text-muted mb-2">Current Status</div>
                   <div className="text-sm font-semibold text-white">{bp.pixel_recommendation.current_status}</div>
@@ -1003,7 +1001,7 @@ export default function CampaignViewPage() {
           {bp.first_7_days_plan && (
             <SectionCard id="first7days" delay={0.05}>
               <SectionTitle>First 7 Days Plan</SectionTitle>
-              <div className="grid sm:grid-cols-2 gap-4 mb-5">
+              <div className="grid md:grid-cols-2 gap-4 mb-5">
                 <div className="bg-bg-dark rounded-xl p-5 border border-border-color">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-xs font-black text-blue-400">1-3</div>
@@ -1026,7 +1024,7 @@ export default function CampaignViewPage() {
                   <p className="text-sm text-text-secondary leading-relaxed">{bp.first_7_days_plan.when_to_edit}</p>
                 </div>
               </div>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-green-500/5 rounded-xl p-4 border border-green-500/20">
                   <div className="text-xs text-green-400 font-bold mb-3 uppercase tracking-wide">🟢 Green Flags</div>
                   <div className="space-y-2">
@@ -1121,7 +1119,7 @@ export default function CampaignViewPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
               {[
                 { label: 'CTR (Feed)', val: bp.performance_benchmarks?.expected_ctr_feed || bp.performance_benchmarks?.expected_ctr },
                 { label: 'CTR (Reels)', val: bp.performance_benchmarks?.expected_ctr_reels },

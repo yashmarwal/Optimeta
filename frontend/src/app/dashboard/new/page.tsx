@@ -166,9 +166,13 @@ export default function NewCampaignPage() {
     await executeGeneration(cleanFormData);
   };
 
-  // Save draft to localStorage on every inputs change
+  // Save draft to localStorage on every inputs change.
+  // Guard: skip if no string field has data yet — prevents the initial empty
+  // render from overwriting an existing draft before the restore effect fires.
   useEffect(() => {
     if (localStorage.getItem('generation_in_progress')) return;
+    const hasData = inputs.businessName || inputs.productName || inputs.targetAudience;
+    if (!hasData) return;
     try {
       localStorage.setItem('campaign_form_draft', JSON.stringify(inputs));
       setDraftSaved(true);
