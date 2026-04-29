@@ -341,7 +341,7 @@ export default function CampaignViewPage() {
   const createdDate = new Date(campaign.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
   return (
-    <div>
+    <div className="w-full max-w-full overflow-x-hidden">
 
       {/* ═══════════════════════════════════════
           DESKTOP LAYOUT (hidden on mobile)
@@ -917,7 +917,7 @@ export default function CampaignViewPage() {
                   </div>
                   <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
                     <div className="text-xs text-text-muted mb-2">Optimization Event</div>
-                    <code className="text-sm text-accent font-mono">{bp.pixel_recommendation.optimization_event}</code>
+                    <code className="text-sm text-accent font-mono break-all">{bp.pixel_recommendation.optimization_event}</code>
                   </div>
                 </div>
                 <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 mb-4">
@@ -1072,7 +1072,7 @@ export default function CampaignViewPage() {
       {/* ═══════════════════════════════════════
           MOBILE LAYOUT (hidden on desktop)
           ═══════════════════════════════════════ */}
-      <div className="block md:hidden min-h-screen bg-[#0A0A0F] pb-24 -mx-4">
+      <div className="block md:hidden min-h-screen bg-[#0A0A0F] pb-24 -mx-4 overflow-x-hidden">
 
         {/* Mobile sticky header */}
         <div className="sticky top-0 z-50 flex items-center gap-3 px-4 py-3 bg-[#0A0A0F]/95 backdrop-blur-md border-b border-[#1E1E3A]">
@@ -1096,7 +1096,7 @@ export default function CampaignViewPage() {
         </div>
 
         {/* Mobile pill nav */}
-        <div className="flex overflow-x-auto gap-2 py-3 px-4 scrollbar-hide sticky top-[52px] bg-[#0A0A0F]/95 backdrop-blur-md z-40 border-b border-[#1E1E3A]/50">
+        <div style={{ WebkitOverflowScrolling: 'touch' }} className="flex overflow-x-auto gap-2 py-3 px-4 scrollbar-hide sticky top-[52px] bg-[#0A0A0F]/95 backdrop-blur-md z-40 border-b border-[#1E1E3A]/50 w-full">
           {MOBILE_PILLS.map((s) => (
             <button key={s.id} onClick={() => scrollToMobile(s.id)}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
@@ -1121,13 +1121,13 @@ export default function CampaignViewPage() {
         <div id="m-summary" className="px-4 pt-4">
           <div className="p-5 rounded-2xl bg-gradient-to-br from-[#7B2FBE]/20 to-[#C026D3]/20 border border-[#7B2FBE]/30 mb-3">
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-accent/20 text-accent border border-accent/30 inline-block mb-3">Blueprint Ready</span>
-            <h2 className="text-xl font-bold text-white mb-3">{bp.campaign_name}</h2>
-            <p className="text-sm text-[#A0A0C0] leading-relaxed">{bp.executive_summary}</p>
+            <h2 className="text-xl font-bold text-white mb-3 break-words">{bp.campaign_name}</h2>
+            <p className="text-sm text-[#A0A0C0] leading-relaxed break-words">{bp.executive_summary}</p>
           </div>
           {bp.market_insight && (
             <div className="border-l-4 border-[#7B2FBE] pl-4 py-2 mb-4">
               <div className="text-xs text-accent font-semibold mb-1 uppercase tracking-wide">India Market Insight</div>
-              <p className="text-sm text-[#A0A0C0] italic leading-relaxed">{bp.market_insight}</p>
+              <p className="text-sm text-[#A0A0C0] italic leading-relaxed break-words">{bp.market_insight}</p>
             </div>
           )}
         </div>
@@ -1142,7 +1142,7 @@ export default function CampaignViewPage() {
               <div className="flex items-center justify-between p-3 bg-[#0A0A0F] rounded-xl border border-[#7B2FBE]/30 mb-3">
                 <div>
                   <div className="text-xs text-[#505070] mb-0.5">In Meta Ads Manager, select:</div>
-                  <code className="text-sm text-accent font-mono">{bp.campaign_objective.meta_objective_name}</code>
+                  <code className="text-sm text-accent font-mono break-all">{bp.campaign_objective.meta_objective_name}</code>
                 </div>
                 <CopyButton text={bp.campaign_objective.meta_objective_name} size={14} />
               </div>
@@ -1162,9 +1162,9 @@ export default function CampaignViewPage() {
           <div className="text-xs font-bold text-[#505070] uppercase tracking-widest mb-3">Budget Strategy</div>
           <div className="p-5 rounded-2xl bg-[#0F0F1A] border border-[#1E1E3A] mb-3 text-center">
             <div className="text-xs text-[#505070] mb-1">Recommended Daily Budget</div>
-            <div className="text-4xl font-black gradient-text">{bp.budget_strategy?.recommended_daily_budget_inr}</div>
+            <div className="text-4xl font-black gradient-text break-all">{bp.budget_strategy?.recommended_daily_budget_inr}</div>
             {bp.budget_strategy?.total_monthly_inr && (
-              <div className="text-xs text-[#505070] mt-1">≈ {bp.budget_strategy.total_monthly_inr} / month</div>
+              <div className="text-xs text-[#505070] mt-1 break-words">≈ {bp.budget_strategy.total_monthly_inr} / month</div>
             )}
           </div>
           <div className="space-y-2 mb-3">
@@ -1344,7 +1344,7 @@ export default function CampaignViewPage() {
                         <span className="text-xs font-bold text-accent">🎯 Hook</span>
                         <CopyButton text={copy.hook} size={13} />
                       </div>
-                      <div className="text-base font-bold text-white">{copy.hook}</div>
+                      <div className="text-base font-bold text-white break-words">{copy.hook}</div>
                     </div>
                   )}
                   <div>
@@ -1352,15 +1352,15 @@ export default function CampaignViewPage() {
                       <span className="text-xs text-[#505070] uppercase tracking-wide">Headline</span>
                       <CopyButton text={copy.headline} size={13} />
                     </div>
-                    <div className="text-lg font-black text-white">{copy.headline}</div>
-                    {copy.sub_headline && <div className="text-xs text-[#505070] mt-0.5">{copy.sub_headline}</div>}
+                    <div className="text-lg font-black text-white break-words">{copy.headline}</div>
+                    {copy.sub_headline && <div className="text-xs text-[#505070] mt-0.5 break-words">{copy.sub_headline}</div>}
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs text-[#505070] uppercase tracking-wide">Primary Text</span>
                       <CopyButton text={copy.primary_text} size={13} />
                     </div>
-                    <div className="text-sm text-[#A0A0C0] leading-relaxed p-3 bg-[#0A0A0F] rounded-xl border border-[#1E1E3A] whitespace-pre-wrap">{copy.primary_text}</div>
+                    <div className="text-sm text-[#A0A0C0] leading-relaxed p-3 bg-[#0A0A0F] rounded-xl border border-[#1E1E3A] whitespace-pre-wrap break-words w-full overflow-hidden">{copy.primary_text}</div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="px-4 py-2 rounded-full text-sm font-bold bg-green-500/15 text-green-300 border border-green-500/25">{copy.cta}</span>
@@ -1442,7 +1442,7 @@ export default function CampaignViewPage() {
                 <div className="text-xs text-accent font-bold uppercase tracking-wide">UGC Creator Brief</div>
                 <CopyButton text={bp.creative_direction.ugc_brief} size={13} />
               </div>
-              <p className="text-sm text-[#A0A0C0] leading-relaxed">{bp.creative_direction.ugc_brief}</p>
+              <p className="text-sm text-[#A0A0C0] leading-relaxed break-words">{bp.creative_direction.ugc_brief}</p>
             </div>
           )}
 
@@ -1474,13 +1474,13 @@ export default function CampaignViewPage() {
               <div className="text-xs font-bold text-[#505070] uppercase tracking-widest mb-3">Pixel Recommendation</div>
               <div className="p-4 bg-[#0F0F1A] rounded-xl border border-[#1E1E3A] mb-3">
                 <div className="text-xs text-[#505070] mb-1">Status</div>
-                <div className="text-sm font-semibold text-white mb-3">{bp.pixel_recommendation.current_status}</div>
+                <div className="text-sm font-semibold text-white mb-3 break-words">{bp.pixel_recommendation.current_status}</div>
                 <div className="text-xs text-[#505070] mb-1">Optimization Event</div>
-                <code className="text-sm text-accent font-mono">{bp.pixel_recommendation.optimization_event}</code>
+                <code className="text-sm text-accent font-mono break-all">{bp.pixel_recommendation.optimization_event}</code>
               </div>
               <div className="p-4 rounded-xl bg-[#7B2FBE]/5 border border-[#7B2FBE]/20 mb-3">
                 <div className="text-xs text-accent font-bold mb-2 uppercase tracking-wide">Immediate Action</div>
-                <p className="text-sm text-[#A0A0C0] leading-relaxed">{bp.pixel_recommendation.immediate_action}</p>
+                <p className="text-sm text-[#A0A0C0] leading-relaxed break-words">{bp.pixel_recommendation.immediate_action}</p>
               </div>
             </div>
           )}
