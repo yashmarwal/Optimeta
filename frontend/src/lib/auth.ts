@@ -1,6 +1,7 @@
 import api from './api';
 
 export const TOKEN_KEY = 'optimeta_token';
+export const USER_KEY = 'optimeta_user';
 
 export interface User {
   id: string;
@@ -37,6 +38,7 @@ export const getDeviceFingerprint = () => ({
 export const login = async (email: string, password: string) => {
   const { data } = await api.post('/api/auth/login', { email, password });
   if (data.data?.token) localStorage.setItem(TOKEN_KEY, data.data.token);
+  if (data.data?.user) localStorage.setItem(USER_KEY, JSON.stringify(data.data.user));
   return data.data;
 };
 
@@ -53,23 +55,41 @@ export const register = async (
     ...fingerprint,
   });
   if (data.data?.token) localStorage.setItem(TOKEN_KEY, data.data.token);
+  if (data.data?.user) localStorage.setItem(USER_KEY, JSON.stringify(data.data.user));
   return data.data;
 };
 
 export const logout = async () => {
   await api.post('/api/auth/logout');
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
 };
 
-// Returns User on success, null on 401 (truly logged out), undefined on network error
+// Returns User on success, null on 401 (token invalid), undefined on network error
 export const getMe = async (): Promise<User | null | undefined> => {
   try {
     const { data } = await api.get('/api/auth/me');
-    return data.data.user;
+    const user = data.data.user;
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    return user;
   } catch (err: unknown) {
     const status = (err as { response?: { status?: number } })?.response?.status;
-    if (status === 401) return null;
-    return undefined; // transient error — caller should keep existing state
+    if (status === 401) {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      return null;
+    }
+    return undefined; // transient network error — caller keeps existing state
+  }
+};
+
+export const getCachedUser = (): User | null => {
+  try {
+    const saved = localStorage.getItem(USER_KEY);
+    return saved ? (JSON.parse(saved) as User) : null;
+  } catch {
+    localStorage.removeItem(USER_KEY);
+    return null;
   }
 };
 
@@ -80,5 +100,7 @@ export const updateProfile = async (fullName: string) => {
 
 export const deleteAccount = async () => {
   const { data } = await api.delete('/api/auth/account');
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
   return data.data;
 };

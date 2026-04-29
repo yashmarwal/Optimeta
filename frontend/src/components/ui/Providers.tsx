@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useEffect, useCallback } from 'react';
 import { AuthContext } from '@/hooks/useAuth';
-import { User, getMe } from '@/lib/auth';
+import { User, getMe, getCachedUser } from '@/lib/auth';
 
 const AUTH_PAGES = ['/login', '/register', '/forgot-password', '/reset-password'];
 
@@ -14,14 +14,27 @@ export default function Providers({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     setLoading(true);
     const u = await getMe();
-    // undefined = transient network error; keep existing user state so a blip
-    // during campaign generation doesn't silently log the user out
-    if (u !== undefined) setUser(u);
+    if (u !== undefined) {
+      // null = token invalid (getMe already cleared localStorage)
+      // User = fresh data (getMe already updated localStorage)
+      setUser(u);
+    }
+    // undefined = transient network error: keep existing user, stay logged in
     setLoading(false);
     setAuthChecked(true);
   }, []);
 
   useEffect(() => {
+    // Hydrate instantly from cache so the dashboard never sees a null-user flash
+    // on page refresh. authChecked = true immediately so no redirect loop fires
+    // before the network call returns.
+    const cached = getCachedUser();
+    if (cached) {
+      setUser(cached);
+      setAuthChecked(true);
+    }
+
+    // Background verify — updates user with fresh plan/data, or clears if token expired
     refresh();
 
     const handleVisibility = () => {
