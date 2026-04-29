@@ -192,7 +192,7 @@ function CopyButton({ text, size = 14 }: { text: string; size?: number }) {
   return (
     <button
       onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="p-2 rounded-lg bg-white/5 hover:bg-primary/20 transition-all text-text-muted hover:text-white flex-shrink-0"
+      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-white/5 hover:bg-primary/20 transition-all text-text-muted hover:text-white flex-shrink-0"
       title="Copy"
     >
       {copied ? <Check size={size} className="text-green-400" /> : <Copy size={size} />}
@@ -337,31 +337,53 @@ export default function CampaignViewPage() {
         </motion.div>
       )}
 
-      {/* Sticky top bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.back()} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all">
+      {/* Top bar */}
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <div className="flex items-center gap-3 min-w-0">
+          <button onClick={() => router.back()} className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 transition-all flex-shrink-0">
             <ArrowLeft size={18} className="text-text-secondary" />
           </button>
-          <div>
-            <h1 className="text-xl font-black text-white">{bp.campaign_name}</h1>
+          <div className="min-w-0">
+            <h1 className="text-base sm:text-xl font-black text-white truncate">{bp.campaign_name}</h1>
             <p className="text-xs text-text-muted">
-              Generated {new Date(campaign.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+              {new Date(campaign.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <button onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success('Link copied!'); }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium btn-ghost">
+            className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium btn-ghost min-h-[44px]">
             <Copy size={14} /> Copy Link
           </button>
+          <button onClick={() => { navigator.clipboard.writeText(window.location.href); toast.success('Link copied!'); }}
+            className="sm:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl btn-ghost">
+            <Copy size={16} />
+          </button>
           <motion.button whileTap={{ scale: 0.97 }} onClick={handleExport} disabled={exporting}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+            className={`flex items-center gap-2 px-3 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all min-h-[44px] ${
               user?.plan === 'free' ? 'bg-white/5 border border-border-color text-text-muted cursor-not-allowed' : 'btn-gradient'
             }`}>
-            <FileDown size={15} />
-            {exporting ? 'Exporting...' : user?.plan === 'free' ? 'Export (Pro)' : 'Export Blueprint'}
+            <FileDown size={14} />
+            <span className="hidden sm:inline">{exporting ? 'Exporting...' : user?.plan === 'free' ? 'Export (Pro)' : 'Export Blueprint'}</span>
+            <span className="sm:hidden">{user?.plan === 'free' ? 'Pro' : exporting ? '...' : 'Export'}</span>
           </motion.button>
+        </div>
+      </div>
+
+      {/* Mobile horizontal pill nav */}
+      <div className="xl:hidden mb-4 -mx-4 sm:-mx-6 lg:-mx-8">
+        <div className="flex gap-2 px-4 sm:px-6 lg:px-8 py-2 overflow-x-auto border-b border-border-color/30" style={{ scrollbarWidth: 'none' }}>
+          {NAV_SECTIONS.map((s) => (
+            <a key={s.id} href={`#${s.id}`}
+              className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all border whitespace-nowrap min-h-[36px] ${
+                activeSection === s.id
+                  ? 'bg-primary/20 text-white border-primary/50'
+                  : 'bg-bg-card text-text-muted border-border-color hover:text-white'
+              }`}>
+              <s.icon size={10} />
+              {s.label}
+            </a>
+          ))}
         </div>
       </div>
 
@@ -437,8 +459,8 @@ export default function CampaignViewPage() {
             )}
           </SectionCard>
 
-          {/* 3. Funnel & Budget (side by side on desktop) */}
-          <div id="funnel-budget" className="grid sm:grid-cols-2 gap-6 mb-6">
+          {/* 3. Funnel & Budget */}
+          <div id="funnel-budget" className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
             <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: 0.05 }} className="glass-card p-6">
               <SectionTitle>Funnel Strategy</SectionTitle>
               <div className="flex gap-2 mb-5">
@@ -714,13 +736,15 @@ export default function CampaignViewPage() {
               {(bp.ad_sets || []).map((set, i) => (
                 <motion.div key={i} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                   className="bg-bg-dark rounded-xl p-5 border border-border-color">
-                  <div className="flex items-center gap-3 mb-3 flex-wrap">
-                    <span className="font-bold text-white">{set.ad_set_name}</span>
-                    <CopyButton text={set.ad_set_name} size={12} />
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${AUDIENCE_COLORS[set.audience_type] || AUDIENCE_COLORS.cold}`}>
-                      {set.audience_type?.toUpperCase()}
-                    </span>
-                    <span className="ml-auto text-sm font-black gradient-text">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2 flex-wrap min-w-0">
+                      <span className="font-bold text-white text-sm">{set.ad_set_name}</span>
+                      <CopyButton text={set.ad_set_name} size={12} />
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${AUDIENCE_COLORS[set.audience_type] || AUDIENCE_COLORS.cold}`}>
+                        {set.audience_type?.toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-sm font-black gradient-text flex-shrink-0">
                       {set.daily_budget_inr ? `${set.daily_budget_inr}/day` : set.budget_allocation}
                     </span>
                   </div>
@@ -748,7 +772,7 @@ export default function CampaignViewPage() {
           {/* 7. Ad Angles */}
           <SectionCard id="angles" delay={0.05}>
             <SectionTitle>Ad Angles</SectionTitle>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {(bp.ad_angles || []).map((angle, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
                   className="bg-bg-dark rounded-xl p-5 border border-border-color">
@@ -831,12 +855,12 @@ export default function CampaignViewPage() {
                     </div>
 
                     {/* CTA + Why */}
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold bg-green-500/15 text-green-300 border border-green-500/25">
+                    <div className="space-y-2">
+                      <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold bg-green-500/15 text-green-300 border border-green-500/25 min-h-[44px]">
                         {copy.cta}
                       </span>
                       {copy.why_this_works && (
-                        <span className="text-xs text-text-muted italic flex-1">— {copy.why_this_works}</span>
+                        <p className="text-xs text-text-muted italic leading-relaxed">{copy.why_this_works}</p>
                       )}
                     </div>
                   </div>
@@ -1051,10 +1075,10 @@ export default function CampaignViewPage() {
 
                 return (
                   <motion.div key={i} whileTap={{ scale: 0.99 }} onClick={() => toggleCheck(i, checklistItems.length)}
-                    className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                    className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all min-h-[52px] ${
                       checkedItems[i] ? 'bg-green-500/5 border-green-500/25' : 'bg-bg-dark border-border-color hover:border-primary/40'
                     }`}>
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all border ${
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all border mt-0.5 ${
                       checkedItems[i] ? 'bg-green-500 border-green-500' : 'border-border-color bg-bg-dark'
                     }`}>
                       {checkedItems[i]
@@ -1066,11 +1090,15 @@ export default function CampaignViewPage() {
                       <div className={`text-sm font-medium leading-relaxed ${checkedItems[i] ? 'text-text-muted line-through' : 'text-white'}`}>
                         {action}
                       </div>
-                      {why && <div className="text-xs text-text-muted mt-1 leading-relaxed">{why}</div>}
+                      {(why || time) && (
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {why && <div className="text-xs text-text-muted leading-relaxed">{why}</div>}
+                          {time && (
+                            <span className="text-xs text-text-muted bg-bg-card px-2 py-0.5 rounded-lg border border-border-color flex-shrink-0">{time}</span>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {time && (
-                      <span className="text-xs text-text-muted bg-bg-card px-2 py-0.5 rounded-lg border border-border-color flex-shrink-0">{time}</span>
-                    )}
                   </motion.div>
                 );
               })}

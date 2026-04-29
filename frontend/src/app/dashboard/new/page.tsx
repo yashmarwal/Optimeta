@@ -64,6 +64,7 @@ export default function NewCampaignPage() {
   const [loadingMsg, setLoadingMsg] = useState(0);
   const [progressWidth, setProgressWidth] = useState(0);
   const [usageInfo, setUsageInfo] = useState<{ remaining: number; limit: number } | null>(null);
+  const [draftSaved, setDraftSaved] = useState(false);
   const router = useRouter();
 
   const [inputs, setInputs] = useState<BusinessInputs>({
@@ -111,6 +112,7 @@ export default function NewCampaignPage() {
       setProgressWidth(100);
       localStorage.removeItem('generation_in_progress');
       localStorage.removeItem('generation_inputs');
+      localStorage.removeItem('campaign_form_draft');
       setTimeout(() => {
         router.push(`/dashboard/campaigns/${response.data.data.id}`);
       }, 600);
@@ -120,6 +122,7 @@ export default function NewCampaignPage() {
       setGenerating(false);
       localStorage.removeItem('generation_in_progress');
       localStorage.removeItem('generation_inputs');
+      localStorage.removeItem('campaign_form_draft');
       const apiMsg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       toast.error(apiMsg || 'Generation failed. Please try again.');
     }
@@ -162,6 +165,32 @@ export default function NewCampaignPage() {
 
     await executeGeneration(cleanFormData);
   };
+
+  // Save draft to localStorage on every inputs change
+  useEffect(() => {
+    if (localStorage.getItem('generation_in_progress')) return;
+    try {
+      localStorage.setItem('campaign_form_draft', JSON.stringify(inputs));
+      setDraftSaved(true);
+      const t = setTimeout(() => setDraftSaved(false), 2000);
+      return () => clearTimeout(t);
+    } catch (e) { console.error('Draft save error:', e); }
+  }, [inputs]);
+
+  // Restore draft from localStorage on mount
+  useEffect(() => {
+    if (localStorage.getItem('generation_in_progress')) return;
+    try {
+      const draft = localStorage.getItem('campaign_form_draft');
+      if (!draft) return;
+      const parsed: BusinessInputs = JSON.parse(draft);
+      setInputs(parsed);
+      if (parsed.targetAudience && parsed.campaignGoal) setStep(4);
+      else if (parsed.productName && parsed.usp) setStep(3);
+      else if (parsed.businessName && parsed.industry) setStep(2);
+    } catch (e) { console.error('Draft restore error:', e); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetch usage info on mount to show remaining campaigns in review step
   useEffect(() => {
@@ -290,6 +319,9 @@ export default function NewCampaignPage() {
           </motion.button>
         )}
       </div>
+      {draftSaved && (
+        <p className="text-center text-xs text-green-400/70 mt-2">✓ Draft auto-saved</p>
+      )}
     </div>
   );
 }
