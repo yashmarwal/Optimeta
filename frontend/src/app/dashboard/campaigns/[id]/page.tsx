@@ -1072,15 +1072,15 @@ export default function CampaignViewPage() {
       {/* ═══════════════════════════════════════
           MOBILE LAYOUT (hidden on desktop)
           ═══════════════════════════════════════ */}
-      <div className="block md:hidden min-h-screen bg-[#0A0A0F] pb-24 -mx-4 overflow-x-hidden">
+      <div className="block md:hidden min-h-screen bg-[#0A0A0F] pb-24 -mx-4 sm:-mx-6 lg:-mx-8 overflow-x-hidden">
 
         {/* Mobile sticky header */}
-        <div className="sticky top-0 z-50 flex items-center gap-3 px-4 py-3 bg-[#0A0A0F]/95 backdrop-blur-md border-b border-[#1E1E3A]">
+        <div className="sticky top-0 z-50 flex items-center gap-3 px-4 py-3 bg-[#0A0A0F]/95 backdrop-blur-md border-b border-[#1E1E3A] w-full">
           <button onClick={() => router.back()} className="w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 flex-shrink-0">
             <ArrowLeft size={20} className="text-white" />
           </button>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold text-white truncate">{bp.campaign_name}</div>
+            <div className="text-sm font-bold text-white truncate min-w-0">{bp.campaign_name}</div>
             <div className="text-xs text-[#505070]">{createdDate}</div>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
