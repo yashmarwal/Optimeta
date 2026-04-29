@@ -1235,6 +1235,13 @@ export default function CampaignViewPage() {
         <div id="m-targeting" className="px-4 pt-6">
           <div className="text-xs font-bold text-[#505070] uppercase tracking-widest mb-3">Audience Targeting</div>
 
+          {bp.targeting?.approach && (
+            <div className="flex items-start gap-3 mb-3 p-3 bg-[#7B2FBE]/5 border border-[#7B2FBE]/20 rounded-xl">
+              <span className="px-2.5 py-1 rounded-lg text-xs font-medium border bg-[#7B2FBE]/20 text-accent border-[#7B2FBE]/30 flex-shrink-0">{bp.targeting.approach}</span>
+              {bp.targeting.approach_reason && <p className="text-xs text-[#A0A0C0] leading-relaxed">{bp.targeting.approach_reason}</p>}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-2 mb-3">
             <div className="p-3 bg-[#0F0F1A] rounded-xl border border-[#1E1E3A]">
               <div className="text-xs text-[#505070] mb-1">Age Range</div>
@@ -1245,6 +1252,13 @@ export default function CampaignViewPage() {
               <div className="text-sm font-semibold text-white">{bp.targeting?.primary_audience?.gender}</div>
             </div>
           </div>
+
+          {bp.targeting?.primary_audience?.income_targeting && (
+            <div className="mb-3 p-3 bg-[#0F0F1A] rounded-xl border border-[#1E1E3A]">
+              <div className="text-xs text-[#505070] mb-1">Income Targeting</div>
+              <div className="text-sm text-[#A0A0C0] break-words">{bp.targeting.primary_audience.income_targeting}</div>
+            </div>
+          )}
 
           {[
             { label: 'Interests', items: bp.targeting?.primary_audience?.interests, cls: 'bg-[#7B2FBE]/10 text-accent border-[#7B2FBE]/25' },
@@ -1262,11 +1276,82 @@ export default function CampaignViewPage() {
             </div>
           ) : null)}
 
+          {bp.targeting?.primary_audience?.demographics && (() => {
+            const d = bp.targeting.primary_audience.demographics!;
+            const hasAny = d.education || d.income_level || d.relationship_status || d.parental_status || (d.life_events && d.life_events.length > 0);
+            return hasAny ? (
+              <div className="mb-3 p-4 bg-[#0F0F1A] rounded-xl border border-[#1E1E3A]">
+                <div className="text-xs text-[#505070] mb-2 uppercase tracking-wide">Demographics</div>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {d.education && <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-500/10 text-purple-300 border border-purple-500/25">🎓 {d.education}</span>}
+                  {d.income_level && <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">💰 {d.income_level}</span>}
+                  {d.relationship_status && <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-pink-500/10 text-pink-300 border border-pink-500/25">❤️ {d.relationship_status}</span>}
+                  {d.parental_status && <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-sky-500/10 text-sky-300 border border-sky-500/25">👨‍👩‍👧 {d.parental_status}</span>}
+                </div>
+                {d.life_events && d.life_events.length > 0 && (
+                  <div>
+                    <div className="text-xs text-[#505070] mb-1.5">Life Events</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {d.life_events.map((ev: string) => (
+                        <span key={ev} className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/25">✨ {ev}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : null;
+          })()}
+
+          {bp.targeting?.detailed_targeting_combinations && bp.targeting.detailed_targeting_combinations.length > 0 && (
+            <div className="mb-3">
+              <div className="text-xs text-[#505070] mb-2 uppercase tracking-wide">Detailed Targeting Combinations</div>
+              <div className="space-y-3">
+                {bp.targeting.detailed_targeting_combinations.map((combo, i) => {
+                  const comboText = [
+                    `Combination: ${combo.combination_name}`,
+                    `Logic: ${combo.logic}`,
+                    combo.interests?.length ? `Interests: ${combo.interests.join(', ')}` : '',
+                    combo.behaviors?.length ? `Behaviors: ${combo.behaviors.join(', ')}` : '',
+                    combo.demographics ? `Demographics: ${combo.demographics}` : '',
+                    combo.why_this_combination ? `Why: ${combo.why_this_combination}` : '',
+                  ].filter(Boolean).join('\n');
+                  return (
+                    <div key={i} className="p-4 bg-[#0F0F1A] rounded-xl border border-[#1E1E3A]">
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
+                        <span className="font-semibold text-white text-sm break-words">{combo.combination_name}</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">{combo.logic}</span>
+                        <CopyButton text={comboText} size={12} />
+                      </div>
+                      {combo.interests?.length > 0 && (
+                        <div className="mb-2">
+                          <div className="text-xs text-[#505070] mb-1.5">Interests</div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {combo.interests.map((item: string) => <span key={item} className="px-2 py-0.5 rounded-full text-xs bg-[#7B2FBE]/10 text-accent border border-[#7B2FBE]/25">{item}</span>)}
+                          </div>
+                        </div>
+                      )}
+                      {combo.behaviors?.length > 0 && (
+                        <div className="mb-2">
+                          <div className="text-xs text-[#505070] mb-1.5">Behaviors</div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {combo.behaviors.map((item: string) => <span key={item} className="px-2 py-0.5 rounded-full text-xs bg-blue-500/10 text-blue-400 border border-blue-500/25">{item}</span>)}
+                          </div>
+                        </div>
+                      )}
+                      {combo.demographics && <div className="text-xs text-[#A0A0C0] mb-2 break-words">{combo.demographics}</div>}
+                      {combo.why_this_combination && <p className="text-xs text-[#505070] italic mt-1 leading-relaxed break-words">{combo.why_this_combination}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="p-4 rounded-xl bg-[#0F0F1A] border border-[#1E1E3A] mb-3">
             <div className="text-xs text-[#505070] mb-2">Lookalike Strategy</div>
             <p className="text-sm text-[#A0A0C0] leading-relaxed">{bp.targeting?.lookalike_strategy}</p>
           </div>
-          <div className="p-4 rounded-xl bg-[#0F0F1A] border border-[#1E1E3A] mb-4">
+          <div className="p-4 rounded-xl bg-[#0F0F1A] border border-[#1E1E3A] mb-3">
             <div className="text-xs text-[#505070] mb-2">Retargeting Strategy</div>
             {bp.targeting?.retargeting_window_days && (
               <span className="inline-block mb-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/25">
@@ -1275,6 +1360,16 @@ export default function CampaignViewPage() {
             )}
             <p className="text-sm text-[#A0A0C0] leading-relaxed">{bp.targeting?.retargeting_strategy}</p>
           </div>
+
+          {bp.targeting?.cod_targeting_note && (
+            <div className="mb-3 p-4 rounded-xl bg-green-500/5 border border-green-500/20 flex items-start gap-2">
+              <Check size={14} className="text-green-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="text-xs text-green-400 font-semibold mb-1">COD Targeting Note</div>
+                <p className="text-sm text-[#A0A0C0] leading-relaxed break-words">{bp.targeting.cod_targeting_note}</p>
+              </div>
+            </div>
+          )}
 
           {/* Ad Sets horizontal scroll */}
           {(bp.ad_sets || []).length > 0 && (
