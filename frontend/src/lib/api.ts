@@ -19,7 +19,8 @@ api.interceptors.request.use((config) => {
 });
 
 const PUBLIC_PATHS = ['/', '/pricing', '/blog', '/login', '/register', '/forgot-password', '/reset-password'];
-const PAYMENT_API_PATHS = ['/api/payments/'];
+// These API paths must never trigger a login redirect — let the caller handle 401 errors
+const SILENT_API_PATHS = ['/api/payments/', '/api/auth/'];
 
 api.interceptors.response.use(
   (response) => response,
@@ -29,8 +30,9 @@ api.interceptors.response.use(
         const path = window.location.pathname;
         const requestUrl = error.config?.url || '';
         const isPublic = PUBLIC_PATHS.includes(path) || path.startsWith('/blog/');
-        const isPaymentCall = PAYMENT_API_PATHS.some((p) => requestUrl.includes(p));
-        if (!isPublic && !isPaymentCall) {
+        const isSilent = SILENT_API_PATHS.some((p) => requestUrl.includes(p));
+        const paymentInProgress = localStorage.getItem('payment_in_progress');
+        if (!isPublic && !isSilent && !paymentInProgress) {
           const redirect = encodeURIComponent(path + window.location.search);
           window.location.href = `/login?redirect=${redirect}`;
         }

@@ -163,7 +163,7 @@ router.post('/logout', (req, res) => {
 // GET /api/auth/me
 router.get('/me', async (req, res) => {
   try {
-    const token = req.cookies?.optimeta_token || req.headers.authorization?.split(' ')[1];
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies?.optimeta_token;
     if (!token) return res.status(401).json({ success: false, message: 'Not authenticated.' });
 
     let decoded;
@@ -205,7 +205,7 @@ router.get('/me', async (req, res) => {
 // PATCH /api/auth/profile
 router.patch('/profile', async (req, res) => {
   try {
-    const token = req.cookies?.optimeta_token || req.headers.authorization?.split(' ')[1];
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies?.optimeta_token;
     if (!token) return res.status(401).json({ success: false, message: 'Not authenticated.' });
 
     let decoded;
@@ -290,7 +290,7 @@ router.post('/reset-password', async (req, res) => {
 // DELETE /api/auth/account
 router.delete('/account', async (req, res) => {
   try {
-    const token = req.cookies?.optimeta_token || req.headers.authorization?.split(' ')[1];
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies?.optimeta_token;
     if (!token) return res.status(401).json({ success: false, message: 'Not authenticated.' });
 
     let decoded;

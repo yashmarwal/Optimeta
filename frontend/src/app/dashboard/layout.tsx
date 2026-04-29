@@ -20,15 +20,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
 
   useEffect(() => {
-    // Wait for the first auth check to complete before deciding to redirect.
-    // This prevents a flash-redirect on mobile where getMe() is slow.
     if (!authChecked) return;
     if (!user) {
-      const hasToken = typeof window !== 'undefined' && localStorage.getItem('optimeta_token');
-      if (!hasToken) {
-        const redirect = encodeURIComponent(window.location.pathname + window.location.search);
-        router.push(`/login?redirect=${redirect}`);
-      }
+      const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+      router.push(`/login?redirect=${redirect}`);
     }
   }, [user, authChecked, router]);
 

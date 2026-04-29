@@ -27,12 +27,12 @@ router.post('/create-subscription', authMiddleware, async (req, res) => {
       return res.status(500).json({ success: false, message: `Plan ID for "${plan}" is not configured on the server.` });
     }
 
-    // Block if user already has an active subscription
+    // Block only if there is a truly active subscription (not abandoned pending attempts)
     const { data: existing } = await supabase
       .from('subscriptions')
       .select('id, status')
       .eq('user_id', req.userId)
-      .in('status', ['active', 'created', 'pending'])
+      .eq('status', 'active')
       .limit(1)
       .single();
 

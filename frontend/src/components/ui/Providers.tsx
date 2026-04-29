@@ -27,8 +27,7 @@ export default function Providers({ children }: { children: ReactNode }) {
     const handleVisibility = () => {
       if (document.visibilityState !== 'visible') return;
       if (localStorage.getItem('generation_in_progress')) return;
-      // Never re-trigger auth check on password reset / auth pages —
-      // it would fire a 401 → interceptor redirect and kill the reset flow
+      if (localStorage.getItem('payment_in_progress')) return;
       const pathname = window.location.pathname;
       if (AUTH_PAGES.includes(pathname)) return;
       refresh();

@@ -18,7 +18,6 @@ const PLAN_DETAILS = {
   pro: {
     name: 'Pro',
     price: '₹499',
-    amount: '499',
     icon: Star,
     features: [
       '10 campaigns per month',
@@ -34,7 +33,6 @@ const PLAN_DETAILS = {
   ultra: {
     name: 'Ultra',
     price: '₹999',
-    amount: '999',
     icon: Crown,
     features: [
       '30 campaigns per month',
@@ -59,7 +57,6 @@ export default function UpgradePage() {
   const planKey = (searchParams.get('plan') === 'ultra' ? 'ultra' : 'pro') as 'pro' | 'ultra';
   const plan = PLAN_DETAILS[planKey];
 
-  // Load Razorpay checkout script once
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
@@ -70,7 +67,6 @@ export default function UpgradePage() {
     };
   }, []);
 
-  // Redirect away if already on a paid plan
   useEffect(() => {
     if (!authChecked) return;
     if (user && user.plan !== 'free') {
@@ -78,16 +74,27 @@ export default function UpgradePage() {
     }
   }, [user, authChecked, router]);
 
+  // Always clean up flag on unmount in case payment was abandoned
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem('payment_in_progress');
+    };
+  }, []);
+
   const handleUpgrade = async () => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('optimeta_token') : null;
-    console.log('[Upgrade] Token present:', !!token, '| Plan:', planKey);
+    const token = localStorage.getItem('optimeta_token');
+    if (!token) {
+      const redirect = encodeURIComponent(`/dashboard/upgrade?plan=${planKey}`);
+      router.push(`/login?redirect=${redirect}`);
+      return;
+    }
 
     setPaying(true);
+    localStorage.setItem('payment_in_progress', 'true');
+
     try {
       const { data } = await api.post('/api/payments/create-subscription', { plan: planKey });
       const { subscription_id, razorpay_key_id, user_email, user_name } = data.data;
-
-      console.log('[Upgrade] Subscription created:', subscription_id);
 
       const options = {
         key: razorpay_key_id,
@@ -109,16 +116,19 @@ export default function UpgradePage() {
               razorpay_signature: response.razorpay_signature,
               plan: planKey,
             });
+            localStorage.removeItem('payment_in_progress');
             await refresh();
             toast.success(`Welcome to ${plan.name}! Your subscription is now active.`);
             router.push('/dashboard');
           } catch {
-            toast.error('Payment received but verification failed. Please contact support if your plan was not upgraded.');
+            localStorage.removeItem('payment_in_progress');
+            toast.error('Payment received but verification failed. Contact support if your plan was not upgraded.');
             setPaying(false);
           }
         },
         modal: {
           ondismiss: () => {
+            localStorage.removeItem('payment_in_progress');
             setPaying(false);
           },
         },
@@ -127,8 +137,16 @@ export default function UpgradePage() {
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err: unknown) {
+      localStorage.removeItem('payment_in_progress');
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      toast.error(msg || 'Failed to start payment. Please try again.');
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 401) {
+        toast.error('Session expired. Please log in again.');
+        const redirect = encodeURIComponent(`/dashboard/upgrade?plan=${planKey}`);
+        router.push(`/login?redirect=${redirect}`);
+      } else {
+        toast.error(msg || 'Failed to start payment. Please try again.');
+      }
       setPaying(false);
     }
   };
