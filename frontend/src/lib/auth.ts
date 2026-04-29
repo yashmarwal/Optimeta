@@ -65,7 +65,8 @@ export const logout = async () => {
   localStorage.removeItem(USER_KEY);
 };
 
-// Returns User on success, null on 401 (token invalid), undefined on network error
+// Returns User on success, null on 401, undefined on network error.
+// Does NOT touch localStorage — callers decide what to clear.
 export const getMe = async (): Promise<User | null | undefined> => {
   try {
     const { data } = await api.get('/api/auth/me');
@@ -74,11 +75,7 @@ export const getMe = async (): Promise<User | null | undefined> => {
     return user;
   } catch (err: unknown) {
     const status = (err as { response?: { status?: number } })?.response?.status;
-    if (status === 401) {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-      return null;
-    }
+    if (status === 401) return null;
     return undefined; // transient network error — caller keeps existing state
   }
 };

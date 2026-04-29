@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useEffect, useCallback } from 'react';
 import { AuthContext } from '@/hooks/useAuth';
-import { User, getMe, getCachedUser } from '@/lib/auth';
+import { User, getMe, getCachedUser, TOKEN_KEY, USER_KEY } from '@/lib/auth';
 
 const AUTH_PAGES = ['/login', '/register', '/forgot-password', '/reset-password'];
 
@@ -14,27 +14,37 @@ export default function Providers({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     setLoading(true);
     const u = await getMe();
-    if (u !== undefined) {
-      // null = token invalid (getMe already cleared localStorage)
-      // User = fresh data (getMe already updated localStorage)
+
+    if (u === undefined) {
+      // Transient network error — keep whatever user state we have
+    } else if (u === null) {
+      // Backend returned 401. Only clear user if the token is also gone.
+      // If the token still exists the 401 is likely a backend/cookie issue —
+      // keeping the cached user prevents a false redirect-to-login loop.
+      const hasToken = !!localStorage.getItem(TOKEN_KEY);
+      if (!hasToken) {
+        setUser(null);
+        localStorage.removeItem(USER_KEY);
+      }
+    } else {
+      // Fresh user from backend — update context and cache
       setUser(u);
     }
-    // undefined = transient network error: keep existing user, stay logged in
+
     setLoading(false);
     setAuthChecked(true);
   }, []);
 
   useEffect(() => {
-    // Hydrate instantly from cache so the dashboard never sees a null-user flash
-    // on page refresh. authChecked = true immediately so no redirect loop fires
-    // before the network call returns.
+    // Instantly hydrate from cache so dashboard never sees a null-user flash.
+    // authChecked = true immediately — no redirect fires before network returns.
     const cached = getCachedUser();
     if (cached) {
       setUser(cached);
       setAuthChecked(true);
     }
 
-    // Background verify — updates user with fresh plan/data, or clears if token expired
+    // Background verify — updates user with fresh data or clears if truly logged out
     refresh();
 
     const handleVisibility = () => {
