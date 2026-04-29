@@ -1232,13 +1232,13 @@ export default function CampaignViewPage() {
         </div>
 
         {/* ── 4. Targeting ── */}
-        <div id="m-targeting" className="px-4 pt-6">
+        <div id="m-targeting" className="px-4 pt-6 overflow-x-hidden">
           <div className="text-xs font-bold text-[#505070] uppercase tracking-widest mb-3">Audience Targeting</div>
 
           {bp.targeting?.approach && (
             <div className="flex items-start gap-3 mb-3 p-3 bg-[#7B2FBE]/5 border border-[#7B2FBE]/20 rounded-xl">
               <span className="px-2.5 py-1 rounded-lg text-xs font-medium border bg-[#7B2FBE]/20 text-accent border-[#7B2FBE]/30 flex-shrink-0">{bp.targeting.approach}</span>
-              {bp.targeting.approach_reason && <p className="text-xs text-[#A0A0C0] leading-relaxed">{bp.targeting.approach_reason}</p>}
+              {bp.targeting.approach_reason && <p className="text-xs text-[#A0A0C0] leading-relaxed min-w-0 break-words">{bp.targeting.approach_reason}</p>}
             </div>
           )}
 
