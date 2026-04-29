@@ -62,6 +62,7 @@ TARGETING RULES:
 - Give exactly 2 targeting combinations
 
 OUTPUT RULES:
+- If Industry Context is provided: use it heavily to make targeting, copy and creative direction hyper-specific to their exact situation — reference their actual details
 - Everything specific to THIS business
 - Match strategy exactly to budget
 - Ad copies: Indian English, emotional, human
@@ -247,7 +248,7 @@ BUSINESS:
 - Name: ${inputs.businessName}
 - Industry: ${industry}
 - Description: ${inputs.businessDescription}
-- Website: ${inputs.websiteUrl || 'Not provided'}
+${inputs.industryContext ? `- Industry Context: ${inputs.industryContext}` : ''}- Website: ${inputs.websiteUrl || 'Not provided'}
 - Monthly Budget: ${inputs.monthlyBudget || inputs.monthlyAdBudget || 'Not specified'}
 
 PRODUCT:

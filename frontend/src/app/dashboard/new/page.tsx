@@ -12,9 +12,11 @@ interface BusinessInputs {
   businessName: string;
   industry: string;
   customIndustry: string;
+  industryContext: string;
   businessDescription: string;
   websiteUrl: string;
   monthlyAdBudget: string;
+  customBudget: string;
   // Step 2 — Product
   productName: string;
   price: string;
@@ -30,6 +32,7 @@ interface BusinessInputs {
   targetLocations: string;
   genderTargeting: string;
   ageGroup: string;
+  customAgeGroup: string;
   competitors: string;
   availableAssets: string[];
   pixelStatus: string;
@@ -68,11 +71,11 @@ export default function NewCampaignPage() {
   const router = useRouter();
 
   const [inputs, setInputs] = useState<BusinessInputs>({
-    businessName: '', industry: '', customIndustry: '', businessDescription: '', websiteUrl: '', monthlyAdBudget: '',
+    businessName: '', industry: '', customIndustry: '', industryContext: '', businessDescription: '', websiteUrl: '', monthlyAdBudget: '', customBudget: '',
     productName: '', price: '', keyBenefit1: '', keyBenefit2: '', keyBenefit3: '',
     usp: '', currentOffer: '', codAvailable: false,
     targetAudience: '', campaignGoal: '', targetLocations: '',
-    genderTargeting: 'All', ageGroup: '18-45', competitors: '',
+    genderTargeting: 'All', ageGroup: '18-45', customAgeGroup: '', competitors: '',
     availableAssets: [], pixelStatus: 'Not installed', hasMetaExperience: false, biggestChallenge: '',
   });
 
@@ -129,13 +132,20 @@ export default function NewCampaignPage() {
   };
 
   const handleGenerate = async () => {
+    const resolvedBudget = inputs.monthlyAdBudget === 'Enter exact amount'
+      ? `₹${inputs.customBudget}/month`
+      : inputs.monthlyAdBudget || '';
+    const resolvedAgeGroup = inputs.ageGroup === 'Custom (specify)'
+      ? inputs.customAgeGroup
+      : inputs.ageGroup || '';
     const cleanFormData = {
       businessName: inputs.businessName || '',
       industry: inputs.industry || '',
       customIndustry: inputs.customIndustry || '',
+      industryContext: inputs.industryContext || '',
       businessDescription: inputs.businessDescription || '',
       websiteUrl: inputs.websiteUrl || '',
-      monthlyBudget: inputs.monthlyAdBudget || '',
+      monthlyBudget: resolvedBudget,
       productName: inputs.productName || '',
       pricePoint: inputs.price || '',
       benefit1: inputs.keyBenefit1 || '',
@@ -148,7 +158,7 @@ export default function NewCampaignPage() {
       campaignGoal: inputs.campaignGoal || '',
       targetLocations: inputs.targetLocations || '',
       genderTargeting: inputs.genderTargeting || '',
-      ageGroup: inputs.ageGroup || '',
+      ageGroup: resolvedAgeGroup,
       competitors: inputs.competitors || '',
       adsExperience: inputs.hasMetaExperience ? 'Has run Meta ads before' : 'New to Meta ads',
       previousChallenge: inputs.biggestChallenge || '',
@@ -358,6 +368,21 @@ function FormField({ label, required, hint, children }: { label: string; require
   );
 }
 
+const INDUSTRY_CONTEXT_PLACEHOLDERS: Record<string, string> = {
+  'D2C Product': 'e.g. We offer COD, 7-day returns, deliver in 3-5 days. Our bestseller is X which accounts for 70% of sales.',
+  'Fashion & Apparel': 'e.g. We sell festive ethnic wear, sizes XS-3XL, high return rates are a challenge, currently launching summer collection.',
+  'Jewellery': 'e.g. We sell artificial jewellery under ₹500, take custom orders, focus on bridal and festive occasions, based in Jaipur.',
+  'Beauty & Skincare': 'e.g. Our hero product targets acne, key ingredient is Niacinamide, dermatologist tested, no side effects, results visible in 14 days.',
+  'Health & Wellness': 'e.g. FSSAI approved protein supplement, targets gym-goers aged 18-30, available in 3 flavours, 30-day results guarantee.',
+  'SaaS': 'e.g. 14-day free trial available, targets marketing teams and founders, integrates with Shopify and WhatsApp, monthly and annual plans.',
+  'Coaching & Education': 'e.g. 8-week live online program, promises first freelance client in 30 days, includes certificate, batch starts every month.',
+  'Local Service': 'e.g. Home salon service within 10km of Pune, bookings via WhatsApp, available 7 days, specialise in bridal makeup packages.',
+  'Food & Beverage': 'e.g. Pure veg healthy snacks, FSSAI certified, no preservatives, ship pan India, also listed on Amazon and Blinkit.',
+  'Agency': 'e.g. We specialise in Meta and Google ads for D2C brands, monthly retainer model, worked with 50+ brands, based in Mumbai.',
+  'Dropshipping': 'e.g. Sourcing phone accessories from Indian suppliers, average order value ₹400-800, COD available, targeting Tier 2/3 cities.',
+  'Other': 'Share any details about your business that would help build a more targeted campaign — product specifics, unique advantages, customer insights, past results etc.',
+};
+
 function Step1({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof BusinessInputs, v: string | boolean | string[]) => void }) {
   return (
     <div className="space-y-6">
@@ -366,7 +391,7 @@ function Step1({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof B
         <p className="text-text-muted text-sm">Tell us about your business so we can build the right strategy.</p>
       </div>
       <FormField label="Business Name" required>
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.businessName} onChange={(e) => update('businessName', e.target.value)} placeholder="e.g. Zura Skincare" />
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.businessName} onChange={(e) => update('businessName', e.target.value)} placeholder="Enter your business name" />
       </FormField>
       <FormField label="Industry" required>
         <select className="input-field w-full px-4 py-3 text-sm" value={inputs.industry} onChange={(e) => update('industry', e.target.value)}>
@@ -387,17 +412,44 @@ function Step1({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof B
           </FormField>
         </motion.div>
       )}
+      {inputs.industry && (
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+          <FormField label={`Tell us more about your ${inputs.industry} business`} hint="optional — more detail = better blueprint">
+            <textarea
+              className="input-field w-full px-4 py-3 text-sm h-28 resize-none"
+              value={inputs.industryContext}
+              onChange={(e) => update('industryContext', e.target.value)}
+              placeholder={INDUSTRY_CONTEXT_PLACEHOLDERS[inputs.industry] || INDUSTRY_CONTEXT_PLACEHOLDERS['Other']}
+            />
+          </FormField>
+        </motion.div>
+      )}
       <FormField label="Business Description" required>
-        <textarea className="input-field w-full px-4 py-3 text-sm h-28 resize-none" value={inputs.businessDescription} onChange={(e) => update('businessDescription', e.target.value)} placeholder="Describe your business, what you sell, who you serve, and what makes you unique..." />
+        <textarea className="input-field w-full px-4 py-3 text-sm h-28 resize-none" value={inputs.businessDescription} onChange={(e) => update('businessDescription', e.target.value)} placeholder="Describe what your business does, who you serve and what makes you different" />
       </FormField>
       <FormField label="Website or Instagram URL" hint="optional">
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.websiteUrl} onChange={(e) => update('websiteUrl', e.target.value)} placeholder="https://yourstore.com or @yourhandle" />
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.websiteUrl} onChange={(e) => update('websiteUrl', e.target.value)} placeholder="https://yourbrand.com or @yourbrand" />
       </FormField>
       <FormField label="Monthly Ad Budget" required>
         <select className="input-field w-full px-4 py-3 text-sm" value={inputs.monthlyAdBudget} onChange={(e) => update('monthlyAdBudget', e.target.value)}>
           <option value="">Select your budget range</option>
-          {['Under ₹5k', '₹5k–₹15k', '₹15k–₹30k', '₹30k–₹75k', '₹75k–₹1.5L', 'Above ₹1.5L'].map((b) => <option key={b} value={b}>{b}</option>)}
+          {['Under ₹5k', '₹5k–₹15k', '₹15k–₹30k', '₹30k–₹75k', '₹75k–₹1.5L', 'Above ₹1.5L', 'Enter exact amount'].map((b) => <option key={b} value={b}>{b}</option>)}
         </select>
+        {inputs.monthlyAdBudget === 'Enter exact amount' && (
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="mt-3">
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-text-muted font-medium">₹</span>
+              <input
+                type="number"
+                className="input-field w-full pl-8 pr-4 py-3 text-sm"
+                value={inputs.customBudget}
+                onChange={(e) => update('customBudget', e.target.value)}
+                placeholder="Enter monthly budget in ₹"
+                autoFocus
+              />
+            </div>
+          </motion.div>
+        )}
       </FormField>
     </div>
   );
@@ -411,25 +463,25 @@ function Step2({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof B
         <p className="text-text-muted text-sm">Details about what you&apos;re selling and why people should buy it.</p>
       </div>
       <FormField label="Product / Service Name" required>
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.productName} onChange={(e) => update('productName', e.target.value)} placeholder="e.g. Vitamin C Brightening Serum" />
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.productName} onChange={(e) => update('productName', e.target.value)} placeholder="Enter your product or service name" />
       </FormField>
       <FormField label="Price (₹)" required>
         <input type="number" className="input-field w-full px-4 py-3 text-sm" value={inputs.price} onChange={(e) => update('price', e.target.value)} placeholder="e.g. 999" />
       </FormField>
       <FormField label="Key Benefit 1" required>
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.keyBenefit1} onChange={(e) => update('keyBenefit1', e.target.value)} placeholder="e.g. Brightens skin in 7 days" />
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.keyBenefit1} onChange={(e) => update('keyBenefit1', e.target.value)} placeholder="e.g. Delivers results in 7 days" />
       </FormField>
       <FormField label="Key Benefit 2" required>
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.keyBenefit2} onChange={(e) => update('keyBenefit2', e.target.value)} placeholder="e.g. 100% natural ingredients" />
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.keyBenefit2} onChange={(e) => update('keyBenefit2', e.target.value)} placeholder="e.g. Made with natural ingredients" />
       </FormField>
       <FormField label="Key Benefit 3" required>
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.keyBenefit3} onChange={(e) => update('keyBenefit3', e.target.value)} placeholder="e.g. Dermatologist tested, fragrance free" />
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.keyBenefit3} onChange={(e) => update('keyBenefit3', e.target.value)} placeholder="e.g. 30-day money back guarantee" />
       </FormField>
       <FormField label="Unique Selling Proposition" required>
-        <textarea className="input-field w-full px-4 py-3 text-sm h-24 resize-none" value={inputs.usp} onChange={(e) => update('usp', e.target.value)} placeholder="What makes you different from every competitor? Be specific..." />
+        <textarea className="input-field w-full px-4 py-3 text-sm h-24 resize-none" value={inputs.usp} onChange={(e) => update('usp', e.target.value)} placeholder="What makes you different from every other brand in your category?" />
       </FormField>
       <FormField label="Current Offer / Discount" hint="optional">
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.currentOffer} onChange={(e) => update('currentOffer', e.target.value)} placeholder="e.g. 30% off for first 100 orders, free shipping above ₹999" />
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.currentOffer} onChange={(e) => update('currentOffer', e.target.value)} placeholder="e.g. 20% off first order, Free shipping above ₹499" />
       </FormField>
       <FormField label="Cash on Delivery Available?" hint="affects targeting cities and ad copy">
         <div className="flex gap-3 mt-1">
@@ -459,7 +511,7 @@ function Step3({ inputs, update, toggleAsset }: {
         <p className="text-text-muted text-sm">Who are your customers and what do you want to achieve?</p>
       </div>
       <FormField label="Ideal Customer Description" required>
-        <textarea className="input-field w-full px-4 py-3 text-sm h-28 resize-none" value={inputs.targetAudience} onChange={(e) => update('targetAudience', e.target.value)} placeholder="Describe your ideal customer — age, gender, income, interests, pain points, lifestyle..." />
+        <textarea className="input-field w-full px-4 py-3 text-sm h-28 resize-none" value={inputs.targetAudience} onChange={(e) => update('targetAudience', e.target.value)} placeholder="Describe your perfect customer — age, gender, location, income, interests, problems they face" />
       </FormField>
       <div className="grid sm:grid-cols-2 gap-4">
         <FormField label="Gender Targeting" required>
@@ -469,10 +521,23 @@ function Step3({ inputs, update, toggleAsset }: {
         </FormField>
         <FormField label="Age Group" required>
           <select className="input-field w-full px-4 py-3 text-sm" value={inputs.ageGroup} onChange={(e) => update('ageGroup', e.target.value)}>
-            {['13-17', '18-24', '25-34', '18-35', '25-45', '30-50', '35-55', '45-65', '18-65 (broad)'].map((a) => <option key={a} value={a}>{a}</option>)}
+            {['13-17', '18-24', '25-34', '18-35', '25-45', '30-50', '35-55', '45-65', '18-65 (broad)', 'Custom (specify)'].map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
         </FormField>
       </div>
+      {inputs.ageGroup === 'Custom (specify)' && (
+        <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+          <FormField label="Enter your custom age range" required>
+            <input
+              className="input-field w-full px-4 py-3 text-sm"
+              value={inputs.customAgeGroup}
+              onChange={(e) => update('customAgeGroup', e.target.value)}
+              placeholder="e.g. 22-40, or 30-55, or 18-24 and 35-44"
+              autoFocus
+            />
+          </FormField>
+        </motion.div>
+      )}
       <FormField label="Campaign Goal" required>
         <select className="input-field w-full px-4 py-3 text-sm" value={inputs.campaignGoal} onChange={(e) => update('campaignGoal', e.target.value)}>
           <option value="">Select campaign goal</option>
@@ -480,7 +545,7 @@ function Step3({ inputs, update, toggleAsset }: {
         </select>
       </FormField>
       <FormField label="Target Cities / States" required>
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.targetLocations} onChange={(e) => update('targetLocations', e.target.value)} placeholder="e.g. Mumbai, Delhi, Bangalore — or All India — or Tier 2 cities" />
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.targetLocations} onChange={(e) => update('targetLocations', e.target.value)} placeholder="e.g. Mumbai, Delhi, Bangalore or Pan India" />
       </FormField>
       <FormField label="Meta Pixel Status" hint="critical for strategy">
         <select className="input-field w-full px-4 py-3 text-sm" value={inputs.pixelStatus} onChange={(e) => update('pixelStatus', e.target.value)}>
@@ -488,7 +553,7 @@ function Step3({ inputs, update, toggleAsset }: {
         </select>
       </FormField>
       <FormField label="Main Competitors" hint="optional but improves targeting">
-        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.competitors} onChange={(e) => update('competitors', e.target.value)} placeholder="e.g. Mamaearth, Minimalist, The Ordinary" />
+        <input className="input-field w-full px-4 py-3 text-sm" value={inputs.competitors} onChange={(e) => update('competitors', e.target.value)} placeholder="Name 2-3 brands you compete with directly" />
       </FormField>
       <FormField label="Available Creative Assets" hint="select all that apply">
         <div className="flex flex-wrap gap-2 mt-1">
@@ -517,17 +582,19 @@ function Step3({ inputs, update, toggleAsset }: {
         </div>
       </FormField>
       <FormField label="Biggest Challenge with Meta Ads" required>
-        <textarea className="input-field w-full px-4 py-3 text-sm h-24 resize-none" value={inputs.biggestChallenge} onChange={(e) => update('biggestChallenge', e.target.value)} placeholder="e.g. low ROAS, don't know who to target, creatives not working, high CPMs..." />
+        <textarea className="input-field w-full px-4 py-3 text-sm h-24 resize-none" value={inputs.biggestChallenge} onChange={(e) => update('biggestChallenge', e.target.value)} placeholder="What is your biggest challenge with Meta ads right now?" />
       </FormField>
     </div>
   );
 }
 
 function Step4({ inputs, onGenerate, usageInfo }: { inputs: BusinessInputs; onGenerate: () => void; usageInfo: { remaining: number; limit: number } | null }) {
+  const displayBudget = inputs.monthlyAdBudget === 'Enter exact amount' ? `₹${inputs.customBudget}/month` : inputs.monthlyAdBudget;
+  const displayAge = inputs.ageGroup === 'Custom (specify)' ? inputs.customAgeGroup : inputs.ageGroup;
   const sections = [
-    { label: 'Business', fields: [{ key: 'Name', val: inputs.businessName }, { key: 'Industry', val: inputs.industry }, { key: 'Budget', val: inputs.monthlyAdBudget }] },
+    { label: 'Business', fields: [{ key: 'Name', val: inputs.businessName }, { key: 'Industry', val: inputs.industry }, { key: 'Budget', val: displayBudget }] },
     { label: 'Product', fields: [{ key: 'Product', val: inputs.productName }, { key: 'Price', val: `₹${inputs.price}` }, { key: 'COD', val: inputs.codAvailable ? 'Yes' : 'No' }] },
-    { label: 'Campaign', fields: [{ key: 'Goal', val: inputs.campaignGoal }, { key: 'Locations', val: inputs.targetLocations }, { key: 'Pixel', val: inputs.pixelStatus }] },
+    { label: 'Campaign', fields: [{ key: 'Goal', val: inputs.campaignGoal }, { key: 'Age', val: displayAge }, { key: 'Pixel', val: inputs.pixelStatus }] },
   ];
 
   return (
