@@ -25,7 +25,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!authChecked) return;
     if (!user) {
       const hasToken = typeof window !== 'undefined' && localStorage.getItem('optimeta_token');
-      if (!hasToken) router.push('/login');
+      if (!hasToken) {
+        const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+        router.push(`/login?redirect=${redirect}`);
+      }
     }
   }, [user, authChecked, router]);
 

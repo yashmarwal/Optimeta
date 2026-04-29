@@ -68,10 +68,7 @@ export const getMe = async (): Promise<User | null | undefined> => {
     return data.data.user;
   } catch (err: unknown) {
     const status = (err as { response?: { status?: number } })?.response?.status;
-    if (status === 401) {
-      localStorage.removeItem(TOKEN_KEY);
-      return null;
-    }
+    if (status === 401) return null;
     return undefined; // transient error — caller should keep existing state
   }
 };

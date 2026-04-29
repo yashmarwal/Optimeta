@@ -84,9 +84,6 @@ export default function UpgradePage() {
 
     setPaying(true);
     try {
-      // Verify token is still valid before starting payment
-      await api.get('/api/auth/me');
-
       const { data } = await api.post('/api/payments/create-subscription', { plan: planKey });
       const { subscription_id, razorpay_key_id, user_email, user_name } = data.data;
 
