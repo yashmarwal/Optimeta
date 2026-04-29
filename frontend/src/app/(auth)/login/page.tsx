@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
@@ -16,6 +16,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect');
   const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +29,7 @@ export default function LoginPage() {
       const data = await login(email, password);
       setUser(data.user);
       toast.success('Welcome back!');
-      router.push('/dashboard');
+      router.push(redirect || '/dashboard');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Login failed.';
       const apiMsg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;

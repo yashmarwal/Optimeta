@@ -8,6 +8,7 @@ import api from '@/lib/api';
 import { updateProfile, deleteAccount } from '@/lib/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface SubscriptionData {
   plan: string;
@@ -177,10 +178,15 @@ export default function SettingsPage() {
           {user?.plan === 'free' && (
             <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
               <div className="text-sm font-semibold text-white mb-1">Upgrade for more campaigns</div>
-              <div className="text-xs text-text-muted mb-3">Pro: 15 campaigns/month · Ultra: 50 campaigns/month</div>
-              <a href="/pricing">
-                <button className="btn-gradient px-5 py-2 rounded-lg text-sm font-semibold">View Plans →</button>
-              </a>
+              <div className="text-xs text-text-muted mb-3">Pro: 10/month · Ultra: 30/month</div>
+              <div className="flex gap-2 flex-wrap">
+                <Link href="/dashboard/upgrade?plan=pro">
+                  <button className="btn-gradient px-5 py-2 rounded-lg text-sm font-semibold">Pro ₹499/mo →</button>
+                </Link>
+                <Link href="/dashboard/upgrade?plan=ultra">
+                  <button className="btn-ghost px-5 py-2 rounded-lg text-sm font-semibold">Ultra ₹999/mo →</button>
+                </Link>
+              </div>
             </div>
           )}
 

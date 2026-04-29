@@ -3,7 +3,7 @@ const supabase = require('../config/supabase');
 
 const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.cookies?.optimeta_token || req.headers.authorization?.split(' ')[1];
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies?.optimeta_token;
 
     if (!token) {
       return res.status(401).json({ success: false, message: 'Authentication required.' });

@@ -4,6 +4,7 @@ import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { Check, Zap, Star, Crown } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 
 const plans = [
   {
@@ -75,6 +76,8 @@ const plans = [
 export default function PricingSection() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-50px' });
+  const { user } = useAuth();
+  const isLoggedInFree = !!user && user.plan === 'free';
 
   return (
     <section id="pricing" ref={ref} className="py-24">
@@ -135,7 +138,11 @@ export default function PricingSection() {
                 </div>
               </div>
 
-              <Link href={plan.href}>
+              <Link href={
+                isLoggedInFree && plan.name !== 'Free'
+                  ? `/dashboard/upgrade?plan=${plan.name.toLowerCase()}`
+                  : plan.href
+              }>
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   className={`w-full py-3 rounded-xl font-bold text-sm mb-8 transition-all ${
@@ -144,7 +151,7 @@ export default function PricingSection() {
                       : 'btn-ghost'
                   }`}
                 >
-                  {plan.cta}
+                  {isLoggedInFree && plan.name !== 'Free' ? `Upgrade to ${plan.name}` : plan.cta}
                 </motion.button>
               </Link>
 
