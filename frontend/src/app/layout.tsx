@@ -63,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <link rel="icon" href="/logo.png" />
         <link rel="apple-touch-icon" href="/logo.png" />
         <script
@@ -89,7 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           {children}
           <Toaster
-            position="top-right"
+            position="top-center"
             toastOptions={{
               style: {
                 background: '#0F0F1A',
@@ -97,6 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 border: '1px solid rgba(123,47,190,0.3)',
                 borderRadius: '12px',
                 fontSize: '14px',
+                maxWidth: '90vw',
               },
               success: {
                 iconTheme: { primary: '#7B2FBE', secondary: '#fff' },
