@@ -309,7 +309,7 @@ router.get('/subscription', authMiddleware, async (req, res) => {
       .eq('id', req.userId)
       .single();
 
-    const PLAN_LIMITS = { free: 1, pro: 15, ultra: 50 };
+    const PLAN_LIMITS = { free: 1, pro: 5, ultra: 10 };
     const plan = profile?.plan || 'free';
     const limit = PLAN_LIMITS[plan];
     const used = profile?.campaigns_used || 0;

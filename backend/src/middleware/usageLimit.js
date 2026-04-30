@@ -2,8 +2,8 @@ const supabase = require('../config/supabase');
 
 const PLAN_LIMITS = {
   free: 1,
-  pro: 10,
-  ultra: 30,
+  pro: 5,
+  ultra: 10,
 };
 
 const usageLimitMiddleware = async (req, res, next) => {
