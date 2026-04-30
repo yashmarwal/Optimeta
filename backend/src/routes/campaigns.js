@@ -159,8 +159,7 @@ router.get('/:id/export', async (req, res) => {
     }
 
     const html = generateBlueprintHTML(data);
-    res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Content-Disposition', `attachment; filename="optimeta-blueprint-${data.id}.html"`);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.send(html);
   } catch (err) {
     return res.status(500).json({ success: false, message: 'Export failed.' });

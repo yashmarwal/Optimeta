@@ -46,13 +46,13 @@ export const register = async (
   email: string,
   password: string,
   fullName: string,
-  fingerprint: { screenResolution: string; timezone: string; canvasHash: string }
+  deviceData: Record<string, unknown>
 ) => {
   const { data } = await api.post('/api/auth/register', {
     email,
     password,
     fullName,
-    ...fingerprint,
+    deviceData,
   });
   if (data.data?.token) localStorage.setItem(TOKEN_KEY, data.data.token);
   if (data.data?.user) localStorage.setItem(USER_KEY, JSON.stringify(data.data.user));

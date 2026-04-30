@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 const COMPARISON = [
-  { feature: 'Campaign Blueprints', free: '1 lifetime', pro: '10 / month', ultra: '30 / month' },
+  { feature: 'Campaign Blueprints', free: '1 lifetime', pro: '5 / month', ultra: '10 / month' },
   { feature: 'AI-Generated Strategy', free: '✓', pro: '✓', ultra: '✓' },
   { feature: 'Audience Targeting Clusters', free: '✓', pro: '✓', ultra: '✓' },
   { feature: 'Ad Copy Generation', free: '✓', pro: '✓', ultra: '✓' },

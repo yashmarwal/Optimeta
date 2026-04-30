@@ -20,7 +20,7 @@ const PLAN_DETAILS = {
     price: '₹499',
     icon: Star,
     features: [
-      '10 campaigns per month',
+      '5 campaigns per month',
       'Full blueprint',
       'Targeting & ad angles',
       'Ad copy generation',
@@ -35,7 +35,7 @@ const PLAN_DETAILS = {
     price: '₹999',
     icon: Crown,
     features: [
-      '30 campaigns per month',
+      '10 campaigns per month',
       'Full blueprint',
       'Targeting & ad angles',
       'Ad copy generation',

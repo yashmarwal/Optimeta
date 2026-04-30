@@ -4,11 +4,46 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, ArrowRight, Check } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Check, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
-import { register, getDeviceFingerprint } from '@/lib/auth';
+import { register } from '@/lib/auth';
 import { useAuth } from '@/hooks/useAuth';
+
+const getDeviceData = () => {
+  const browserFingerprint = [
+    navigator.userAgent,
+    navigator.language,
+    `${screen.width}x${screen.height}`,
+    screen.colorDepth,
+    new Date().getTimezoneOffset(),
+    navigator.hardwareConcurrency || 0,
+    (navigator as { deviceMemory?: number }).deviceMemory || 0,
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+  ].join('|');
+
+  let canvasFingerprint = '';
+  try {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.textBaseline = 'top';
+      ctx.font = '14px Arial';
+      ctx.fillText('Optimeta fingerprint', 2, 2);
+      canvasFingerprint = canvas.toDataURL().slice(-50);
+    }
+  } catch { /* ignore */ }
+
+  return {
+    browserFingerprint,
+    canvasFingerprint,
+    sessionFlag: sessionStorage.getItem('optimeta_registered'),
+    screenResolution: `${screen.width}x${screen.height}`,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    language: navigator.language,
+    userAgent: navigator.userAgent,
+  };
+};
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
@@ -31,8 +66,9 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const fingerprint = getDeviceFingerprint();
-      const data = await register(email, password, fullName, fingerprint);
+      const deviceData = getDeviceData();
+      const data = await register(email, password, fullName, deviceData);
+      sessionStorage.setItem('optimeta_registered', 'true');
       setUser(data.user);
       toast.success('Account created! Welcome to Optimeta.');
 
@@ -51,6 +87,10 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-bg-dark dot-grid flex items-center justify-center px-4 py-16">
+      <Link href="/" className="fixed top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-text-muted hover:text-primary border border-transparent hover:border-primary/30 hover:bg-primary/10 transition-all">
+        <ArrowLeft size={15} />
+        Home
+      </Link>
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/15 rounded-full blur-[100px]" />
         <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/10 rounded-full blur-[100px]" />
@@ -144,9 +184,9 @@ export default function RegisterPage() {
               </div>
               <span className="text-sm text-text-muted">
                 I agree to the{' '}
-                <span className="text-accent hover:text-primary cursor-pointer">Terms of Service</span>
+                <Link href="/terms" target="_blank" className="text-accent hover:text-primary transition-colors">Terms of Service</Link>
                 {' '}and{' '}
-                <span className="text-accent hover:text-primary cursor-pointer">Privacy Policy</span>
+                <Link href="/privacy" target="_blank" className="text-accent hover:text-primary transition-colors">Privacy Policy</Link>
               </span>
             </label>
 

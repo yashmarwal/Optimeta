@@ -67,7 +67,7 @@ export default function SettingsPage() {
       setShowCancelModal(false);
       await refresh();
     } catch {
-      toast.error('Cancellation failed. Please try again.');
+      toast.error('Cancellation failed. Contact optimeta@outlook.com if the issue persists.');
     } finally {
       setCancelLoading(false);
     }
@@ -178,7 +178,7 @@ export default function SettingsPage() {
           {user?.plan === 'free' && (
             <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
               <div className="text-sm font-semibold text-white mb-1">Upgrade for more campaigns</div>
-              <div className="text-xs text-text-muted mb-3">Pro: 10/month · Ultra: 30/month</div>
+              <div className="text-xs text-text-muted mb-3">Pro: 5/month · Ultra: 10/month</div>
               <div className="flex gap-2 flex-wrap">
                 <Link href="/dashboard/upgrade?plan=pro">
                   <button className="btn-gradient px-5 py-2 rounded-lg text-sm font-semibold">Pro ₹499/mo →</button>
@@ -190,7 +190,7 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {sub?.subscription?.status === 'active' && user?.plan !== 'free' && (
+          {user?.plan !== 'free' && (
             <button
               onClick={() => setShowCancelModal(true)}
               className="text-sm text-red-400 hover:text-red-300 transition-colors border border-red-500/20 hover:border-red-500/40 px-4 py-2 rounded-lg"

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const supabase = require('../config/supabase');
-const { checkFingerprintAbuse, storeFingerprint } = require('../services/fingerprintService');
+const { checkAndStoreFingerprint } = require('../services/fingerprintService');
 
 const generateToken = (userId) =>
   jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -19,7 +19,7 @@ const COOKIE_OPTIONS = {
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, fullName, screenResolution, timezone, canvasHash } = req.body;
+    const { email, password, fullName, deviceData } = req.body;
 
     if (!email || !password || !fullName) {
       return res.status(400).json({ success: false, message: 'Email, password, and full name are required.' });
@@ -32,24 +32,6 @@ router.post('/register', async (req, res) => {
     // Real IP: use x-forwarded-for first (Render proxy), fall back to socket
     const ip = (req.headers['x-forwarded-for']?.split(',')[0]?.trim()) ||
                req.ip || req.socket?.remoteAddress || '0.0.0.0';
-    const userAgent = req.headers['user-agent'] || '';
-
-    let fingerprintHash;
-    try {
-      const fpResult = await checkFingerprintAbuse({
-        ip,
-        userAgent,
-        screenResolution: screenResolution || 'unknown',
-        timezone: timezone || 'unknown',
-        email,
-      });
-      if (fpResult.abused) {
-        return res.status(403).json({ success: false, message: fpResult.reason || 'Free trial already used on this device. Please upgrade to continue.' });
-      }
-      fingerprintHash = fpResult.fingerprintHash;
-    } catch {
-      // Don't block registration if fingerprint service is unavailable
-    }
 
     // Create user in Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
@@ -66,6 +48,22 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, message: authError.message });
     }
 
+    // Fingerprint check + store (after user creation so we have real userId)
+    // On abuse: delete the just-created user and reject
+    try {
+      const fpResult = await checkAndStoreFingerprint(authData.user.id, email, ip, deviceData);
+      if (!fpResult.allowed) {
+        await supabase.auth.admin.deleteUser(authData.user.id);
+        return res.status(403).json({
+          success: false,
+          message: fpResult.reason || 'Free trial already used on this device. Please upgrade to continue.',
+          code: 'TRIAL_USED',
+        });
+      }
+    } catch {
+      // Never block registration on fingerprint service error
+    }
+
     // Explicitly create profile (in case trigger didn't fire due to RLS)
     await supabase.from('profiles').upsert({
       id: authData.user.id,
@@ -76,17 +74,6 @@ router.post('/register', async (req, res) => {
     }, { onConflict: 'id', ignoreDuplicates: true });
 
     const token = generateToken(authData.user.id);
-
-    // Store fingerprint so subsequent registrations from same device are blocked
-    storeFingerprint({
-      userId: authData.user.id,
-      email,
-      ip,
-      userAgent,
-      screenResolution: screenResolution || 'unknown',
-      timezone: timezone || 'unknown',
-      fingerprintHash,
-    }).catch(() => {});
 
     res.cookie('optimeta_token', token, COOKIE_OPTIONS);
 

@@ -306,12 +306,19 @@ export default function CampaignViewPage() {
     if (user?.plan === 'free') { toast.error('PDF export is available on Pro and Ultra plans.'); return; }
     setExporting(true);
     try {
-      const response = await api.get(`/api/campaigns/${id}/export`, { responseType: 'blob' });
-      const url = URL.createObjectURL(new Blob([response.data], { type: 'text/html' }));
-      const a = document.createElement('a'); a.href = url;
-      a.download = `optimeta-blueprint-${id}.html`; a.click();
-      URL.revokeObjectURL(url);
-      toast.success('Blueprint exported!');
+      const response = await api.get(`/api/campaigns/${id}/export`, { responseType: 'text' });
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast.error('Could not open print window. Please allow popups for this site.');
+        return;
+      }
+      printWindow.document.write(response.data as string);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+      }, 600);
+      toast.success('Print dialog opened — choose "Save as PDF" to download.');
     } catch { toast.error('Export failed.'); }
     finally { setExporting(false); }
   };

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { login } from '@/lib/auth';
@@ -42,6 +42,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-bg-dark dot-grid flex items-center justify-center px-4">
+      <Link href="/" className="fixed top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-text-muted hover:text-primary border border-transparent hover:border-primary/30 hover:bg-primary/10 transition-all">
+        <ArrowLeft size={15} />
+        Home
+      </Link>
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/15 rounded-full blur-[100px]" />
         <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/10 rounded-full blur-[100px]" />

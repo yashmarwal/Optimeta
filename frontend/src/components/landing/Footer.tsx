@@ -89,8 +89,8 @@ export default function Footer() {
             © 2025 Optimeta. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <button className="text-sm text-text-muted hover:text-white transition-colors">Privacy Policy</button>
-            <button className="text-sm text-text-muted hover:text-white transition-colors">Terms of Service</button>
+            <Link href="/privacy" className="text-sm text-text-muted hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="text-sm text-text-muted hover:text-white transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>

@@ -33,7 +33,7 @@ const plans = [
     period: '/month',
     description: 'For growing brands & founders',
     features: [
-      '10 campaigns per month',
+      '5 campaigns per month',
       'Full blueprint',
       'Targeting & ad angles',
       'Ad copy generation',
@@ -55,7 +55,7 @@ const plans = [
     period: '/month',
     description: 'For agencies & power users',
     features: [
-      '30 campaigns per month',
+      '10 campaigns per month',
       'Full blueprint',
       'Targeting & ad angles',
       'Ad copy generation',
