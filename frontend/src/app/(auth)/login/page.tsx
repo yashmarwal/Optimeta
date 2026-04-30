@@ -18,6 +18,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect');
+  const decodedRedirect = redirect ? decodeURIComponent(redirect) : '/dashboard';
   const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +30,7 @@ export default function LoginPage() {
       const data = await login(email, password);
       setUser(data.user);
       toast.success('Welcome back!');
-      router.push(redirect || '/dashboard');
+      router.push(decodedRedirect);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Login failed.';
       const apiMsg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;

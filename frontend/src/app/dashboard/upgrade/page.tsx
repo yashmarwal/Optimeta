@@ -82,10 +82,8 @@ export default function UpgradePage() {
   }, []);
 
   const handleUpgrade = async () => {
-    const token = localStorage.getItem('optimeta_token');
-    if (!token) {
-      const redirect = encodeURIComponent(`/dashboard/upgrade?plan=${planKey}`);
-      router.push(`/login?redirect=${redirect}`);
+    if (!user) {
+      toast.error('Please log in to upgrade.');
       return;
     }
 
@@ -151,15 +149,16 @@ export default function UpgradePage() {
     }
   };
 
-  if (!authChecked) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
+  if (!authChecked) return (
+    <div className="min-h-screen bg-bg-dark flex items-center justify-center">
+      <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+    </div>
+  );
+  if (!user) return null;
+  if (user.plan !== 'free') {
+    router.replace('/dashboard/settings');
+    return null;
   }
-
-  if (!user || user.plan !== 'free') return null;
 
   const PlanIcon = plan.icon;
 
