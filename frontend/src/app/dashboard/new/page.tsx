@@ -115,7 +115,8 @@ export default function NewCampaignPage() {
       setProgressWidth(100);
       localStorage.removeItem('generation_in_progress');
       localStorage.removeItem('generation_inputs');
-      localStorage.removeItem('campaign_form_draft');
+      localStorage.removeItem('campaign_draft');
+      sessionStorage.setItem('fresh_campaign', 'true');
       setTimeout(() => {
         router.push(`/dashboard/campaigns/${response.data.data.id}`);
       }, 600);
@@ -125,7 +126,6 @@ export default function NewCampaignPage() {
       setGenerating(false);
       localStorage.removeItem('generation_in_progress');
       localStorage.removeItem('generation_inputs');
-      localStorage.removeItem('campaign_form_draft');
       const apiMsg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       toast.error(apiMsg || 'Generation failed. Please try again.');
     }
@@ -133,7 +133,7 @@ export default function NewCampaignPage() {
 
   const handleGenerate = async () => {
     const resolvedBudget = inputs.monthlyAdBudget === 'Enter exact amount'
-      ? `₹${inputs.customBudget}/month`
+      ? inputs.customBudget || ''
       : inputs.monthlyAdBudget || '';
     const resolvedAgeGroup = inputs.ageGroup === 'Custom (specify)'
       ? inputs.customAgeGroup
@@ -176,26 +176,30 @@ export default function NewCampaignPage() {
     await executeGeneration(cleanFormData);
   };
 
-  // Save draft to localStorage on every inputs change.
-  // Guard: skip if no string field has data yet — prevents the initial empty
-  // render from overwriting an existing draft before the restore effect fires.
+  // Save draft on every inputs change
   useEffect(() => {
     if (localStorage.getItem('generation_in_progress')) return;
     const hasData = inputs.businessName || inputs.productName || inputs.targetAudience;
     if (!hasData) return;
     try {
-      localStorage.setItem('campaign_form_draft', JSON.stringify(inputs));
+      localStorage.setItem('campaign_draft', JSON.stringify(inputs));
       setDraftSaved(true);
       const t = setTimeout(() => setDraftSaved(false), 2000);
       return () => clearTimeout(t);
     } catch (e) { console.error('Draft save error:', e); }
   }, [inputs]);
 
-  // Restore draft from localStorage on mount
+  // Restore draft on mount — skip if user clicked "New Campaign" (fresh start)
   useEffect(() => {
     if (localStorage.getItem('generation_in_progress')) return;
+    const isFreshStart = sessionStorage.getItem('fresh_campaign');
+    if (isFreshStart) {
+      localStorage.removeItem('campaign_draft');
+      sessionStorage.removeItem('fresh_campaign');
+      return;
+    }
     try {
-      const draft = localStorage.getItem('campaign_form_draft');
+      const draft = localStorage.getItem('campaign_draft');
       if (!draft) return;
       const parsed: BusinessInputs = JSON.parse(draft);
       setInputs(parsed);
@@ -437,17 +441,15 @@ function Step1({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof B
         </select>
         {inputs.monthlyAdBudget === 'Enter exact amount' && (
           <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="mt-3">
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-text-muted font-medium">₹</span>
-              <input
-                type="number"
-                className="input-field w-full pl-8 pr-4 py-3 text-sm"
-                value={inputs.customBudget}
-                onChange={(e) => update('customBudget', e.target.value)}
-                placeholder="Enter monthly budget in ₹"
-                autoFocus
-              />
-            </div>
+            <input
+              type="text"
+              inputMode="text"
+              className="input-field w-full px-4 py-3 text-sm"
+              value={inputs.customBudget}
+              onChange={(e) => update('customBudget', e.target.value)}
+              placeholder="e.g. ₹15,000 or ₹500/day"
+              autoFocus
+            />
           </motion.div>
         )}
       </FormField>
@@ -465,8 +467,8 @@ function Step2({ inputs, update }: { inputs: BusinessInputs; update: (f: keyof B
       <FormField label="Product / Service Name" required>
         <input className="input-field w-full px-4 py-3 text-sm" value={inputs.productName} onChange={(e) => update('productName', e.target.value)} placeholder="Enter your product or service name" />
       </FormField>
-      <FormField label="Price (₹)" required>
-        <input type="number" className="input-field w-full px-4 py-3 text-sm" value={inputs.price} onChange={(e) => update('price', e.target.value)} placeholder="e.g. 999" />
+      <FormField label="Price / Pricing" required>
+        <input type="text" inputMode="text" className="input-field w-full px-4 py-3 text-sm" value={inputs.price} onChange={(e) => update('price', e.target.value)} placeholder="e.g. ₹999, ₹499/month, Starting from ₹299, Free + ₹99 shipping" />
       </FormField>
       <FormField label="Key Benefit 1" required>
         <input className="input-field w-full px-4 py-3 text-sm" value={inputs.keyBenefit1} onChange={(e) => update('keyBenefit1', e.target.value)} placeholder="e.g. Delivers results in 7 days" />

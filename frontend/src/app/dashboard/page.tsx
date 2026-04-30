@@ -53,6 +53,11 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
+  const handleNewCampaign = () => {
+    sessionStorage.setItem('fresh_campaign', 'true');
+    router.push('/dashboard/new');
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this campaign? This cannot be undone.')) return;
     setDeletingId(id);
@@ -123,15 +128,14 @@ export default function DashboardPage() {
           <h2 className="text-xl font-black text-white">My Campaigns</h2>
           <p className="text-sm text-text-muted">{campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''} generated</p>
         </div>
-        <Link href="/dashboard/new">
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            className="btn-gradient px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"
-          >
-            <Plus size={16} />
-            New Campaign
-          </motion.button>
-        </Link>
+        <motion.button
+          whileTap={{ scale: 0.97 }}
+          onClick={handleNewCampaign}
+          className="btn-gradient px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"
+        >
+          <Plus size={16} />
+          New Campaign
+        </motion.button>
       </div>
 
       {/* Campaign grid */}
@@ -158,14 +162,13 @@ export default function DashboardPage() {
           <p className="text-text-muted text-sm mb-8 max-w-sm mx-auto">
             Generate your first AI-powered Meta campaign blueprint. It takes less than a minute.
           </p>
-          <Link href="/dashboard/new">
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              className="btn-gradient px-8 py-3 rounded-xl font-bold glow"
-            >
-              Generate Your First Campaign →
-            </motion.button>
-          </Link>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleNewCampaign}
+            className="btn-gradient px-8 py-3 rounded-xl font-bold glow"
+          >
+            Generate Your First Campaign →
+          </motion.button>
         </motion.div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
