@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const supabase = require('../config/supabase');
 const { checkAndStoreFingerprint } = require('../services/fingerprintService');
+const { sendWelcomeEmail } = require('../services/emailService');
 
 const generateToken = (userId) =>
   jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -74,6 +75,11 @@ router.post('/register', async (req, res) => {
     }, { onConflict: 'id', ignoreDuplicates: true });
 
     const token = generateToken(authData.user.id);
+
+    // Fire and forget — never block registration on email failure
+    sendWelcomeEmail(email, fullName).catch((err) =>
+      console.error('Welcome email error:', err)
+    );
 
     res.cookie('optimeta_token', token, COOKIE_OPTIONS);
 

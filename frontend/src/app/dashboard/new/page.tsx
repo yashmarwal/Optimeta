@@ -591,11 +591,11 @@ function Step3({ inputs, update, toggleAsset }: {
 }
 
 function Step4({ inputs, onGenerate, usageInfo }: { inputs: BusinessInputs; onGenerate: () => void; usageInfo: { remaining: number; limit: number } | null }) {
-  const displayBudget = inputs.monthlyAdBudget === 'Enter exact amount' ? `₹${inputs.customBudget}/month` : inputs.monthlyAdBudget;
+  const displayBudget = inputs.monthlyAdBudget === 'Enter exact amount' ? inputs.customBudget : inputs.monthlyAdBudget;
   const displayAge = inputs.ageGroup === 'Custom (specify)' ? inputs.customAgeGroup : inputs.ageGroup;
   const sections = [
     { label: 'Business', fields: [{ key: 'Name', val: inputs.businessName }, { key: 'Industry', val: inputs.industry }, { key: 'Budget', val: displayBudget }] },
-    { label: 'Product', fields: [{ key: 'Product', val: inputs.productName }, { key: 'Price', val: `₹${inputs.price}` }, { key: 'COD', val: inputs.codAvailable ? 'Yes' : 'No' }] },
+    { label: 'Product', fields: [{ key: 'Product', val: inputs.productName }, { key: 'Price', val: inputs.price }, { key: 'COD', val: inputs.codAvailable ? 'Yes' : 'No' }] },
     { label: 'Campaign', fields: [{ key: 'Goal', val: inputs.campaignGoal }, { key: 'Age', val: displayAge }, { key: 'Pixel', val: inputs.pixelStatus }] },
   ];
 
