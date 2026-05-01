@@ -129,6 +129,10 @@ const runMigrations = async () => {
       created_at timestamp with time zone default now()
     );
 
+    alter table free_trial_fingerprints add column if not exists user_agent text;
+    alter table free_trial_fingerprints add column if not exists screen_resolution text;
+    alter table free_trial_fingerprints add column if not exists timezone text;
+
     create index if not exists idx_fingerprint_hash on free_trial_fingerprints(fingerprint_hash);
     create index if not exists idx_fingerprint_ip on free_trial_fingerprints(ip_address);
 
@@ -138,19 +142,27 @@ const runMigrations = async () => {
     alter table free_trial_fingerprints enable row level security;
   `;
 
-  try {
-    await supabase.rpc('exec_sql', { sql });
-    console.log('[DB] Migration check complete.');
-  } catch {
-    console.log('[DB] Migration note: Run migrations manually via Supabase SQL editor.');
-  }
+  await supabase.rpc('exec_sql', { sql });
 };
 
 app.listen(PORT, async () => {
   console.log(`\n🚀 Optimeta Backend running on http://localhost:${PORT}`);
   console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`   Frontend URL: ${process.env.FRONTEND_URL}\n`);
-  await runMigrations();
+
+  const migrationTimeout = setTimeout(() => {
+    console.log('[DB] Migration timeout — continuing startup');
+  }, 10000);
+
+  try {
+    await runMigrations();
+    clearTimeout(migrationTimeout);
+    console.log('[DB] Migration complete');
+  } catch (error) {
+    clearTimeout(migrationTimeout);
+    console.error('[DB] Migration error:', error.message);
+    console.log('[DB] Continuing startup...');
+  }
 });
 
 module.exports = app;
