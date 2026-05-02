@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const supabase = require('../config/supabase');
 const razorpay = require('../config/razorpay');
 const authMiddleware = require('../middleware/auth');
-const { sendPaymentFailedEmail } = require('../services/emailService');
+const { sendPaymentFailedEmail, sendCancellationEmail } = require('../services/emailService');
 
 const PLAN_IDS = {
   pro: process.env.RAZORPAY_PLAN_PRO,
@@ -411,23 +411,33 @@ router.get('/subscription', authMiddleware, async (req, res) => {
 // POST /api/payments/cancel
 router.post('/cancel', authMiddleware, async (req, res) => {
   try {
-    // Try to find an active or payment_failed subscription record
+    const userId = req.userId;
+
+    // Fetch profile early — needed for email and fallback plan check
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan, email, full_name')
+      .eq('id', userId)
+      .single();
+
+    // Try to find an active or payment_failed subscription record in DB
     const { data: sub } = await supabase
       .from('subscriptions')
       .select('razorpay_subscription_id, status')
-      .eq('user_id', req.userId)
+      .eq('user_id', userId)
       .in('status', ['active', 'payment_failed'])
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
 
     if (sub?.razorpay_subscription_id) {
-      // Normal path: subscription record found — cancel via Razorpay
+      // Normal path: subscription record found
       try {
-        await razorpay.subscriptions.cancel(sub.razorpay_subscription_id, true);
+        await razorpay.subscriptions.cancel(sub.razorpay_subscription_id, { cancel_at_cycle_end: true });
+        console.log('[Payments] Razorpay subscription cancelled successfully');
       } catch (rzpErr) {
-        // If Razorpay cancel fails (already cancelled, not found, etc.) log and continue
-        console.error('[Payments] Razorpay cancel error (continuing):', rzpErr.message);
+        // Log and continue — still update DB and downgrade plan
+        console.error('[Payments] Razorpay cancel failed:', rzpErr.message);
       }
 
       await supabase
@@ -435,35 +445,74 @@ router.post('/cancel', authMiddleware, async (req, res) => {
         .update({ status: 'cancelled', cancelled_at: now().toISOString() })
         .eq('razorpay_subscription_id', sub.razorpay_subscription_id);
 
+      await supabase
+        .from('profiles')
+        .update({ plan: 'free' })
+        .eq('id', userId);
+
+      if (profile?.email) {
+        sendCancellationEmail(profile.email, profile.full_name)
+          .catch(e => console.error('[Payments] Cancellation email error:', e.message));
+      }
+
       return res.json({
         success: true,
-        data: { message: 'Subscription cancelled. You keep access until your current billing period ends.' },
+        data: { message: 'Subscription cancelled. Your autopay has been stopped.' },
       });
     }
 
-    // Fallback: no subscription record in DB but user may have pro/ultra plan
-    // (happens if verify route failed to upsert the subscription record)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('plan')
-      .eq('id', req.userId)
-      .single();
-
+    // Fallback: no DB subscription record — user may still have an active Razorpay subscription
     if (!profile || profile.plan === 'free') {
       return res.status(404).json({ success: false, message: 'No active subscription found.' });
     }
 
-    // Downgrade the user directly since we can't reach Razorpay without a subscription ID
+    // Try to find and cancel the subscription directly on Razorpay
+    try {
+      const rzpSubs = await razorpay.subscriptions.all({ count: 10 });
+      const activeSub = rzpSubs.items?.find(
+        s => s.status === 'active' || s.status === 'created'
+      );
+
+      if (activeSub) {
+        console.log('[Payments] Fallback — found Razorpay subscription:', activeSub.id);
+
+        await razorpay.subscriptions.cancel(activeSub.id, { cancel_at_cycle_end: true });
+        console.log('[Payments] Fallback — Razorpay subscription cancelled:', activeSub.id);
+
+        // Save the record so future cancels work via normal path
+        await supabase
+          .from('subscriptions')
+          .upsert({
+            user_id: userId,
+            razorpay_subscription_id: activeSub.id,
+            plan: profile.plan,
+            status: 'cancelled',
+            cancelled_at: now().toISOString(),
+            current_period_end: activeSub.current_end
+              ? new Date(activeSub.current_end * 1000).toISOString()
+              : null,
+          }, { onConflict: 'user_id' });
+      }
+    } catch (rzpError) {
+      console.error('[Payments] Fallback Razorpay cancel error:', rzpError.message);
+    }
+
+    // Always downgrade plan regardless of Razorpay result
     await supabase
       .from('profiles')
       .update({ plan: 'free' })
-      .eq('id', req.userId);
+      .eq('id', userId);
 
-    console.log('[Payments] Fallback cancel — downgraded user directly:', req.userId);
+    console.log('[Payments] Fallback cancel — user downgraded:', userId);
+
+    if (profile?.email) {
+      sendCancellationEmail(profile.email, profile.full_name)
+        .catch(e => console.error('[Payments] Cancellation email error:', e.message));
+    }
 
     return res.json({
       success: true,
-      data: { message: 'Subscription cancelled successfully.' },
+      data: { message: 'Subscription cancelled. You have access until end of current billing period.' },
     });
   } catch (err) {
     console.error('[Payments] cancel error:', err);

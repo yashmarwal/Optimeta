@@ -214,4 +214,59 @@ const sendPaymentFailedEmail = async (toEmail, fullName, isCancelled = false, re
   }
 };
 
-module.exports = { sendWelcomeEmail, sendPaymentFailedEmail };
+const sendCancellationEmail = async (toEmail, fullName) => {
+  try {
+    const firstName = fullName?.split(' ')[0] || 'there';
+
+    await resend.emails.send({
+      from: 'Optimeta <hello@optimeta.tech>',
+      to: toEmail,
+      subject: 'Your Optimeta subscription has been cancelled',
+      html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0; padding:0; background-color:#0A0A0F; font-family: Arial, sans-serif;">
+  <div style="max-width:600px; margin:0 auto; padding:40px 24px;">
+    <div style="text-align:center; margin-bottom:32px;">
+      <h1 style="margin:0; font-size:32px; font-weight:900; color:#C026D3;">OPTIMETA</h1>
+      <p style="color:#606080; font-size:14px; margin:4px 0 0;">AI Meta Ad Campaign Architect</p>
+    </div>
+    <div style="background:#0F0F1A; border:1px solid #1E1E3A; border-radius:16px; padding:32px;">
+      <h2 style="color:#ffffff; font-size:22px; margin:0 0 12px;">Subscription Cancelled</h2>
+      <p style="color:#A0A0C0; font-size:15px; line-height:1.6; margin:0 0 20px;">
+        Hi ${firstName}, your Optimeta subscription has been successfully cancelled.
+        Your autopay has been stopped — you will not be charged again.
+      </p>
+      <div style="background:#141428; border-radius:12px; padding:16px; margin:0 0 24px;">
+        <p style="color:#A0A0C0; font-size:14px; margin:0; line-height:1.8;">
+          📋 Your campaigns are saved and accessible in read-only mode.<br>
+          Want to come back? You can resubscribe anytime.
+        </p>
+      </div>
+      <a href="https://optimeta.tech/pricing"
+         style="display:inline-block; background:linear-gradient(135deg,#7B2FBE,#C026D3); color:#fff; padding:12px 28px; border-radius:10px; text-decoration:none; font-weight:bold; font-size:15px;">
+        Resubscribe Anytime →
+      </a>
+      <p style="color:#606080; font-size:13px; margin-top:24px;">
+        Questions? Contact us at <a href="mailto:optimeta@outlook.com" style="color:#7B2FBE;">optimeta@outlook.com</a>
+      </p>
+    </div>
+    <p style="color:#606080; font-size:12px; text-align:center; margin-top:24px;">
+      <a href="https://optimeta.tech" style="color:#7B2FBE; text-decoration:none;">optimeta.tech</a>
+    </p>
+  </div>
+</body>
+</html>
+      `,
+    });
+
+    console.log('Cancellation email sent to:', toEmail);
+    return true;
+  } catch (error) {
+    console.error('Cancellation email error:', error.message);
+    return false;
+  }
+};
+
+module.exports = { sendWelcomeEmail, sendPaymentFailedEmail, sendCancellationEmail };
