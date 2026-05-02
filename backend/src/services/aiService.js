@@ -456,4 +456,111 @@ const generateCampaignBlueprint = async (inputs) => {
   }
 };
 
-module.exports = { generateCampaignBlueprint };
+const generateOptimisedBlueprint = async (originalCampaign, optimisationInputs) => {
+  const originalBlueprint = originalCampaign.blueprint || {};
+  const originalInputs = originalCampaign.business_inputs || {};
+
+  const prompt = `
+You are Optimeta AI — India's most advanced Meta Ad Campaign Architect.
+
+A brand has been running a Meta ads campaign and wants to optimise it for better results.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ORIGINAL CAMPAIGN DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Business: ${originalInputs.businessName || ''}
+Industry: ${originalInputs.industry || ''}
+Product: ${originalInputs.productName || ''}
+Price: ${originalInputs.pricePoint || originalInputs.price || ''}
+Original Budget: ${originalInputs.monthlyBudget || ''}
+Original Goal: ${originalInputs.campaignGoal || ''}
+Original Targeting: ${JSON.stringify(originalBlueprint.targeting?.primary_audience || {})}
+Original Objective: ${originalBlueprint.campaign_objective?.recommended || ''}
+Original Ad Copies: ${JSON.stringify(originalBlueprint.ad_copies || [])}
+Original Angles Used: ${(originalBlueprint.ad_angles || []).map(a => a.angle_name).join(', ')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CURRENT SITUATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Campaign running for: ${optimisationInputs.runningDuration || ''}
+Main problems: ${(optimisationInputs.mainProblems || []).join(', ')}
+Current CPR/CPA: ${optimisationInputs.currentCPR || 'Not provided'}
+Getting results: ${optimisationInputs.gettingResults || ''}
+Current budget: ${optimisationInputs.currentBudget || ''}
+New creatives available: ${optimisationInputs.newCreatives || ''}
+Business changes: ${(optimisationInputs.businessChanges || []).join(', ') || 'None'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+YOUR TASK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Analyse what went wrong with the original campaign based on the problems reported.
+
+Generate a COMPLETE NEW optimised campaign blueprint that:
+1. Fixes the specific problems reported
+2. Keeps what was working
+3. Changes what was not working
+4. Uses fresh angles not tried before
+5. Adapts to business changes
+6. Is realistic for their budget
+
+PROBLEM-SPECIFIC FIXES TO APPLY:
+
+"Too expensive": Broaden audience, switch to lower-funnel objective, test new creative hooks, reduce ad sets to concentrate budget.
+"Not reaching enough people": Widen targeting, increase budget or consolidate ad sets, use Advantage+ targeting, add new placement types.
+"People click but don't buy": Landing page optimisation advice, stronger CTA in copies, add urgency/scarcity, retargeting strategy fix, price/offer clarity in ad.
+"Wrong audience": Complete targeting overhaul, new interest combinations, lookalike from different seed, exclude current audiences.
+"Results dropped suddenly": Creative fatigue diagnosis, new creative direction, audience saturation fix, budget reallocation.
+"Never got results": Fundamental strategy change, simpler objective, different campaign structure, pixel/tracking fix first.
+"Want to scale what's working": Scale winning ad sets, duplicate and broad, increase budget incrementally, Advantage+ Shopping Campaign.
+
+Include an "optimisation_diagnosis" section with:
+{
+  "what_went_wrong": "specific diagnosis",
+  "what_to_keep": "elements likely working",
+  "what_to_change": "specific changes from original",
+  "key_differences": ["list of main changes"]
+}
+
+Return the COMPLETE JSON blueprint with ALL standard sections PLUS the optimisation_diagnosis section.
+Return ONLY valid JSON. No markdown, no backticks, no text outside JSON.
+  `.trim();
+
+  const message = await anthropic.messages.create({
+    model: 'claude-sonnet-4-5',
+    max_tokens: 6000,
+    temperature: 0.7,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  console.log('Optimise: Claude responded. Stop reason:', message.stop_reason);
+
+  const rawText = message.content[0].text;
+  let cleanJson = rawText
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
+
+  const startIndex = cleanJson.indexOf('{');
+  if (startIndex === -1) throw new Error('No JSON object found in Claude optimise response');
+  cleanJson = cleanJson.slice(startIndex);
+
+  if (message.stop_reason === 'max_tokens') {
+    console.warn('[aiService] Optimise response truncated — repairing JSON...');
+    return repairTruncatedJson(cleanJson);
+  }
+
+  const lastIndex = cleanJson.lastIndexOf('}');
+  if (lastIndex !== -1) cleanJson = cleanJson.slice(0, lastIndex + 1);
+
+  try {
+    return JSON.parse(cleanJson);
+  } catch (parseErr) {
+    console.warn('[aiService] Optimise parse error — attempting repair:', parseErr.message);
+    return repairTruncatedJson(cleanJson);
+  }
+};
+
+module.exports = { generateCampaignBlueprint, generateOptimisedBlueprint };

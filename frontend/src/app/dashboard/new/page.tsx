@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ArrowLeft, CheckCircle, Sparkles, Building2, Package, Target, Eye } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle, Sparkles, Building2, Package, Target, Eye, Rocket, TrendingUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 
@@ -62,6 +62,7 @@ const loadingMessages = [
 const ASSET_OPTIONS = ['Product photos', 'Short videos', 'Customer testimonials', 'UGC content', 'Brand story video', 'None yet'];
 
 export default function NewCampaignPage() {
+  const [showChoice, setShowChoice] = useState(true);
   const [step, setStep] = useState(1);
   const [generating, setGenerating] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState(0);
@@ -196,6 +197,7 @@ export default function NewCampaignPage() {
     if (isFreshStart) {
       localStorage.removeItem('campaign_draft');
       sessionStorage.removeItem('fresh_campaign');
+      setShowChoice(false);
       return;
     }
     try {
@@ -206,6 +208,7 @@ export default function NewCampaignPage() {
       if (parsed.targetAudience && parsed.campaignGoal) setStep(4);
       else if (parsed.productName && parsed.usp) setStep(3);
       else if (parsed.businessName && parsed.industry) setStep(2);
+      setShowChoice(false);
     } catch (e) { console.error('Draft restore error:', e); }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -221,6 +224,7 @@ export default function NewCampaignPage() {
   useEffect(() => {
     const inProgress = localStorage.getItem('generation_in_progress');
     if (!inProgress) return;
+    setShowChoice(false);
     const stored = localStorage.getItem('generation_inputs');
     if (!stored) {
       localStorage.removeItem('generation_in_progress');
@@ -272,6 +276,67 @@ export default function NewCampaignPage() {
             </motion.p>
           </AnimatePresence>
         </div>
+      </div>
+    );
+  }
+
+  if (showChoice) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="w-full max-w-3xl"
+        >
+          <div className="text-center mb-10">
+            <h1 className="text-3xl sm:text-4xl font-black text-white mb-3">What would you like to do?</h1>
+            <p className="text-text-muted text-sm">Choose how you want to use Optimeta today.</p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-5">
+            {/* Card 1 — New Campaign */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -4 }}
+              whileTap={{ scale: 0.98 }}
+              className="glass-card p-8 flex flex-col items-center text-center cursor-pointer group gradient-border"
+              onClick={() => {
+                sessionStorage.setItem('fresh_campaign', 'true');
+                setShowChoice(false);
+              }}
+            >
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-5 glow group-hover:scale-105 transition-transform">
+                <Rocket size={28} className="text-white" />
+              </div>
+              <h2 className="text-xl font-black text-white mb-2">Start Fresh</h2>
+              <p className="text-text-muted text-sm leading-relaxed mb-6">
+                Create a complete campaign blueprint for a new brand or product.
+              </p>
+              <button className="btn-gradient w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+                Create New Campaign <ArrowRight size={15} />
+              </button>
+            </motion.div>
+
+            {/* Card 2 — Optimise */}
+            <motion.div
+              whileHover={{ scale: 1.02, y: -4 }}
+              whileTap={{ scale: 0.98 }}
+              className="glass-card p-8 flex flex-col items-center text-center cursor-pointer group gradient-border"
+              onClick={() => router.push('/dashboard/optimise')}
+            >
+              <div className="w-16 h-16 rounded-2xl bg-bg-dark border border-primary/40 flex items-center justify-center mb-5 group-hover:border-primary group-hover:scale-105 transition-all">
+                <TrendingUp size={28} className="text-accent" />
+              </div>
+              <h2 className="text-xl font-black text-white mb-2">Optimise Existing</h2>
+              <p className="text-text-muted text-sm leading-relaxed mb-6">
+                Improve a campaign you&apos;ve already generated based on what&apos;s working and what&apos;s not.
+              </p>
+              <button className="btn-ghost w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
+                Optimise a Campaign <ArrowRight size={15} />
+              </button>
+            </motion.div>
+          </div>
+        </motion.div>
       </div>
     );
   }

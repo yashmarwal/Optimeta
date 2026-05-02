@@ -3,7 +3,7 @@ const router = express.Router();
 const supabase = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
 const usageLimitMiddleware = require('../middleware/usageLimit');
-const { generateCampaignBlueprint } = require('../services/aiService');
+const { generateCampaignBlueprint, generateOptimisedBlueprint } = require('../services/aiService');
 const { storeFingerprint } = require('../services/fingerprintService');
 const { generateBlueprintHTML } = require('../services/pdfService');
 
@@ -116,6 +116,78 @@ router.post('/generate', usageLimitMiddleware, async (req, res) => {
       success: false,
       message: error.message || 'Failed to generate campaign',
     });
+  }
+});
+
+// POST /api/campaigns/optimise — generate optimised campaign from existing one
+router.post('/optimise', usageLimitMiddleware, async (req, res) => {
+  try {
+    const { campaignId, optimisationInputs } = req.body;
+    const userId = req.user?.id || req.userId;
+
+    if (!campaignId || !optimisationInputs) {
+      return res.status(400).json({ success: false, message: 'Missing campaignId or optimisationInputs.' });
+    }
+
+    const { data: originalCampaign, error: fetchError } = await supabase
+      .from('campaigns')
+      .select('*')
+      .eq('id', campaignId)
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError || !originalCampaign) {
+      return res.status(404).json({ success: false, message: 'Original campaign not found.' });
+    }
+
+    const blueprint = await generateOptimisedBlueprint(originalCampaign, optimisationInputs);
+
+    // Find existing optimised versions of this campaign to determine version number
+    const { data: existingVersions } = await supabase
+      .from('campaigns')
+      .select('id')
+      .eq('user_id', userId)
+      .like('campaign_name', `${originalCampaign.campaign_name} — Optimised v%`);
+
+    const version = (existingVersions?.length || 0) + 1;
+    const newName = `${originalCampaign.campaign_name} — Optimised v${version}`;
+
+    const { data: campaign, error: saveError } = await supabase
+      .from('campaigns')
+      .insert({
+        user_id: userId,
+        campaign_name: newName,
+        business_inputs: {
+          ...originalCampaign.business_inputs,
+          optimisationInputs,
+          isOptimisation: true,
+          originalCampaignId: campaignId,
+        },
+        blueprint,
+      })
+      .select()
+      .single();
+
+    if (saveError) {
+      console.error('DB save error:', saveError);
+      throw new Error('Failed to save optimised campaign');
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('campaigns_used')
+      .eq('id', userId)
+      .single();
+
+    await supabase
+      .from('profiles')
+      .update({ campaigns_used: (profile?.campaigns_used || 0) + 1 })
+      .eq('id', userId);
+
+    return res.json({ success: true, data: campaign });
+  } catch (error) {
+    console.error('Optimise error:', error.message);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to optimise campaign.' });
   }
 });
 

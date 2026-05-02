@@ -5,15 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import DashboardTopBar from '@/components/dashboard/DashboardTopBar';
-
-const Spinner = () => (
-  <div className="min-h-screen bg-bg-dark flex items-center justify-center">
-    <div className="flex flex-col items-center gap-4">
-      <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-      <p className="text-text-muted text-sm">Loading Optimeta...</p>
-    </div>
-  </div>
-);
+import { DashboardLayoutSkeleton } from '@/components/ui/Skeleton';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, authChecked } = useAuth();
@@ -27,8 +19,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [user, authChecked, router]);
 
-  // Show spinner until auth has been checked at least once
-  if (!authChecked || loading) return <Spinner />;
+  if (!authChecked || loading) return <DashboardLayoutSkeleton />;
 
   return (
     <div className="min-h-screen bg-bg-dark flex w-full">

@@ -234,3 +234,16 @@ select.input-field option {
   background: #0F0F1A;
   color: white;
 }
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #0F0F1A 25%, #1E1E3A 50%, #0F0F1A 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}

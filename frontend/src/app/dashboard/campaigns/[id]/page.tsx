@@ -11,6 +11,7 @@ import {
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
+import { CampaignViewSkeleton } from '@/components/ui/Skeleton';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -143,6 +144,12 @@ interface Blueprint {
     break_even_roas?: string;
   };
   budget_warning?: string | null;
+  optimisation_diagnosis?: {
+    what_went_wrong: string;
+    what_to_keep: string;
+    what_to_change: string;
+    key_differences: string[];
+  };
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -329,14 +336,7 @@ export default function CampaignViewPage() {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center py-32">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-        <p className="text-text-muted text-sm">Loading blueprint...</p>
-      </div>
-    </div>
-  );
+  if (loading) return <CampaignViewSkeleton />;
 
   if (!campaign) return null;
 
@@ -410,6 +410,51 @@ export default function CampaignViewPage() {
 
           {/* Main content */}
           <div className="flex-1 min-w-0">
+
+            {/* Optimisation Diagnosis Card */}
+            {bp.optimisation_diagnosis && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 rounded-2xl border-2 border-amber-500/40 bg-gradient-to-br from-amber-500/5 to-orange-500/5 p-6"
+              >
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-lg">
+                    🔍
+                  </div>
+                  <div>
+                    <div className="text-xs text-amber-400 font-semibold uppercase tracking-wide">Optimisation Analysis</div>
+                    <div className="text-base font-black text-white">What We Changed & Why</div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-4">
+                    <div className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-1.5">What went wrong</div>
+                    <p className="text-sm text-text-secondary leading-relaxed">{bp.optimisation_diagnosis.what_went_wrong}</p>
+                  </div>
+                  <div className="rounded-xl bg-green-500/10 border border-green-500/20 p-4">
+                    <div className="text-xs font-semibold text-green-400 uppercase tracking-wide mb-1.5">What to keep</div>
+                    <p className="text-sm text-text-secondary leading-relaxed">{bp.optimisation_diagnosis.what_to_keep}</p>
+                  </div>
+                  <div className="rounded-xl bg-blue-500/10 border border-blue-500/20 p-4">
+                    <div className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1.5">What changed</div>
+                    <p className="text-sm text-text-secondary leading-relaxed">{bp.optimisation_diagnosis.what_to_change}</p>
+                  </div>
+                  {bp.optimisation_diagnosis.key_differences?.length > 0 && (
+                    <div>
+                      <div className="text-xs font-semibold text-amber-400 uppercase tracking-wide mb-2">Key Differences</div>
+                      <div className="flex flex-wrap gap-2">
+                        {bp.optimisation_diagnosis.key_differences.map((d, i) => (
+                          <span key={i} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 border border-amber-500/30 text-amber-300">
+                            {d}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
 
             <SectionCard id="summary">
               <div className="bg-gradient-to-br from-primary/15 via-accent/10 to-transparent border border-primary/20 rounded-2xl p-6 mb-4">
@@ -1121,6 +1166,42 @@ export default function CampaignViewPage() {
           <div className="mx-4 mt-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2">
             <AlertTriangle size={15} className="text-amber-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-amber-300 leading-relaxed">{bp.budget_warning}</p>
+          </div>
+        )}
+
+        {/* Optimisation Diagnosis (mobile) */}
+        {bp.optimisation_diagnosis && (
+          <div className="px-4 pt-4">
+            <div className="rounded-2xl border-2 border-amber-500/40 bg-gradient-to-br from-amber-500/5 to-orange-500/5 p-5 mb-3">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-xl">🔍</span>
+                <div>
+                  <div className="text-xs text-amber-400 font-semibold uppercase tracking-wide">Optimisation Analysis</div>
+                  <div className="text-sm font-black text-white">What We Changed & Why</div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-3">
+                  <div className="text-xs font-semibold text-red-400 mb-1">What went wrong</div>
+                  <p className="text-xs text-text-secondary leading-relaxed">{bp.optimisation_diagnosis.what_went_wrong}</p>
+                </div>
+                <div className="rounded-xl bg-green-500/10 border border-green-500/20 p-3">
+                  <div className="text-xs font-semibold text-green-400 mb-1">What to keep</div>
+                  <p className="text-xs text-text-secondary leading-relaxed">{bp.optimisation_diagnosis.what_to_keep}</p>
+                </div>
+                <div className="rounded-xl bg-blue-500/10 border border-blue-500/20 p-3">
+                  <div className="text-xs font-semibold text-blue-400 mb-1">What changed</div>
+                  <p className="text-xs text-text-secondary leading-relaxed">{bp.optimisation_diagnosis.what_to_change}</p>
+                </div>
+                {bp.optimisation_diagnosis.key_differences?.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {bp.optimisation_diagnosis.key_differences.map((d, i) => (
+                      <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-500/10 border border-amber-500/30 text-amber-300">{d}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
