@@ -117,4 +117,101 @@ const sendWelcomeEmail = async (toEmail, fullName) => {
   }
 };
 
-module.exports = { sendWelcomeEmail };
+const sendPaymentFailedEmail = async (toEmail, fullName, isCancelled = false, retryCount = 1) => {
+  try {
+    const firstName = fullName?.split(' ')[0] || 'there';
+
+    const subject = isCancelled
+      ? 'Your Optimeta subscription has been cancelled'
+      : `Payment failed — Action required (Attempt ${retryCount}/3)`;
+
+    const html = isCancelled ? `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0; padding:0; background-color:#0A0A0F; font-family: Arial, sans-serif;">
+  <div style="max-width:600px; margin:0 auto; padding:40px 24px;">
+    <div style="text-align:center; margin-bottom:32px;">
+      <h1 style="margin:0; font-size:32px; font-weight:900; color:#C026D3;">OPTIMETA</h1>
+      <p style="color:#606080; font-size:14px; margin:4px 0 0;">AI Meta Ad Campaign Architect</p>
+    </div>
+    <div style="background:#0F0F1A; border:1px solid #3A1E1E; border-radius:16px; padding:32px;">
+      <h2 style="color:#ffffff; font-size:22px; margin:0 0 12px;">Subscription Cancelled, ${firstName}</h2>
+      <p style="color:#A0A0C0; font-size:15px; line-height:1.6; margin:0 0 20px;">
+        Your Optimeta subscription has been cancelled after 3 failed payment attempts. Your account has been downgraded to the free plan.
+      </p>
+      <div style="background:#1A0F0F; border:1px solid #3A1E1E; border-radius:12px; padding:16px; margin:0 0 20px;">
+        <p style="color:#FF6B6B; font-size:14px; margin:0;">
+          ⚠️ You've lost access to: Pro/Ultra campaigns per month, PDF export, and full campaign history.
+        </p>
+      </div>
+      <p style="color:#A0A0C0; font-size:14px; margin:0 0 20px;">
+        Want to continue? Update your payment method and resubscribe:
+      </p>
+      <a href="https://optimeta.tech/pricing"
+         style="display:inline-block; background:linear-gradient(135deg,#7B2FBE,#C026D3); color:#fff; padding:12px 28px; border-radius:10px; text-decoration:none; font-weight:bold; font-size:15px;">
+        Resubscribe Now →
+      </a>
+      <p style="color:#606080; font-size:13px; margin-top:24px;">
+        Need help? Contact us at <a href="mailto:optimeta@outlook.com" style="color:#7B2FBE;">optimeta@outlook.com</a>
+      </p>
+    </div>
+    <p style="color:#606080; font-size:12px; text-align:center; margin-top:24px;">
+      <a href="https://optimeta.tech" style="color:#7B2FBE; text-decoration:none;">optimeta.tech</a>
+    </p>
+  </div>
+</body>
+</html>
+    ` : `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin:0; padding:0; background-color:#0A0A0F; font-family: Arial, sans-serif;">
+  <div style="max-width:600px; margin:0 auto; padding:40px 24px;">
+    <div style="text-align:center; margin-bottom:32px;">
+      <h1 style="margin:0; font-size:32px; font-weight:900; color:#C026D3;">OPTIMETA</h1>
+      <p style="color:#606080; font-size:14px; margin:4px 0 0;">AI Meta Ad Campaign Architect</p>
+    </div>
+    <div style="background:#0F0F1A; border:1px solid #2A1E0F; border-radius:16px; padding:32px;">
+      <h2 style="color:#ffffff; font-size:22px; margin:0 0 12px;">Payment Failed, ${firstName}</h2>
+      <p style="color:#A0A0C0; font-size:15px; line-height:1.6; margin:0 0 20px;">
+        We couldn't process your Optimeta subscription payment. This is attempt <strong style="color:#FFB347;">${retryCount} of 3</strong>.
+        ${retryCount < 3 ? 'We will try again automatically.' : 'This was the final attempt before cancellation.'}
+      </p>
+      <div style="background:#1A1500; border:1px solid #3A3000; border-radius:12px; padding:16px; margin:0 0 20px;">
+        <p style="color:#FFB347; font-size:14px; margin:0;">
+          ⚠️ Please update your payment method to avoid losing access to your subscription.${retryCount >= 2 ? ' Your subscription will be cancelled after one more failed attempt.' : ''}
+        </p>
+      </div>
+      <a href="https://optimeta.tech/dashboard/settings"
+         style="display:inline-block; background:linear-gradient(135deg,#7B2FBE,#C026D3); color:#fff; padding:12px 28px; border-radius:10px; text-decoration:none; font-weight:bold; font-size:15px;">
+        Update Payment Method →
+      </a>
+      <p style="color:#606080; font-size:13px; margin-top:24px;">
+        Need help? Contact us at <a href="mailto:optimeta@outlook.com" style="color:#7B2FBE;">optimeta@outlook.com</a>
+      </p>
+    </div>
+    <p style="color:#606080; font-size:12px; text-align:center; margin-top:24px;">
+      <a href="https://optimeta.tech" style="color:#7B2FBE; text-decoration:none;">optimeta.tech</a>
+    </p>
+  </div>
+</body>
+</html>
+    `;
+
+    await resend.emails.send({
+      from: 'Optimeta <hello@optimeta.tech>',
+      to: toEmail,
+      subject,
+      html,
+    });
+
+    console.log(`Payment failed email sent (cancelled=${isCancelled}, attempt=${retryCount}) to:`, toEmail);
+    return true;
+  } catch (error) {
+    console.error('Payment failed email error:', error.message);
+    return false;
+  }
+};
+
+module.exports = { sendWelcomeEmail, sendPaymentFailedEmail };

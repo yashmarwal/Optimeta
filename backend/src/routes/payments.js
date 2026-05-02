@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const supabase = require('../config/supabase');
 const razorpay = require('../config/razorpay');
 const authMiddleware = require('../middleware/auth');
+const { sendPaymentFailedEmail } = require('../services/emailService');
 
 const PLAN_IDS = {
   pro: process.env.RAZORPAY_PLAN_PRO,
@@ -12,7 +13,6 @@ const PLAN_IDS = {
 
 const now = () => new Date();
 const addDays = (d, n) => { const r = new Date(d); r.setDate(r.getDate() + n); return r; };
-const addMonth = (d) => { const r = new Date(d); r.setMonth(r.getMonth() + 1); return r; };
 
 // POST /api/payments/create-subscription
 router.post('/create-subscription', authMiddleware, async (req, res) => {
@@ -92,7 +92,7 @@ router.post('/verify', authMiddleware, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Payment verification failed — invalid signature.' });
     }
 
-    // Determine plan from DB record if not passed
+    // Fetch plan from existing DB record (if it exists)
     const { data: subRecord } = await supabase
       .from('subscriptions')
       .select('plan, user_id')
@@ -103,16 +103,20 @@ router.post('/verify', authMiddleware, async (req, res) => {
     const periodStart = now();
     const periodEnd = addDays(periodStart, 30);
 
-    // Activate subscription in DB
+    // Upsert subscription record — handles the case where the pending record
+    // was never saved to DB (e.g. DB insert failed during create-subscription)
     await supabase
       .from('subscriptions')
-      .update({
-        status: 'active',
+      .upsert({
+        user_id: req.userId,
+        razorpay_subscription_id,
         razorpay_payment_id,
+        plan: activePlan,
+        status: 'active',
         current_period_start: periodStart.toISOString(),
         current_period_end: periodEnd.toISOString(),
-      })
-      .eq('razorpay_subscription_id', razorpay_subscription_id);
+        payment_retry_count: 0,
+      }, { onConflict: 'razorpay_subscription_id' });
 
     // Upgrade user profile
     await supabase
@@ -219,7 +223,12 @@ router.post('/webhook', async (req, res) => {
 
         await supabase
           .from('subscriptions')
-          .update({ current_period_start: start.toISOString(), current_period_end: end.toISOString(), status: 'active' })
+          .update({
+            current_period_start: start.toISOString(),
+            current_period_end: end.toISOString(),
+            status: 'active',
+            payment_retry_count: 0,
+          })
           .eq('razorpay_subscription_id', sub.id);
 
         if (dbSub) {
@@ -269,15 +278,66 @@ router.post('/webhook', async (req, res) => {
       }
 
       case 'payment.failed': {
-        // 3-day grace period — keep access, mark status
-        const sub = payload.subscription?.entity;
-        if (sub?.id) {
+        // Get subscription ID from whichever payload field is present
+        const subId =
+          payload?.subscription?.entity?.id ||
+          payload?.payment?.entity?.subscription_id;
+
+        if (!subId) {
+          console.log('[Webhook] payment.failed — no subscription ID found, skipping.');
+          break;
+        }
+
+        // Fetch subscription + profile from DB
+        const { data: dbSub } = await supabase
+          .from('subscriptions')
+          .select('*, profiles(*)')
+          .eq('razorpay_subscription_id', subId)
+          .single();
+
+        if (!dbSub) {
+          console.log('[Webhook] payment.failed — no DB record for subscription:', subId);
+          break;
+        }
+
+        const retryCount = (dbSub.payment_retry_count || 0) + 1;
+        console.log(`[Webhook] Payment failed. Retry ${retryCount}/3 for user: ${dbSub.user_id}`);
+
+        if (retryCount >= 3) {
+          // 3 failures — cancel subscription immediately
+          try {
+            await razorpay.subscriptions.cancel(subId, { cancel_at_cycle_end: false });
+          } catch (e) {
+            console.error('[Webhook] Razorpay cancel error:', e.message);
+          }
+
           await supabase
             .from('subscriptions')
-            .update({ status: 'payment_failed' })
-            .eq('razorpay_subscription_id', sub.id);
+            .update({ status: 'cancelled', payment_retry_count: retryCount, cancelled_at: now().toISOString() })
+            .eq('razorpay_subscription_id', subId);
+
+          await supabase
+            .from('profiles')
+            .update({ plan: 'free' })
+            .eq('id', dbSub.user_id);
+
+          const email = dbSub.profiles?.email;
+          const name = dbSub.profiles?.full_name;
+          if (email) await sendPaymentFailedEmail(email, name, true);
+
+          console.log('[Webhook] Subscription cancelled after 3 failed payments:', dbSub.user_id);
+        } else {
+          await supabase
+            .from('subscriptions')
+            .update({ payment_retry_count: retryCount, status: 'payment_failed' })
+            .eq('razorpay_subscription_id', subId);
+
+          const email = dbSub.profiles?.email;
+          const name = dbSub.profiles?.full_name;
+          if (email) await sendPaymentFailedEmail(email, name, false, retryCount);
+
+          console.log(`[Webhook] Payment failure warning sent. Attempt ${retryCount}/3`);
         }
-        console.log('[Webhook] Payment failed — grace period active.');
         break;
       }
 
@@ -314,19 +374,30 @@ router.get('/subscription', authMiddleware, async (req, res) => {
     const limit = PLAN_LIMITS[plan];
     const used = profile?.campaigns_used || 0;
 
-    const periodEnd = sub?.current_period_end ? new Date(sub.current_period_end) : null;
+    // Use subscription period_end if available, otherwise derive from billing_cycle_start
+    const periodEnd = sub?.current_period_end
+      ? new Date(sub.current_period_end)
+      : profile?.billing_cycle_start
+        ? new Date(new Date(profile.billing_cycle_start).getTime() + 30 * 24 * 60 * 60 * 1000)
+        : null;
+
     const daysRemaining = periodEnd
       ? Math.max(0, Math.ceil((periodEnd - now()) / (1000 * 60 * 60 * 24)))
+      : null;
+
+    // Build subscription object, enriching with daysRemaining even if record is sparse
+    const subscriptionData = sub
+      ? { ...sub, daysRemaining, current_period_end: periodEnd?.toISOString() || sub.current_period_end }
       : null;
 
     return res.json({
       success: true,
       data: {
-        subscription: sub ? { ...sub, days_remaining: daysRemaining } : null,
+        subscription: subscriptionData,
         plan,
         limit,
         used,
-        remaining: plan === 'free' ? Math.max(0, limit - used) : Math.max(0, limit - used),
+        remaining: Math.max(0, limit - used),
         cycle_end: periodEnd?.toISOString() || null,
         percent_used: limit > 0 ? Math.round((used / limit) * 100) : 0,
       },
@@ -340,30 +411,59 @@ router.get('/subscription', authMiddleware, async (req, res) => {
 // POST /api/payments/cancel
 router.post('/cancel', authMiddleware, async (req, res) => {
   try {
+    // Try to find an active or payment_failed subscription record
     const { data: sub } = await supabase
       .from('subscriptions')
-      .select('razorpay_subscription_id')
+      .select('razorpay_subscription_id, status')
       .eq('user_id', req.userId)
       .in('status', ['active', 'payment_failed'])
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
 
-    if (!sub) {
+    if (sub?.razorpay_subscription_id) {
+      // Normal path: subscription record found — cancel via Razorpay
+      try {
+        await razorpay.subscriptions.cancel(sub.razorpay_subscription_id, true);
+      } catch (rzpErr) {
+        // If Razorpay cancel fails (already cancelled, not found, etc.) log and continue
+        console.error('[Payments] Razorpay cancel error (continuing):', rzpErr.message);
+      }
+
+      await supabase
+        .from('subscriptions')
+        .update({ status: 'cancelled', cancelled_at: now().toISOString() })
+        .eq('razorpay_subscription_id', sub.razorpay_subscription_id);
+
+      return res.json({
+        success: true,
+        data: { message: 'Subscription cancelled. You keep access until your current billing period ends.' },
+      });
+    }
+
+    // Fallback: no subscription record in DB but user may have pro/ultra plan
+    // (happens if verify route failed to upsert the subscription record)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', req.userId)
+      .single();
+
+    if (!profile || profile.plan === 'free') {
       return res.status(404).json({ success: false, message: 'No active subscription found.' });
     }
 
-    // cancel_at_cycle_end: true — user keeps access until period end
-    await razorpay.subscriptions.cancel(sub.razorpay_subscription_id, true);
-
+    // Downgrade the user directly since we can't reach Razorpay without a subscription ID
     await supabase
-      .from('subscriptions')
-      .update({ status: 'cancelled', cancelled_at: now().toISOString() })
-      .eq('razorpay_subscription_id', sub.razorpay_subscription_id);
+      .from('profiles')
+      .update({ plan: 'free' })
+      .eq('id', req.userId);
+
+    console.log('[Payments] Fallback cancel — downgraded user directly:', req.userId);
 
     return res.json({
       success: true,
-      data: { message: 'Subscription cancelled. You keep access until your current billing period ends.' },
+      data: { message: 'Subscription cancelled successfully.' },
     });
   } catch (err) {
     console.error('[Payments] cancel error:', err);
