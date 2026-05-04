@@ -11,6 +11,7 @@ import FAQSection from '@/components/landing/FAQSection';
 import FinalCTA from '@/components/landing/FinalCTA';
 import Footer from '@/components/landing/Footer';
 import Navbar from '@/components/landing/Navbar';
+import { StickyStackCards } from '@/components/landing/StickyStackCards';
 
 export const metadata: Metadata = {
   title: 'Optimeta — AI Meta Ad Campaign Architect for Indian Brands',
@@ -30,15 +31,104 @@ export const metadata: Metadata = {
   },
 };
 
+const problemCards = [
+  {
+    icon: '💸',
+    title: 'Burning Budget on Gut Feelings',
+    description:
+      "Most Indian brands run Meta ads without a strategy — targeting random audiences, using copied creatives, and wondering why ROAS is below 1x. Every day of guessing is money down the drain.",
+  },
+  {
+    icon: '🏢',
+    title: 'Agencies Charge ₹50k+ for Basic Blueprints',
+    description:
+      "Marketing agencies create the same templated campaign plans and charge astronomical fees. Smaller D2C brands and bootstrapped founders simply can't compete — until now.",
+  },
+  {
+    icon: '⚠️',
+    title: "Generic AI Tools Don't Understand India",
+    description:
+      "ChatGPT doesn't know Indian audience behavior, INR economics, or India-specific funnel dynamics. You get generic US-focused advice that'll never work for your Tier 2 customer.",
+  },
+];
+
+const featureCards = [
+  {
+    icon: '🧠',
+    title: 'AI Campaign Architecture',
+    description:
+      'Claude Sonnet analyzes your business and constructs a full-funnel campaign structure with TOFU/MOFU/BOFU strategy.',
+  },
+  {
+    icon: '🎯',
+    title: 'Audience Targeting Clusters',
+    description:
+      'Get 10 hyper-specific interests, behavioral targeting, lookalike strategies, and exclusion lists — all India-optimized.',
+  },
+  {
+    icon: '💰',
+    title: 'Budget Split Logic',
+    description:
+      'Data-driven daily budget recommendation with awareness/consideration/conversion percentage splits and scaling logic.',
+  },
+  {
+    icon: '✍️',
+    title: 'Performance Ad Copy',
+    description:
+      '3 complete ad copies with primary text, headline, sub-headline, and CTA — written for Feed, Story, and Reels placement.',
+  },
+  {
+    icon: '🎨',
+    title: 'Creative Direction',
+    description:
+      "Visual style guide, color palette, content formats, 3 scroll-stopping hooks, and a DO/DON'T creative checklist.",
+  },
+  {
+    icon: '📄',
+    title: 'Blueprint Export (PDF)',
+    description:
+      'Export your complete campaign blueprint as a beautifully formatted PDF. Share with your team or freelancer.',
+  },
+];
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-bg-dark dot-grid overflow-x-hidden">
       <Navbar />
       <Hero />
       <StatsBar />
-      <ProblemSection />
+
+      {/* MOBILE — Sticky Stack */}
+      <div className="md:hidden">
+        <StickyStackCards
+          titleLine1="Why Most Meta Ads"
+          titleLine2="Fail in India"
+          sectionTitle="The Problem"
+          sectionSubtitle="The Indian market demands a different approach."
+          cards={problemCards}
+        />
+      </div>
+      {/* DESKTOP — Original layout */}
+      <div className="hidden md:block">
+        <ProblemSection />
+      </div>
+
       <HowItWorks />
-      <FeaturesGrid />
+
+      {/* MOBILE — Sticky Stack */}
+      <div className="md:hidden">
+        <StickyStackCards
+          titleLine1="Everything You Need to"
+          titleLine2="Win on Meta"
+          sectionSubtitle="Optimeta generates what a senior marketer would take 3 days to build — in 15 seconds."
+          cards={featureCards}
+        />
+      </div>
+      {/* DESKTOP — Original layout */}
+      <div className="hidden md:block">
+        <FeaturesGrid />
+      </div>
+
       <BlueprintPreview />
       <PricingSection />
       <Testimonials />

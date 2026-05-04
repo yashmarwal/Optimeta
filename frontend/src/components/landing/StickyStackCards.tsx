@@ -13,42 +13,37 @@ function StackCard({
   card,
   index,
   total,
-  scrollYProgress,
+  progress,
 }: {
   card: Card;
   index: number;
   total: number;
-  scrollYProgress: MotionValue<number>;
+  progress: MotionValue<number>;
 }) {
-  const cardProgress = useTransform(
-    scrollYProgress,
-    [index / total, (index + 1) / total],
-    [0, 1]
+  const y = useTransform(
+    progress,
+    [(index - 1) / total, index / total],
+    ['100%', '0%']
   );
-  const y = useTransform(cardProgress, [0, 1], ['0%', '-110%']);
-  const scale = useTransform(cardProgress, [0, 0.5, 1], [1, 0.95, 0.9]);
-  const opacity = useTransform(cardProgress, [0, 0.8, 1], [1, 1, 0]);
 
   return (
     <motion.div
-      style={{ y, scale, opacity }}
-      className="absolute inset-0 glass-card p-6 rounded-2xl"
+      style={{
+        y: index === 0 ? '0%' : y,
+        zIndex: index + 1,
+      }}
+      className="absolute inset-0 rounded-2xl p-6 bg-[#0F0F1A] border border-[#1E1E3A]"
     >
-      <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 text-2xl">
+      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7B2FBE] to-[#C026D3] flex items-center justify-center mb-4 text-2xl">
         {card.icon}
       </div>
-      <h3 className="text-white font-bold text-lg mb-2">{card.title}</h3>
-      <p className="text-text-muted text-sm leading-relaxed">{card.description}</p>
 
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-        {Array.from({ length: total }).map((_, i) => (
-          <div
-            key={i}
-            className={`h-1.5 rounded-full transition-all ${
-              i === index ? 'bg-primary w-4' : 'bg-white/20 w-1.5'
-            }`}
-          />
-        ))}
+      <h3 className="text-white font-bold text-xl mb-3">{card.title}</h3>
+
+      <p className="text-[#A0A0C0] text-sm leading-relaxed">{card.description}</p>
+
+      <div className="absolute bottom-4 right-4 text-xs text-[#606080]">
+        {index + 1}/{total}
       </div>
     </motion.div>
   );
@@ -68,6 +63,7 @@ export function StickyStackCards({
   sectionSubtitle?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start start', 'end end'],
@@ -75,39 +71,42 @@ export function StickyStackCards({
 
   return (
     <div
-      className="md:hidden"
       ref={containerRef}
-      style={{ height: `${cards.length * 100}vh` }}
+      style={{ height: `${cards.length * 80}vh` }}
+      className="relative md:hidden"
     >
-      <div className="sticky top-0 h-screen flex flex-col items-center justify-center overflow-hidden px-4">
+      <div className="sticky top-0 h-screen flex flex-col justify-center px-4 py-8">
         <div className="text-center mb-8">
           {sectionTitle && (
-            <span className="text-xs font-bold uppercase tracking-widest text-primary mb-2 block">
+            <span className="inline-block text-xs font-bold uppercase tracking-widest text-white bg-[#7B2FBE]/30 border border-[#7B2FBE]/50 px-3 py-1 rounded-full mb-3">
               {sectionTitle}
             </span>
           )}
-          <h2 className="text-3xl font-black text-white">
-            {titleLine1}{' '}
-            <span className="gradient-text">{titleLine2}</span>
+          <h2 className="text-3xl font-black text-white leading-tight">
+            {titleLine1}
+            <br />
+            <span className="bg-gradient-to-r from-[#7B2FBE] to-[#C026D3] bg-clip-text text-transparent">
+              {titleLine2}
+            </span>
           </h2>
           {sectionSubtitle && (
-            <p className="text-text-muted text-sm mt-2 max-w-xs mx-auto">{sectionSubtitle}</p>
+            <p className="text-[#A0A0C0] text-sm mt-2 px-4">{sectionSubtitle}</p>
           )}
         </div>
 
-        <div className="relative w-full max-w-sm h-72">
+        <div className="relative w-full max-w-sm mx-auto" style={{ height: '280px' }}>
           {cards.map((card, index) => (
             <StackCard
               key={index}
               card={card}
               index={index}
               total={cards.length}
-              scrollYProgress={scrollYProgress}
+              progress={scrollYProgress}
             />
           ))}
         </div>
 
-        <p className="text-text-muted text-xs mt-6 animate-bounce">Scroll to explore ↓</p>
+        <p className="text-center text-[#606080] text-xs mt-6">Scroll to see more ↓</p>
       </div>
     </div>
   );
