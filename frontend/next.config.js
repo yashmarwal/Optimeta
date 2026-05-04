@@ -1,14 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.optimeta.tech' }],
-        destination: 'https://optimeta.tech/:path*',
-        permanent: true,
-      },
-    ];
+    return [];
   },
 
   async headers() {
