@@ -1,5 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.optimeta.tech' }],
+        destination: 'https://optimeta.tech/:path*',
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {
@@ -11,10 +22,24 @@ const nextConfig = {
           { key: 'X-XSS-Protection', value: '1; mode=block' },
         ],
       },
+      {
+        source: '/(.*)\\.(jpg|jpeg|png|gif|ico|svg|woff|woff2)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
     ];
   },
+
+  compress: true,
+  poweredByHeader: false,
+
   images: {
-    domains: ['localhost'],
+    domains: ['optimeta.tech'],
+    formats: ['image/avif', 'image/webp'],
   },
 };
 

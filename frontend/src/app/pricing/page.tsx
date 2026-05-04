@@ -6,9 +6,19 @@ import FinalCTA from '@/components/landing/FinalCTA';
 import Footer from '@/components/landing/Footer';
 
 export const metadata: Metadata = {
-  title: 'Pricing — Optimeta',
-  description: 'Start free and scale as you grow. Optimeta offers simple, transparent pricing for Indian brands and agencies running Meta ads.',
-  alternates: { canonical: 'https://optimeta.in/pricing' },
+  title: 'Pricing — Optimeta Meta Ads Campaign Planner India',
+  description: 'Start free. Pro at ₹499/month. Get complete Meta ad campaign blueprints for your Indian brand. No agency needed.',
+  alternates: {
+    canonical: 'https://optimeta.tech/pricing',
+  },
+  openGraph: {
+    url: 'https://optimeta.tech/pricing',
+    title: 'Pricing — Optimeta',
+    description: 'Start free. Upgrade for ₹499/month.',
+    siteName: 'Optimeta',
+    locale: 'en_IN',
+    type: 'website',
+  },
 };
 
 const COMPARISON = [

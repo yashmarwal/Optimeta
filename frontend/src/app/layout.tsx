@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://optimeta.in'),
+  metadataBase: new URL('https://optimeta.tech'),
   title: {
     default: 'Optimeta — AI Meta Ad Campaign Architect for Indian Brands',
     template: '%s | Optimeta',
@@ -31,10 +31,13 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Optimeta' }],
   creator: 'Optimeta',
+  alternates: {
+    canonical: 'https://optimeta.tech',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://optimeta.in',
+    url: 'https://optimeta.tech',
     siteName: 'Optimeta',
     title: 'Optimeta — AI Meta Ad Campaign Architect for Indian Brands',
     description:

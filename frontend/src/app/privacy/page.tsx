@@ -3,8 +3,11 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — Optimeta',
-  description: 'Privacy policy for Optimeta — how we collect, use, and protect your data.',
+  title: 'Privacy Policy | Optimeta',
+  description: 'Privacy policy for Optimeta. How we collect, use and protect your data.',
+  alternates: {
+    canonical: 'https://optimeta.tech/privacy',
+  },
 };
 
 export default function PrivacyPage() {

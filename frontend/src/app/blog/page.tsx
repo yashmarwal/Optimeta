@@ -6,17 +6,20 @@ import Footer from '@/components/landing/Footer';
 import { blogArticles, categoryColors } from '@/lib/blogData';
 
 export const metadata: Metadata = {
-  title: 'Blog — Meta Ads Guides & Strategies for Indian Brands | Optimeta',
+  title: 'Blog — Meta Ads Guides for Indian Brands | Optimeta',
   description:
-    'Expert Meta ads guides, targeting strategies, budget planning and creative tips for Indian D2C brands, SaaS founders and agencies.',
+    'Expert guides on running profitable Meta ads in India. Targeting strategies, budget planning and creative tips for D2C brands.',
+  alternates: {
+    canonical: 'https://optimeta.tech/blog',
+  },
   openGraph: {
-    title: 'Blog — Meta Ads Guides & Strategies for Indian Brands | Optimeta',
-    description:
-      'Expert Meta ads guides, targeting strategies, budget planning and creative tips for Indian D2C brands, SaaS founders and agencies.',
-    url: 'https://optimeta.in/blog',
+    url: 'https://optimeta.tech/blog',
+    title: 'Blog — Meta Ads Guides | Optimeta',
+    description: 'Expert guides on running profitable Meta ads in India.',
+    siteName: 'Optimeta',
+    locale: 'en_IN',
     type: 'website',
   },
-  alternates: { canonical: 'https://optimeta.in/blog' },
 };
 
 export default function BlogPage() {

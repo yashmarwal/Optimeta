@@ -26,9 +26,9 @@ export async function generateMetadata({
       description: article.metaDescription,
       type: 'article',
       authors: [article.author],
-      url: `https://optimeta.in/blog/${article.slug}`,
+      url: `https://optimeta.tech/blog/${article.slug}`,
     },
-    alternates: { canonical: `https://optimeta.in/blog/${article.slug}` },
+    alternates: { canonical: `https://optimeta.tech/blog/${article.slug}` },
   };
 }
 
@@ -162,6 +162,37 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
       </div>
 
       <Footer />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: article.title,
+            description: article.description,
+            author: {
+              '@type': 'Organization',
+              name: 'Optimeta',
+              url: 'https://optimeta.tech',
+            },
+            publisher: {
+              '@type': 'Organization',
+              name: 'Optimeta',
+              logo: {
+                '@type': 'ImageObject',
+                url: 'https://optimeta.tech/logo.png',
+              },
+            },
+            datePublished: article.publishDate,
+            dateModified: article.publishDate,
+            mainEntityOfPage: {
+              '@type': 'WebPage',
+              '@id': `https://optimeta.tech/blog/${article.slug}`,
+            },
+          }),
+        }}
+      />
     </main>
   );
 }

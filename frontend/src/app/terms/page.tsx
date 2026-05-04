@@ -3,8 +3,11 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Terms & Conditions — Optimeta',
-  description: 'Terms and conditions for using Optimeta AI Meta Ad Campaign Architect platform.',
+  title: 'Terms & Conditions | Optimeta',
+  description: 'Terms and conditions for using Optimeta AI Meta Ad Campaign Architect.',
+  alternates: {
+    canonical: 'https://optimeta.tech/terms',
+  },
 };
 
 export default function TermsPage() {
