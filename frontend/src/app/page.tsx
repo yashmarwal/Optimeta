@@ -6,7 +6,7 @@ import HowItWorks from '@/components/landing/HowItWorks';
 import FeaturesGrid from '@/components/landing/FeaturesGrid';
 import BlueprintPreview from '@/components/landing/BlueprintPreview';
 import PricingSection from '@/components/landing/PricingSection';
-import Testimonials from '@/components/landing/Testimonials';
+import { ReviewsMarquee } from '@/components/landing/ReviewsMarquee';
 import FAQSection from '@/components/landing/FAQSection';
 import FinalCTA from '@/components/landing/FinalCTA';
 import Footer from '@/components/landing/Footer';
@@ -58,7 +58,7 @@ export default function HomePage() {
 
       <BlueprintPreview />
       <PricingSection />
-      <Testimonials />
+      <ReviewsMarquee />
       <FAQSection />
       <FinalCTA />
       <Footer />
