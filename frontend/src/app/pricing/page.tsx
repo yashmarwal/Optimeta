@@ -7,7 +7,7 @@ import Footer from '@/components/landing/Footer';
 
 export const metadata: Metadata = {
   title: 'Pricing — Optimeta Meta Ads Campaign Planner India',
-  description: 'Start free. Pro at ₹499/month. Get complete Meta ad campaign blueprints for your Indian brand. No agency needed.',
+  description: 'Start free or upgrade to Pro at ₹499/month. Get your complete Meta ad campaign blueprint for Indian D2C brands in 15 seconds. No agencies, no long waits.',
   alternates: {
     canonical: 'https://optimeta.tech/pricing',
   },

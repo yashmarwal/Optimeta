@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Terms & Conditions | Optimeta',
-  description: 'Terms and conditions for using Optimeta AI Meta Ad Campaign Architect.',
+  description: 'Optimeta terms and conditions. Learn about subscriptions, cancellation, data use, free trial rules and user responsibilities for the AI Meta ad platform.',
   alternates: {
     canonical: 'https://optimeta.tech/terms',
   },

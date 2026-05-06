@@ -15,7 +15,7 @@ import Navbar from '@/components/landing/Navbar';
 export const metadata: Metadata = {
   title: 'Optimeta — AI Meta Ad Campaign Architect for Indian Brands',
   description:
-    'Stop wasting money on random Meta ads. Optimeta transforms your business into a complete Facebook & Instagram campaign blueprint in minutes. Built for Indian D2C brands, SaaS, coaches & agencies.',
+    'Stop wasting money on Meta ads. Optimeta generates your complete Facebook and Instagram campaign blueprint in minutes. Free to start, no agency needed.',
   alternates: {
     canonical: 'https://optimeta.tech',
   },

@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: '%s | Optimeta',
   },
   description:
-    'Stop wasting money on random Meta ads. Optimeta generates complete Facebook and Instagram campaign blueprints for Indian D2C brands, SaaS, coaches and agencies in minutes. Free to start.',
+    'Stop wasting money on Meta ads. Optimeta generates complete Facebook and Instagram blueprints for Indian D2C brands and agencies in minutes. Free to start.',
   keywords: [
     'meta ads india',
     'facebook ads tool india',

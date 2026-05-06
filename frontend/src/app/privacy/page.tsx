@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Optimeta',
-  description: 'Privacy policy for Optimeta. How we collect, use and protect your data.',
+  description: 'Optimeta privacy policy. How we collect, store and protect your data. Covers account info, campaign data, device fingerprinting, payments and your rights.',
   alternates: {
     canonical: 'https://optimeta.tech/privacy',
   },
