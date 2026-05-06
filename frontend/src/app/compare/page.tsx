@@ -20,6 +20,10 @@ export const metadata: Metadata = {
     locale: 'en_IN',
     type: 'website',
   },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 const rows = [

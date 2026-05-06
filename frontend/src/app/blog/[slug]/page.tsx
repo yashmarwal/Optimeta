@@ -29,6 +29,10 @@ export async function generateMetadata({
       url: `https://optimeta.tech/blog/${article.slug}`,
     },
     alternates: { canonical: `https://optimeta.tech/blog/${article.slug}` },
+    robots: {
+      index: true,
+      follow: true,
+    },
   };
 }
 
