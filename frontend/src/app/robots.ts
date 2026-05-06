@@ -12,11 +12,12 @@ export default function robots(): MetadataRoute.Robots {
           '/blog/',
           '/terms',
           '/privacy',
+          '/compare',
+          '/llms.txt',
         ],
         disallow: [
           '/dashboard/',
           '/api/',
-          '/*?_rsc=',
           '/_next/',
           '/login',
           '/register',
@@ -24,30 +25,23 @@ export default function robots(): MetadataRoute.Robots {
           '/reset-password',
         ],
       },
-      {
-        userAgent: 'OAI-SearchBot',
-        allow: '/',
-        disallow: '/dashboard/',
-      },
-      {
-        userAgent: 'PerplexityBot',
-        allow: '/',
-        disallow: '/dashboard/',
-      },
-      {
-        userAgent: 'ClaudeBot',
-        allow: '/',
-        disallow: '/dashboard/',
-      },
-      {
-        userAgent: 'Googlebot',
-        allow: '/',
-        disallow: [
-          '/dashboard/',
-          '/api/',
-          '/*?_rsc=',
-        ],
-      },
+      // ChatGPT bots
+      { userAgent: 'GPTBot', allow: '/' },
+      { userAgent: 'OAI-SearchBot', allow: '/' },
+      { userAgent: 'ChatGPT-User', allow: '/' },
+      // Perplexity
+      { userAgent: 'PerplexityBot', allow: '/' },
+      // Claude/Anthropic
+      { userAgent: 'ClaudeBot', allow: '/' },
+      { userAgent: 'Claude-SearchBot', allow: '/' },
+      // Google AI
+      { userAgent: 'Google-Extended', allow: '/' },
+      { userAgent: 'Googlebot', allow: '/' },
+      // Bing/Copilot
+      { userAgent: 'Bingbot', allow: '/' },
+      { userAgent: 'msnbot', allow: '/' },
+      // Meta AI
+      { userAgent: 'FacebookBot', allow: '/' },
     ],
     sitemap: 'https://optimeta.tech/sitemap.xml',
     host: 'https://optimeta.tech',

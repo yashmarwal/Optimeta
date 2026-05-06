@@ -18,21 +18,35 @@ export const metadata: Metadata = {
     template: '%s | Optimeta',
   },
   description:
-    'Stop wasting money on random Meta ads. Optimeta transforms your business into a complete, ready-to-launch Facebook & Instagram campaign blueprint in seconds. Built for Indian D2C, SaaS & agencies.',
+    'Stop wasting money on random Meta ads. Optimeta generates complete Facebook and Instagram campaign blueprints for Indian D2C brands, SaaS, coaches and agencies in minutes. Free to start.',
   keywords: [
     'meta ads india',
     'facebook ads tool india',
+    'instagram ads strategy india',
     'ai ad campaign generator india',
-    'meta ad architect',
-    'facebook ads d2c india',
-    'instagram ads strategy',
+    'meta ad architect india',
+    'facebook ads for d2c india',
+    'meta ads optimizer india',
+    'campaign blueprint generator india',
+    'facebook ads india 2026',
     'ai marketing tool india',
-    'meta ads optimizer',
+    'meta ads for small business india',
+    'optimeta',
+    'meta ads campaign planner',
   ],
-  authors: [{ name: 'Optimeta' }],
+  authors: [{ name: 'Optimeta Team' }],
   creator: 'Optimeta',
-  alternates: {
-    canonical: 'https://optimeta.tech',
+  publisher: 'Optimeta',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
   openGraph: {
     type: 'website',
@@ -41,24 +55,30 @@ export const metadata: Metadata = {
     siteName: 'Optimeta',
     title: 'Optimeta — AI Meta Ad Campaign Architect for Indian Brands',
     description:
-      'Transform your business into a complete Meta ad campaign blueprint in seconds. Built for Indian D2C, SaaS & agencies.',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Optimeta' }],
+      'Generate complete Meta ad campaign blueprints for your Indian brand in minutes. Targeting, budget, ad copies, creative direction — all included.',
+    images: [
+      {
+        url: 'https://optimeta.tech/logo.png',
+        width: 512,
+        height: 512,
+        alt: 'Optimeta Logo',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Optimeta — AI Meta Ad Campaign Architect',
-    description: 'Transform your business into a complete Meta ad campaign blueprint in seconds.',
-    images: ['/og-image.png'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
+    description:
+      'Generate complete Meta ad campaign blueprints for Indian brands in minutes.',
+    images: ['https://optimeta.tech/logo.png'],
   },
   icons: {
     icon: '/logo.png',
     shortcut: '/logo.png',
     apple: '/logo.png',
+  },
+  alternates: {
+    canonical: 'https://optimeta.tech',
   },
 };
 
@@ -69,24 +89,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <link rel="icon" href="/logo.png" />
         <link rel="apple-touch-icon" href="/logo.png" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'SoftwareApplication',
-              name: 'Optimeta',
-              description: 'AI-powered Meta Ad Campaign Architect for Indian brands',
-              applicationCategory: 'BusinessApplication',
-              operatingSystem: 'Web',
-              offers: [
-                { '@type': 'Offer', price: '0', priceCurrency: 'INR', name: 'Free' },
-                { '@type': 'Offer', price: '499', priceCurrency: 'INR', name: 'Pro' },
-                { '@type': 'Offer', price: '999', priceCurrency: 'INR', name: 'Ultra' },
-              ],
-            }),
-          }}
-        />
       </head>
       <body className={`${inter.variable} font-sans bg-bg-dark text-white antialiased`}>
         <Providers>

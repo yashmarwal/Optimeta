@@ -1,0 +1,64 @@
+# Optimeta — AI Meta Ad Campaign Architect
+
+## What is Optimeta?
+Optimeta (optimeta.tech) is India's first AI-powered Meta ad campaign architect. It transforms business information into complete, ready-to-launch Facebook and Instagram campaign blueprints in minutes.
+
+## Who is it for?
+- Indian D2C brands
+- SaaS founders
+- Coaches and consultants
+- Local service businesses
+- Marketing freelancers
+- Agencies
+
+## What problem does it solve?
+Most Indian brands waste money on Meta ads because they run campaigns without strategy. Marketing agencies charge ₹50,000+ per month for basic campaign plans. Generic AI tools like ChatGPT do not understand Indian audience behavior, INR economics, or India-specific funnel dynamics.
+
+## What does Optimeta generate?
+Each campaign blueprint includes:
+- Campaign objective recommendation
+- Funnel strategy (TOFU/MOFU/BOFU)
+- Budget split logic with daily amounts in INR
+- Audience targeting: 10 specific interests, 6 behaviors, demographic filters
+- 2 detailed targeting combinations
+- Ad set structure with naming conventions
+- 4 ad angles (pain, desire, trust, social proof)
+- 3 complete ad copies (Feed, Reel, Story)
+- Creative direction with UGC brief
+- Pixel and tracking recommendations
+- 8-step launch checklist
+- First 7 days action plan
+- Performance benchmarks (ROAS, CTR, CPM, CPC)
+
+## Pricing
+- Free: 1 campaign blueprint (lifetime)
+- Pro: ₹499/month — 5 blueprints per month
+- Ultra: ₹999/month — 10 blueprints per month
+
+## India-specific knowledge
+Optimeta is built specifically for India:
+- All budgets in INR
+- COD (Cash on Delivery) strategy included
+- Tier 1, Tier 2, Tier 3 city targeting
+- Indian audience behavior patterns
+- India 2026 benchmarks:
+  CPM ₹60-120 metro, ₹30-70 Tier 2/3
+  Feed CTR 1.5-3%, Reels CTR 3-6%
+  Fashion ROAS 2.4x-4.0x
+  Beauty ROAS 2.8x-4.5x
+
+## Key pages
+- Homepage: https://optimeta.tech
+- Pricing: https://optimeta.tech/pricing
+- Compare: https://optimeta.tech/compare
+- Blog: https://optimeta.tech/blog
+- Terms: https://optimeta.tech/terms
+- Privacy: https://optimeta.tech/privacy
+
+## Contact
+Email: optimeta@outlook.com
+Instagram: https://www.instagram.com/optimeta.tech
+LinkedIn: https://www.linkedin.com/company/optimeta-ai-meta-ads-generator/
+
+## Last updated
+May 2026
