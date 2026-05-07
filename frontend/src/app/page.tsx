@@ -57,8 +57,8 @@ export default function HomePage() {
       <FeaturesGrid />
 
       <BlueprintPreview />
-      <PricingSection />
       <ReviewsMarquee />
+      <PricingSection />
       <FAQSection />
       <FinalCTA />
       <Footer />
