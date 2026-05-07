@@ -24,11 +24,19 @@ export async function generateMetadata({
     description: article.metaDescription,
     keywords: article.keywords,
     openGraph: {
-      title: article.metaTitle,
+      title: truncatedTitle + ' | Optimeta',
       description: article.metaDescription,
       type: 'article',
       authors: [article.author],
       url: `https://optimeta.tech/blog/${article.slug}`,
+      images: [
+        {
+          url: 'https://optimeta.tech/logo.png',
+          width: 512,
+          height: 512,
+          alt: article.title,
+        },
+      ],
     },
     alternates: { canonical: `https://optimeta.tech/blog/${article.slug}` },
     robots: {
@@ -103,6 +111,7 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
           Back to Blog
         </Link>
 
+        <article>
         {/* Article header */}
         <div className="mb-10">
           <span
@@ -120,7 +129,9 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
             </span>
             <span className="flex items-center gap-1.5">
               <Calendar size={13} />
-              {article.publishDate}
+              <time dateTime={new Date(article.publishDate).toISOString()}>
+                {article.publishDate}
+              </time>
             </span>
             <span className="flex items-center gap-1.5">
               <Clock size={13} />
@@ -152,6 +163,8 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
           <p className="text-text-secondary leading-relaxed">{article.conclusion}</p>
         </div>
 
+        </article>
+
         {/* CTA card */}
         <div className="mt-16 glass-card gradient-border p-10 text-center rounded-2xl">
           <h3 className="text-2xl font-black text-white mb-3">Ready to build your campaign?</h3>
@@ -177,10 +190,11 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
             '@type': 'Article',
             headline: article.title,
             description: article.description,
+            image: 'https://optimeta.tech/logo.png',
             author: {
               '@type': 'Organization',
-              name: 'Optimeta',
-              url: 'https://optimeta.tech',
+              name: 'Optimeta Team',
+              url: 'https://optimeta.tech/about',
             },
             publisher: {
               '@type': 'Organization',
@@ -191,11 +205,36 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
               },
             },
             datePublished: article.publishDate,
-            dateModified: article.publishDate,
+            dateModified: new Date().toISOString(),
             mainEntityOfPage: {
               '@type': 'WebPage',
               '@id': `https://optimeta.tech/blog/${article.slug}`,
             },
+          }),
+        }}
+      />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://optimeta.tech' },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Blog',
+                item: 'https://optimeta.tech/blog',
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: article.title,
+                item: `https://optimeta.tech/blog/${article.slug}`,
+              },
+            ],
           }),
         }}
       />

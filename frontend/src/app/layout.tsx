@@ -37,6 +37,10 @@ export const metadata: Metadata = {
   authors: [{ name: 'Optimeta Team' }],
   creator: 'Optimeta',
   publisher: 'Optimeta',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0A0A0F' },
+    { media: '(prefers-color-scheme: light)', color: '#7B2FBE' },
+  ],
   robots: {
     index: true,
     follow: true,
@@ -89,8 +93,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <meta name="theme-color" content="#7B2FBE" />
+        <meta name="msapplication-TileColor" content="#7B2FBE" />
         <link rel="icon" href="/logo.png" />
         <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
+        <link rel="dns-prefetch" href="https://optimeta-backend.onrender.com" />
+        <link rel="preconnect" href="https://optimeta-backend.onrender.com" />
+        <link rel="alternate" type="application/rss+xml" title="Optimeta Blog" href="https://optimeta.tech/feed.xml" />
       </head>
       <body className={`${inter.variable} font-sans bg-bg-dark text-white antialiased`}>
         <Providers>

@@ -39,6 +39,7 @@ export default function Footer() {
             <div className="text-white font-semibold text-sm mb-4">Company</div>
             <div className="space-y-3">
               {[
+                { label: 'About', href: '/about' },
                 { label: 'Blog', href: '/blog' },
                 { label: 'Login', href: '/login' },
                 { label: 'Register', href: '/register' },

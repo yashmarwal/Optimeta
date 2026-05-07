@@ -5,43 +5,57 @@ const nextConfig = {
   },
 
   async headers() {
+    const fullRobots =
+      'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+
     return [
       {
-        // Security headers for all pages
+        // Security + CSP headers for all pages
         source: '/(.*)',
         headers: [
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
-        ],
-      },
-      {
-        // Explicitly allow indexing on homepage
-        source: '/',
-        headers: [
           {
-            key: 'X-Robots-Tag',
-            value: 'index, follow, max-image-preview:large, max-snippet:-1',
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://api.razorpay.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com",
+              "img-src 'self' data: https: blob:",
+              "connect-src 'self' https://optimeta-backend.onrender.com https://api.razorpay.com https://lumberjack.razorpay.com https://*.supabase.co wss://*.supabase.co",
+              "frame-src https://api.razorpay.com",
+              "object-src 'none'",
+            ].join('; '),
           },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
         ],
       },
       {
-        // Allow indexing on all public pages
+        source: '/',
+        headers: [{ key: 'X-Robots-Tag', value: fullRobots }],
+      },
+      {
         source: '/pricing',
-        headers: [{ key: 'X-Robots-Tag', value: 'index, follow' }],
+        headers: [{ key: 'X-Robots-Tag', value: fullRobots }],
       },
       {
         source: '/blog',
-        headers: [{ key: 'X-Robots-Tag', value: 'index, follow' }],
+        headers: [{ key: 'X-Robots-Tag', value: fullRobots }],
       },
       {
         source: '/blog/:slug*',
-        headers: [{ key: 'X-Robots-Tag', value: 'index, follow' }],
+        headers: [{ key: 'X-Robots-Tag', value: fullRobots }],
       },
       {
         source: '/compare',
-        headers: [{ key: 'X-Robots-Tag', value: 'index, follow' }],
+        headers: [{ key: 'X-Robots-Tag', value: fullRobots }],
+      },
+      {
+        source: '/about',
+        headers: [{ key: 'X-Robots-Tag', value: fullRobots }],
       },
       {
         source: '/terms',
@@ -56,7 +70,6 @@ const nextConfig = {
         headers: [{ key: 'X-Robots-Tag', value: 'index, follow' }],
       },
       {
-        // Block indexing on protected pages
         source: '/dashboard/:path*',
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
       },
@@ -81,14 +94,8 @@ const nextConfig = {
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
       },
       {
-        // Cache static assets for performance
         source: '/(.*)\\.(jpg|jpeg|png|gif|ico|svg|woff|woff2|txt)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
     ];
   },

@@ -19,6 +19,14 @@ export const metadata: Metadata = {
     siteName: 'Optimeta',
     locale: 'en_IN',
     type: 'website',
+    images: [
+      {
+        url: 'https://optimeta.tech/logo.png',
+        width: 512,
+        height: 512,
+        alt: 'Optimeta Blog — Meta Ads Guides for Indian Brands',
+      },
+    ],
   },
   robots: {
     index: true,
@@ -82,7 +90,12 @@ export default function BlogPage() {
                       <span className="mx-1.5">·</span>
                       <span>{article.readTime}</span>
                     </div>
-                    <span className="text-xs text-text-muted">{article.publishDate}</span>
+                    <time
+                      className="text-xs text-text-muted"
+                      dateTime={new Date(article.publishDate).toISOString()}
+                    >
+                      {article.publishDate}
+                    </time>
                   </div>
                   <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent group-hover:text-primary transition-colors">
                     Read Article

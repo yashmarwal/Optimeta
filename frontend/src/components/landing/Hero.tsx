@@ -31,7 +31,7 @@ export default function Hero() {
               </div>
             </motion.div>
 
-            <motion.h1
+            <motion.h2
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
@@ -40,7 +40,7 @@ export default function Hero() {
               <span className="text-white">Stop Guessing.</span>
               <br />
               <span className="gradient-text">Start Winning.</span>
-            </motion.h1>
+            </motion.h2>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -114,7 +114,8 @@ export default function Hero() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="hidden lg:flex flex-col items-center"
           >
-            <div className="animate-float">
+            <figure>
+          <div className="animate-float">
               <div className="glass-card p-2 glow-lg" style={{ borderRadius: '20px' }}>
                 <div className="rounded-2xl overflow-hidden" style={{ width: '520px', background: '#0F0F1A' }}>
 
@@ -244,6 +245,10 @@ export default function Hero() {
                 </div>
               </div>
             </div>
+          </figure>
+            <figcaption className="sr-only">
+              Meta Ads Manager dashboard showing real campaign results from Optimeta users
+            </figcaption>
             <p className="text-xs text-text-muted mt-4">Real results from Optimeta users</p>
           </motion.div>
         </div>

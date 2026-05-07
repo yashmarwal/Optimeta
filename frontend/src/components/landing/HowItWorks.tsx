@@ -51,6 +51,14 @@ export default function HowItWorks() {
           {/* Connecting line */}
           <div className="hidden lg:block absolute top-16 left-[calc(16.67%-24px)] right-[calc(16.67%-24px)] h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
+          <ol className="sr-only">
+            {steps.map((step) => (
+              <li key={step.number}>
+                {step.title}: {step.desc}
+              </li>
+            ))}
+          </ol>
+
           <div className="grid lg:grid-cols-3 gap-8">
             {steps.map((step, i) => (
               <motion.div

@@ -18,6 +18,14 @@ export const metadata: Metadata = {
     siteName: 'Optimeta',
     locale: 'en_IN',
     type: 'website',
+    images: [
+      {
+        url: 'https://optimeta.tech/logo.png',
+        width: 512,
+        height: 512,
+        alt: 'Optimeta Pricing — Meta Ads Plans for Indian Brands',
+      },
+    ],
   },
   robots: {
     index: true,

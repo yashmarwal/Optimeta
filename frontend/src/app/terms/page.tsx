@@ -5,6 +5,15 @@ import { ArrowLeft } from 'lucide-react';
 export const metadata: Metadata = {
   title: 'Terms & Conditions | Optimeta',
   description: 'Optimeta terms and conditions. Learn about subscriptions, cancellation, data use, free trial rules and user responsibilities for the AI Meta ad platform.',
+  openGraph: {
+    url: 'https://optimeta.tech/terms',
+    title: 'Terms & Conditions | Optimeta',
+    description: 'Optimeta terms and conditions for the AI Meta ad campaign architect platform.',
+    siteName: 'Optimeta',
+    locale: 'en_IN',
+    type: 'website',
+    images: [{ url: 'https://optimeta.tech/logo.png', width: 512, height: 512, alt: 'Optimeta' }],
+  },
   alternates: {
     canonical: 'https://optimeta.tech/terms',
   },

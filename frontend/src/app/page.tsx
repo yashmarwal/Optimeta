@@ -27,6 +27,14 @@ export const metadata: Metadata = {
     siteName: 'Optimeta',
     locale: 'en_IN',
     type: 'website',
+    images: [
+      {
+        url: 'https://optimeta.tech/logo.png',
+        width: 512,
+        height: 512,
+        alt: 'Optimeta — AI Meta Ad Campaign Architect',
+      },
+    ],
   },
   robots: {
     index: true,
@@ -37,6 +45,8 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-bg-dark dot-grid overflow-x-hidden">
+      <h1 className="sr-only">Optimeta — AI Meta Ad Campaign Architect for Indian Brands</h1>
+
       <div className="sr-only">
         Optimeta is India&apos;s AI-powered Meta ad campaign architect. It generates complete
         Facebook and Instagram campaign blueprints for Indian D2C brands, SaaS founders, coaches
@@ -50,6 +60,32 @@ export default function HomePage() {
       <Hero />
       <StatsBar />
 
+      <section className="py-8 px-4 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          <div>
+            <p className="text-3xl font-black gradient-text">490M+</p>
+            <p className="text-text-muted text-sm mt-1">
+              Facebook users in India
+              <cite className="block text-xs text-[#606080] mt-1">Source: Meta Q1 2026</cite>
+            </p>
+          </div>
+          <div>
+            <p className="text-3xl font-black gradient-text">₹60-120</p>
+            <p className="text-text-muted text-sm mt-1">
+              Average CPM in metro cities
+              <cite className="block text-xs text-[#606080] mt-1">India Meta Ads Benchmark 2026</cite>
+            </p>
+          </div>
+          <div>
+            <p className="text-3xl font-black gradient-text">3.2x</p>
+            <p className="text-text-muted text-sm mt-1">
+              Average ROAS for Indian D2C brands
+              <cite className="block text-xs text-[#606080] mt-1">Optimeta Campaign Data 2026</cite>
+            </p>
+          </div>
+        </div>
+      </section>
+
       <ProblemSection />
 
       <HowItWorks />
@@ -62,6 +98,88 @@ export default function HomePage() {
       <FAQSection />
       <FinalCTA />
       <Footer />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'Optimeta',
+            url: 'https://optimeta.tech',
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: {
+                '@type': 'EntryPoint',
+                urlTemplate: 'https://optimeta.tech/blog?q={search_term_string}',
+              },
+              'query-input': 'required name=search_term_string',
+            },
+          }),
+        }}
+      />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: 'Optimeta — AI Meta Ad Architect',
+            speakable: {
+              '@type': 'SpeakableSpecification',
+              cssSelector: ['.hero-description', '.executive-summary', 'h1', 'h2'],
+            },
+            url: 'https://optimeta.tech',
+          }),
+        }}
+      />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'HowTo',
+            name: 'How to Generate a Meta Ad Campaign Blueprint with Optimeta',
+            description:
+              'Generate a complete Facebook and Instagram campaign blueprint in minutes using Optimeta AI.',
+            totalTime: 'PT15M',
+            step: [
+              {
+                '@type': 'HowToStep',
+                position: 1,
+                name: 'Enter Business Details',
+                text: 'Answer questions about your business name, industry, monthly ad budget and product details.',
+              },
+              {
+                '@type': 'HowToStep',
+                position: 2,
+                name: 'Describe Your Audience',
+                text: 'Tell Optimeta about your ideal customer, campaign goal, target cities and gender targeting.',
+              },
+              {
+                '@type': 'HowToStep',
+                position: 3,
+                name: 'Add Context',
+                text: 'Share your competitors, available creative assets, Meta pixel status and previous ad experience.',
+              },
+              {
+                '@type': 'HowToStep',
+                position: 4,
+                name: 'Generate Blueprint',
+                text: 'Click Generate and receive your complete Meta ad campaign blueprint in 15-20 seconds.',
+              },
+              {
+                '@type': 'HowToStep',
+                position: 5,
+                name: 'Launch Your Campaign',
+                text: 'Follow the 8-step launch checklist to implement your blueprint in Meta Ads Manager.',
+              },
+            ],
+          }),
+        }}
+      />
 
       <script
         type="application/ld+json"

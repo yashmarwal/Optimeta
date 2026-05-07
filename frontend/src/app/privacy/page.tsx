@@ -5,6 +5,15 @@ import { ArrowLeft } from 'lucide-react';
 export const metadata: Metadata = {
   title: 'Privacy Policy | Optimeta',
   description: 'Optimeta privacy policy. How we collect, store and protect your data. Covers account info, campaign data, device fingerprinting, payments and your rights.',
+  openGraph: {
+    url: 'https://optimeta.tech/privacy',
+    title: 'Privacy Policy | Optimeta',
+    description: 'Optimeta privacy policy covering data collection, storage and your rights.',
+    siteName: 'Optimeta',
+    locale: 'en_IN',
+    type: 'website',
+    images: [{ url: 'https://optimeta.tech/logo.png', width: 512, height: 512, alt: 'Optimeta' }],
+  },
   alternates: {
     canonical: 'https://optimeta.tech/privacy',
   },
