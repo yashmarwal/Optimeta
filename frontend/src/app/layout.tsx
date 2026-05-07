@@ -12,6 +12,9 @@ const inter = Inter({
 });
 
 export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
   themeColor: [
     { media: '(prefers-color-scheme: dark)', color: '#0A0A0F' },
     { media: '(prefers-color-scheme: light)', color: '#7B2FBE' },
@@ -95,7 +98,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta name="theme-color" content="#7B2FBE" />
         <meta name="msapplication-TileColor" content="#7B2FBE" />
         <link rel="icon" href="/logo.png" />
