@@ -216,6 +216,8 @@ export default function HomePage() {
                 description: '10 campaigns per month',
               },
             ],
+            datePublished: '2026-01-01',
+            dateModified: '2026-05-07',
             aggregateRating: {
               '@type': 'AggregateRating',
               ratingValue: '4.8',
@@ -245,6 +247,8 @@ export default function HomePage() {
             sameAs: [
               'https://www.instagram.com/optimeta.tech',
               'https://www.linkedin.com/company/optimeta-ai-meta-ads-generator/',
+              'https://optimeta.tech',
+              'https://twitter.com/optimeta',
             ],
           }),
         }}

@@ -7,6 +7,7 @@ const nextConfig = {
   async headers() {
     const fullRobots =
       'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+    const lastModified = new Date().toUTCString();
 
     return [
       {
@@ -35,27 +36,45 @@ const nextConfig = {
       },
       {
         source: '/',
-        headers: [{ key: 'X-Robots-Tag', value: fullRobots }],
+        headers: [
+          { key: 'X-Robots-Tag', value: fullRobots },
+          { key: 'Last-Modified', value: lastModified },
+        ],
       },
       {
         source: '/pricing',
-        headers: [{ key: 'X-Robots-Tag', value: fullRobots }],
+        headers: [
+          { key: 'X-Robots-Tag', value: fullRobots },
+          { key: 'Last-Modified', value: lastModified },
+        ],
       },
       {
         source: '/blog',
-        headers: [{ key: 'X-Robots-Tag', value: fullRobots }],
+        headers: [
+          { key: 'X-Robots-Tag', value: fullRobots },
+          { key: 'Last-Modified', value: lastModified },
+        ],
       },
       {
         source: '/blog/:slug*',
-        headers: [{ key: 'X-Robots-Tag', value: fullRobots }],
+        headers: [
+          { key: 'X-Robots-Tag', value: fullRobots },
+          { key: 'Last-Modified', value: lastModified },
+        ],
       },
       {
         source: '/compare',
-        headers: [{ key: 'X-Robots-Tag', value: fullRobots }],
+        headers: [
+          { key: 'X-Robots-Tag', value: fullRobots },
+          { key: 'Last-Modified', value: lastModified },
+        ],
       },
       {
         source: '/about',
-        headers: [{ key: 'X-Robots-Tag', value: fullRobots }],
+        headers: [
+          { key: 'X-Robots-Tag', value: fullRobots },
+          { key: 'Last-Modified', value: lastModified },
+        ],
       },
       {
         source: '/terms',
