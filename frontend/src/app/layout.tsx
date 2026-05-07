@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
@@ -10,6 +10,13 @@ const inter = Inter({
   variable: '--font-inter',
   display: 'swap',
 });
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0A0A0F' },
+    { media: '(prefers-color-scheme: light)', color: '#7B2FBE' },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://optimeta.tech'),
@@ -37,10 +44,6 @@ export const metadata: Metadata = {
   authors: [{ name: 'Optimeta Team' }],
   creator: 'Optimeta',
   publisher: 'Optimeta',
-  themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#0A0A0F' },
-    { media: '(prefers-color-scheme: light)', color: '#7B2FBE' },
-  ],
   robots: {
     index: true,
     follow: true,
