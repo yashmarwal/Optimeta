@@ -104,11 +104,12 @@ export default function RegisterPage() {
         style={{ maxWidth: 'min(448px, 100%)' }}
       >
         <div className="text-center mb-8">
+          <h1 className="sr-only">Create Your Optimeta Account</h1>
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
             <Image src="/logo.png" alt="Optimeta" width={40} height={40} className="object-contain" />
             <span className="text-2xl font-black gradient-text">OPTIMETA</span>
           </Link>
-          <h1 className="text-3xl font-black text-white mb-2">Create your account</h1>
+          <h2 className="text-3xl font-black text-white mb-2">Create your account</h2>
           <p className="text-text-muted text-sm">
             {selectedPlan
               ? `Starting with the ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan`
