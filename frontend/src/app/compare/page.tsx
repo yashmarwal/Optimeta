@@ -5,7 +5,7 @@ import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 
 export const metadata: Metadata = {
-  title: 'Optimeta vs ChatGPT vs Agency — Best Meta Ads Tool for Indian Brands',
+  title: 'Optimeta vs ChatGPT vs Agency | India',
   description:
     'Compare Optimeta with ChatGPT and marketing agencies for Meta ad campaign planning. See why Indian brands choose Optimeta.',
   alternates: {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     url: 'https://optimeta.tech/compare',
-    title: 'Optimeta vs ChatGPT vs Agency — Best Meta Ads Tool for Indian Brands',
+    title: 'Optimeta vs ChatGPT vs Agency | India',
     description:
       'Compare Optimeta with ChatGPT and marketing agencies for Meta ad campaign planning.',
     siteName: 'Optimeta',

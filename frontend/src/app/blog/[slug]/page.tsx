@@ -17,8 +17,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const article = blogArticles.find((a) => a.slug === params.slug);
   if (!article) return {};
+  const truncatedTitle =
+    article.title.length > 55 ? article.title.substring(0, 52) + '...' : article.title;
   return {
-    title: article.metaTitle,
+    title: { absolute: truncatedTitle + ' | Optimeta' },
     description: article.metaDescription,
     keywords: article.keywords,
     openGraph: {

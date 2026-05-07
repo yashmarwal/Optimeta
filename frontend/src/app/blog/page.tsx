@@ -6,7 +6,7 @@ import Footer from '@/components/landing/Footer';
 import { blogArticles, categoryColors } from '@/lib/blogData';
 
 export const metadata: Metadata = {
-  title: 'Blog — Meta Ads Guides for Indian Brands | Optimeta',
+  title: 'Blog — Meta Ads Guides India | Optimeta',
   description:
     'Expert guides on running profitable Meta ads in India. Targeting strategies, budget planning and creative tips for D2C brands.',
   alternates: {
@@ -38,9 +38,9 @@ export default function BlogPage() {
             Blog
           </div>
           <h1 className="text-4xl sm:text-5xl font-black text-white mb-4">
-            Meta Ads Insights for
+            Meta Ads Blog —
             <br />
-            <span className="gradient-text">Indian Brands</span>
+            <span className="gradient-text">Guides for Indian Brands</span>
           </h1>
           <p className="text-text-secondary max-w-xl mx-auto">
             Guides, strategies and playbooks to help you run profitable Meta ads. New articles

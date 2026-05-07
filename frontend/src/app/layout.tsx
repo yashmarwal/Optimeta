@@ -14,7 +14,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL('https://optimeta.tech'),
   title: {
-    default: 'Optimeta — AI Meta Ad Campaign Architect for Indian Brands',
+    default: 'Optimeta — AI Meta Ad Architect for India',
     template: '%s | Optimeta',
   },
   description:
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     locale: 'en_IN',
     url: 'https://optimeta.tech',
     siteName: 'Optimeta',
-    title: 'Optimeta — AI Meta Ad Campaign Architect for Indian Brands',
+    title: 'Optimeta — AI Meta Ad Architect for India',
     description:
       'Generate complete Meta ad campaign blueprints for your Indian brand in minutes. Targeting, budget, ad copies, creative direction — all included.',
     images: [

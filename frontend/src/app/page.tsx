@@ -13,7 +13,7 @@ import Footer from '@/components/landing/Footer';
 import Navbar from '@/components/landing/Navbar';
 
 export const metadata: Metadata = {
-  title: 'Optimeta — AI Meta Ad Campaign Architect for Indian Brands',
+  title: 'Optimeta — AI Meta Ad Architect for India',
   description:
     'Stop wasting money on Meta ads. Optimeta generates your complete Facebook and Instagram campaign blueprint in minutes. Free to start, no agency needed.',
   alternates: {
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     url: 'https://optimeta.tech',
-    title: 'Optimeta — AI Meta Ad Campaign Architect for Indian Brands',
+    title: 'Optimeta — AI Meta Ad Architect for India',
     description:
       'Stop wasting money on random Meta ads. Generate your complete Meta ad campaign blueprint in minutes.',
     siteName: 'Optimeta',

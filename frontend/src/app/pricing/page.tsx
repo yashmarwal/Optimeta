@@ -6,7 +6,7 @@ import FinalCTA from '@/components/landing/FinalCTA';
 import Footer from '@/components/landing/Footer';
 
 export const metadata: Metadata = {
-  title: 'Pricing — Optimeta Meta Ads Campaign Planner India',
+  title: 'Pricing — Optimeta Meta Ads Planner',
   description: 'Start free or upgrade to Pro at ₹499/month. Get your complete Meta ad campaign blueprint for Indian D2C brands in 15 seconds. No agencies, no long waits.',
   alternates: {
     canonical: 'https://optimeta.tech/pricing',
@@ -42,6 +42,12 @@ export default function PricingPage() {
     <main className="min-h-screen bg-bg-dark dot-grid">
       <Navbar />
       <div className="pt-24">
+        <div className="text-center pt-8 pb-2 px-4">
+          <h1 className="text-4xl sm:text-5xl font-black text-white">
+            Optimeta Pricing —{' '}
+            <span className="gradient-text">Meta Ads Plans for Indian Brands</span>
+          </h1>
+        </div>
         <PricingSection />
 
         {/* Comparison table */}
