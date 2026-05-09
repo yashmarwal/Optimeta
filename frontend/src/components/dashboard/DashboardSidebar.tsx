@@ -105,7 +105,7 @@ export default function DashboardSidebar() {
 
       {/* Mobile trigger */}
       <button
-        className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center glow shadow-xl"
+        className="lg:hidden fixed bottom-6 left-6 z-50 w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center glow shadow-xl"
         onClick={() => setMobileOpen(true)}
       >
         <Menu size={20} className="text-white" />

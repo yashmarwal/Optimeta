@@ -155,10 +155,27 @@ function getAnswer(query: string, campaigns: any[]): string {
 
   // ── Campaign-specific queries ──────────────────────────────
 
+  // Helper: get display name from campaign object (handles both camelCase list API and snake_case)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getName = (c: any, i?: number) =>
+    c.campaignName ||
+    c.campaign_name ||
+    (c.business_inputs?.businessName ? c.business_inputs.businessName + ' Campaign' : null) ||
+    `Campaign ${(i ?? 0) + 1}`;
+
+  // Helper: safe date formatting
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getDate = (c: any) => {
+    try {
+      const d = new Date(c.createdAt || c.created_at);
+      return isNaN(d.getTime()) ? 'Recent' : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch { return 'Recent'; }
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const campaignNameMatch = campaigns.find(c =>
-    q.includes(c.campaign_name?.toLowerCase().substring(0, 10)) ||
-    q.includes(c.business_inputs?.businessName?.toLowerCase())
+    q.includes(getName(c).toLowerCase().substring(0, 10)) ||
+    q.includes(c.business_inputs?.businessName?.toLowerCase() || '')
   );
 
   if (
@@ -175,9 +192,7 @@ function getAnswer(query: string, campaigns: any[]): string {
     const list = campaigns
       .slice(0, 5)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((c: any, i: number) =>
-        `${i + 1}. ${c.campaign_name || c.business_inputs?.businessName + ' Campaign'} (${new Date(c.created_at).toLocaleDateString('en-IN')})`
-      )
+      .map((c: any, i: number) => `${i + 1}. ${getName(c, i)} (${getDate(c)})`)
       .join('\n');
     return `You have ${campaigns.length} campaign${campaigns.length > 1 ? 's' : ''}:\n\n${list}\n\nAsk me about any specific campaign for details.`;
   }
@@ -194,7 +209,7 @@ function getAnswer(query: string, campaigns: any[]): string {
     const latest = campaigns[0];
     const bp = latest.blueprint;
     const inputs = latest.business_inputs;
-    return `Your latest campaign is "${latest.campaign_name}" for ${inputs?.businessName || 'your business'}.\n\nObjective: ${bp?.campaign_objective?.recommended || 'N/A'}\nDaily Budget: ₹${bp?.budget_strategy?.recommended_daily_budget_inr || 'N/A'}\nFunnel Stage: ${bp?.funnel_strategy?.stage || 'N/A'}\n\nAsk me for targeting, ad copies, or checklist details.`;
+    return `Your latest campaign is "${getName(latest)}" for ${inputs?.businessName || 'your business'}.\n\nObjective: ${bp?.campaign_objective?.recommended || 'N/A'}\nDaily Budget: ₹${bp?.budget_strategy?.recommended_daily_budget_inr || 'N/A'}\nFunnel Stage: ${bp?.funnel_strategy?.stage || 'N/A'}\n\nOpen the campaign to see full targeting, ad copies and checklist.`;
   }
 
   if (
@@ -205,11 +220,11 @@ function getAnswer(query: string, campaigns: any[]): string {
     const bp = campaign.blueprint;
     const targeting = bp?.targeting;
     if (!targeting) {
-      return 'Targeting details not found for this campaign. Please open the full campaign blueprint to view targeting.';
+      return `Open "${getName(campaign)}" from your dashboard to see the full targeting — interests, behaviors, locations and audience combinations.`;
     }
     const interests = targeting?.primary_audience?.interests?.slice(0, 5)?.join(', ') || 'N/A';
     const behaviors = targeting?.primary_audience?.behaviors?.slice(0, 3)?.join(', ') || 'N/A';
-    return `Targeting for "${campaign.campaign_name}":\n\nAudience: ${targeting?.primary_audience?.age_range || ''} ${targeting?.primary_audience?.gender || ''}\nLocations: ${targeting?.primary_audience?.locations?.join(', ') || 'N/A'}\nTop Interests: ${interests}\nBehaviors: ${behaviors}\nApproach: ${targeting?.approach || 'N/A'}\n\nOpen the full blueprint for complete targeting combinations.`;
+    return `Targeting for "${getName(campaign)}":\n\nAudience: ${targeting?.primary_audience?.age_range || ''} ${targeting?.primary_audience?.gender || ''}\nLocations: ${targeting?.primary_audience?.locations?.join(', ') || 'N/A'}\nTop Interests: ${interests}\nBehaviors: ${behaviors}\nApproach: ${targeting?.approach || 'N/A'}\n\nOpen the full blueprint for complete targeting combinations.`;
   }
 
   if (
@@ -220,10 +235,10 @@ function getAnswer(query: string, campaigns: any[]): string {
     const bp = campaign.blueprint;
     const copies = bp?.ad_copies;
     if (!copies || copies.length === 0) {
-      return 'Ad copies not found. Please open the full campaign blueprint to view your ad copies.';
+      return `Open "${getName(campaign)}" from your dashboard to see all 3 ad copies — primary text, headline, CTA and placement for each.`;
     }
     const first = copies[0];
-    return `First ad copy for "${campaign.campaign_name}":\n\n🎯 Hook: ${first.hook}\n\nPrimary Text: ${first.primary_text?.substring(0, 120)}...\n\nHeadline: ${first.headline}\nCTA: ${first.cta}\nPlacement: ${first.placement}\n\nOpen the full blueprint to see all 3 ad copies.`;
+    return `First ad copy for "${getName(campaign)}":\n\n🎯 Hook: ${first.hook}\n\nPrimary Text: ${first.primary_text?.substring(0, 120)}...\n\nHeadline: ${first.headline}\nCTA: ${first.cta}\nPlacement: ${first.placement}\n\nOpen the full blueprint to see all 3 ad copies.`;
   }
 
   if (
@@ -235,9 +250,9 @@ function getAnswer(query: string, campaigns: any[]): string {
     const bp = campaign.blueprint;
     const budget = bp?.budget_strategy;
     if (!budget) {
-      return 'Budget details not found. Open the full blueprint to view budget strategy.';
+      return `Open "${getName(campaign)}" from your dashboard to see the full budget strategy and daily spend recommendation.`;
     }
-    return `Budget for "${campaign.campaign_name}":\n\nDaily Budget: ₹${budget.recommended_daily_budget_inr}\nMonthly Total: ₹${budget.total_monthly_inr}\n\nSplit:\n• Cold Prospecting: ${budget.split?.cold_prospecting}\n• Warm Retargeting: ${budget.split?.warm_retargeting}\n• Lookalike: ${budget.split?.lookalike}\n\nScaling: ${budget.scaling_logic}`;
+    return `Budget for "${getName(campaign)}":\n\nDaily Budget: ₹${budget.recommended_daily_budget_inr}\nMonthly Total: ₹${budget.total_monthly_inr}\n\nSplit:\n• Cold Prospecting: ${budget.split?.cold_prospecting}\n• Warm Retargeting: ${budget.split?.warm_retargeting}\n• Lookalike: ${budget.split?.lookalike}\n\nScaling: ${budget.scaling_logic}`;
   }
 
   if (
@@ -248,9 +263,9 @@ function getAnswer(query: string, campaigns: any[]): string {
     const bp = campaign.blueprint;
     const obj = bp?.campaign_objective;
     if (!obj) {
-      return 'Objective details not found. Open the full blueprint for campaign details.';
+      return `Open "${getName(campaign)}" from your dashboard to see the recommended campaign objective and Meta Ads Manager settings.`;
     }
-    return `Campaign objective for "${campaign.campaign_name}":\n\nRecommended: ${obj.recommended}\nIn Meta Ads Manager select: "${obj.meta_objective_name}"\n\nWhy: ${obj.reason}\n\nAvoid: ${obj.what_to_avoid}`;
+    return `Campaign objective for "${getName(campaign)}":\n\nRecommended: ${obj.recommended}\nIn Meta Ads Manager select: "${obj.meta_objective_name}"\n\nWhy: ${obj.reason}\n\nAvoid: ${obj.what_to_avoid}`;
   }
 
   if (
@@ -266,7 +281,7 @@ function getAnswer(query: string, campaigns: any[]): string {
       if (checklist && checklist.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const steps = checklist.slice(0, 5).map((item: any) => `${item.step}. ${item.action} (${item.time_estimate})`).join('\n');
-        return `Launch checklist for "${campaign.campaign_name}":\n\n${steps}\n\nOpen the full blueprint to see all steps and check them off as you complete them.`;
+        return `Launch checklist for "${getName(campaign)}":\n\n${steps}\n\nOpen the full blueprint to see all steps and check them off as you complete them.`;
       }
     }
     return 'To launch your Meta campaign: 1. Install Meta Pixel on website 2. Set up Conversions API 3. Create campaign in Meta Ads Manager 4. Set up ad sets with recommended targeting 5. Upload creatives 6. Set budget and schedule 7. Review and publish 8. Monitor for 7 days without editing.';
@@ -280,9 +295,9 @@ function getAnswer(query: string, campaigns: any[]): string {
     const bp = campaign.blueprint;
     const perf = bp?.performance_benchmarks;
     if (!perf) {
-      return 'Performance benchmarks not found. Open the full blueprint for expected metrics.';
+      return `Open "${getName(campaign)}" from your dashboard to see expected ROAS, CTR, CPM and CPC benchmarks.`;
     }
-    return `Expected performance for "${campaign.campaign_name}":\n\nTarget ROAS: ${perf.your_target_roas}\nExpected CTR (Feed): ${perf.expected_ctr_feed}\nExpected CTR (Reels): ${perf.expected_ctr_reels}\nExpected CPM: ₹${perf.expected_cpm_inr}\nExpected CPC: ₹${perf.expected_cpc_inr}\nLearning Phase: ${perf.learning_phase_duration}`;
+    return `Expected performance for "${getName(campaign)}":\n\nTarget ROAS: ${perf.your_target_roas}\nExpected CTR (Feed): ${perf.expected_ctr_feed}\nExpected CTR (Reels): ${perf.expected_ctr_reels}\nExpected CPM: ₹${perf.expected_cpm_inr}\nExpected CPC: ₹${perf.expected_cpc_inr}\nLearning Phase: ${perf.learning_phase_duration}`;
   }
 
   if (
@@ -296,7 +311,7 @@ function getAnswer(query: string, campaigns: any[]): string {
       const bp = campaign.blueprint;
       const plan = bp?.first_7_days_plan;
       if (plan) {
-        return `First 7 days plan for "${campaign.campaign_name}":\n\nDay 1-3: ${plan.day_1_3}\n\nDay 4-7: ${plan.day_4_7}\n\nWhen to edit: ${plan.when_to_edit}\n\n✅ Green flags: ${plan.green_flags?.join(', ')}\n\n🚨 Red flags: ${plan.red_flags?.join(', ')}`;
+        return `First 7 days plan for "${getName(campaign)}":\n\nDay 1-3: ${plan.day_1_3}\n\nDay 4-7: ${plan.day_4_7}\n\nWhen to edit: ${plan.when_to_edit}\n\n✅ Green flags: ${plan.green_flags?.join(', ')}\n\n🚨 Red flags: ${plan.red_flags?.join(', ')}`;
       }
     }
     return 'First 7 days after launching Meta ads: Day 1-3: Do NOT touch anything. Let Meta learn. Day 4-7: Check CPM and CTR only. If CTR below 0.5% after day 5, consider new creative. Never edit targeting or budget in first 7 days — it resets the learning phase.';
@@ -331,7 +346,7 @@ function getAnswer(query: string, campaigns: any[]): string {
 
   if (bestMatch && bestScore > 0) return bestMatch.answer;
 
-  return `I don't have a specific answer for that. ${campaigns.length > 0 ? `You can also ask me about your ${campaigns.length} generated campaign${campaigns.length > 1 ? 's' : ''} — targeting, ad copies, budget, checklist or performance benchmarks. ` : ''}For more help email optimeta@outlook.com`;
+  return `I don't have a specific answer for that. ${campaigns.length > 0 ? `You can ask me about your ${campaigns.length} campaign${campaigns.length > 1 ? 's' : ''} — try "show my campaigns", "latest campaign", or "what is ROAS". ` : ''}For more help email optimeta@outlook.com`;
 }
 
 export function FAQAssistant() {
@@ -360,9 +375,19 @@ export function FAQAssistant() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        if (data.success && data.data) {
-          setCampaigns(data.data.campaigns ?? data.data);
-        }
+
+        const campaignList =
+          data.data?.campaigns ||
+          data.data ||
+          data.campaigns ||
+          [];
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const validCampaigns = (Array.isArray(campaignList) ? campaignList : []).filter((c: any) =>
+          c && (c.campaignName || c.campaign_name || c.business_inputs?.businessName)
+        );
+
+        setCampaigns(validCampaigns);
       } catch (e) {
         console.error('Campaign fetch error:', e);
       } finally {

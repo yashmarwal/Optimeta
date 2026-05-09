@@ -17,17 +17,24 @@ const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Invalid or expired token.' });
     }
 
+    // Normalize userId — JWT payload may use userId, id, or sub
+    const userId = decoded.userId || decoded.id || decoded.sub;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Invalid token payload.' });
+    }
+
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', decoded.userId)
+      .eq('id', userId)
       .single();
 
     if (error || !profile) {
       return res.status(401).json({ success: false, message: 'User not found.' });
     }
 
-    req.user = profile;
+    req.user = { ...profile, id: profile.id, userId: profile.id };
     req.userId = profile.id;
     next();
   } catch (err) {
