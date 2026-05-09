@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, Play, Sparkles, TrendingUp, Banknote, MessageCircle, Target } from 'lucide-react';
+import { HeroDashboardAnimation } from '@/components/landing/HeroDashboardAnimation';
 
 const avatars = ['R', 'P', 'A', 'V', 'K'];
 
@@ -115,6 +116,7 @@ export default function Hero() {
             className="hidden lg:flex flex-col items-center"
           >
             <figure>
+          <HeroDashboardAnimation>
           <div className="animate-float">
               <div className="glass-card p-2 glow-lg" style={{ borderRadius: '20px' }}>
                 <div className="rounded-2xl overflow-hidden" style={{ width: '520px', background: '#0F0F1A' }}>
@@ -245,11 +247,11 @@ export default function Hero() {
                 </div>
               </div>
             </div>
+          </HeroDashboardAnimation>
           </figure>
             <figcaption className="sr-only">
               Meta Ads Manager dashboard showing real campaign results from Optimeta users
             </figcaption>
-            <p className="text-xs text-text-muted mt-4">Real results from Optimeta users</p>
           </motion.div>
         </div>
       </div>

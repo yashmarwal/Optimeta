@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { CampaignViewSkeleton } from '@/components/ui/Skeleton';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -187,6 +188,12 @@ const AUDIENCE_COLORS: Record<string, string> = {
   hot: 'bg-red-500/10 text-red-400 border-red-500/30',
 };
 
+const AUDIENCE_TOOLTIP_TERMS: Record<string, string> = {
+  cold: 'Cold Audience',
+  warm: 'Warm Audience',
+  hot: 'Hot Audience',
+};
+
 const ANGLE_COLORS: Record<string, string> = {
   pain: 'bg-red-500/10 text-red-400 border-red-500/30',
   desire: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
@@ -241,7 +248,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="text-base font-black gradient-text mb-5 pb-4 border-b border-border-color uppercase tracking-wide">{children}</h2>;
 }
 
-function MetricBox({ label, value, sub, highlight }: { label: string; value: string; sub?: string; highlight?: boolean }) {
+function MetricBox({ label, value, sub, highlight }: { label: React.ReactNode; value: string; sub?: string; highlight?: boolean }) {
   return (
     <div className={`rounded-xl p-4 border text-center ${highlight ? 'bg-primary/10 border-primary/30' : 'bg-bg-dark border-border-color'}`}>
       <div className={`text-2xl font-black mb-1 ${highlight ? 'gradient-text' : 'text-white'}`}>{value}</div>
@@ -514,7 +521,7 @@ export default function CampaignViewPage() {
                     <div key={stage} className={`flex-1 rounded-xl p-3 border text-center ${
                       i === 0 ? 'bg-blue-500/10 border-blue-500/30' : i === 1 ? 'bg-orange-500/10 border-orange-500/30' : 'bg-red-500/10 border-red-500/30'
                     }`}>
-                      <div className="text-xs font-black text-white">{stage}</div>
+                      <div className="text-xs font-black text-white flex items-center justify-center">{stage}<InfoTooltip term={stage} /></div>
                       <div className={`text-xs mt-0.5 ${i === 0 ? 'text-blue-400' : i === 1 ? 'text-orange-400' : 'text-red-400'}`}>
                         {i === 0 ? 'Awareness' : i === 1 ? 'Consider' : 'Convert'}
                       </div>
@@ -589,8 +596,8 @@ export default function CampaignViewPage() {
                     {bp.campaign_structure.use_advantage_plus ? <Check size={16} className="text-green-400" /> : <Eye size={16} className="text-text-muted" />}
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-white mb-0.5">
-                      Advantage+ Shopping: {bp.campaign_structure.use_advantage_plus ? 'Recommended' : 'Not recommended'}
+                    <div className="text-sm font-semibold text-white mb-0.5 flex items-center flex-wrap gap-x-0">
+                      Advantage+<InfoTooltip term="Advantage+" /> Shopping: {bp.campaign_structure.use_advantage_plus ? 'Recommended' : 'Not recommended'}
                     </div>
                     <p className="text-xs text-text-secondary leading-relaxed">{bp.campaign_structure.advantage_plus_reason}</p>
                   </div>
@@ -716,11 +723,11 @@ export default function CampaignViewPage() {
 
               <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
-                  <div className="text-xs text-text-muted mb-2">Lookalike Strategy</div>
+                  <div className="text-xs text-text-muted mb-2 flex items-center">Lookalike<InfoTooltip term="Lookalike Audience" /> Strategy</div>
                   <p className="text-sm text-text-secondary leading-relaxed">{bp.targeting?.lookalike_strategy}</p>
                 </div>
                 <div className="bg-bg-dark rounded-xl p-4 border border-border-color">
-                  <div className="text-xs text-text-muted mb-2">Retargeting Strategy</div>
+                  <div className="text-xs text-text-muted mb-2 flex items-center">Retargeting<InfoTooltip term="Retargeting" /> Strategy</div>
                   {bp.targeting?.retargeting_window_days && (
                     <span className="inline-block mb-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/25">
                       {bp.targeting.retargeting_window_days}-day window
@@ -750,8 +757,8 @@ export default function CampaignViewPage() {
                       <div className="flex items-center gap-2 flex-wrap min-w-0">
                         <span className="font-bold text-white text-sm">{set.ad_set_name}</span>
                         <CopyButton text={set.ad_set_name} size={12} />
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${AUDIENCE_COLORS[set.audience_type] || AUDIENCE_COLORS.cold}`}>
-                          {set.audience_type?.toUpperCase()}
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border inline-flex items-center ${AUDIENCE_COLORS[set.audience_type] || AUDIENCE_COLORS.cold}`}>
+                          {set.audience_type?.toUpperCase()}<InfoTooltip term={AUDIENCE_TOOLTIP_TERMS[set.audience_type] || 'Cold Audience'} />
                         </span>
                       </div>
                       <span className="text-sm font-black gradient-text flex-shrink-0">
@@ -927,7 +934,7 @@ export default function CampaignViewPage() {
                 <div className="mb-5 bg-bg-dark rounded-xl p-5 border border-primary/20">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <div className="text-xs text-accent font-bold uppercase tracking-wide">UGC Creator Brief</div>
+                      <div className="text-xs text-accent font-bold uppercase tracking-wide flex items-center">UGC<InfoTooltip term="UGC" /> Creator Brief</div>
                       <div className="text-xs text-text-muted">Send this exact brief to your UGC creator</div>
                     </div>
                     <CopyButton text={bp.creative_direction.ugc_brief} />
@@ -980,7 +987,7 @@ export default function CampaignViewPage() {
                   <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/5 border border-amber-500/25">
                     <AlertTriangle size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <div className="text-xs text-amber-400 font-bold mb-1">Conversions API (CAPI) Required</div>
+                      <div className="text-xs text-amber-400 font-bold mb-1 flex items-center">Conversions API (CAPI<InfoTooltip term="CAPI" />) Required</div>
                       <p className="text-xs text-text-secondary leading-relaxed">Server-side tracking is essential at your scale to avoid data loss from iOS restrictions and ad blockers. Set up CAPI via Shopify app or GTM before launching.</p>
                     </div>
                   </div>
@@ -1087,29 +1094,29 @@ export default function CampaignViewPage() {
               {(bp.performance_benchmarks?.category_average_roas || bp.performance_benchmarks?.your_target_roas) && (
                 <div className="grid grid-cols-2 gap-4 mb-5">
                   {bp.performance_benchmarks.category_average_roas && (
-                    <MetricBox label="Category Avg ROAS" value={bp.performance_benchmarks.category_average_roas} />
+                    <MetricBox label={<span className="flex items-center justify-center">Category Avg ROAS<InfoTooltip term="ROAS" /></span>} value={bp.performance_benchmarks.category_average_roas} />
                   )}
                   {(bp.performance_benchmarks.your_target_roas || bp.performance_benchmarks.roas_target) && (
-                    <MetricBox label="Your Target ROAS" value={bp.performance_benchmarks.your_target_roas || bp.performance_benchmarks.roas_target || ''} highlight />
+                    <MetricBox label={<span className="flex items-center justify-center">Your Target ROAS<InfoTooltip term="ROAS" /></span>} value={bp.performance_benchmarks.your_target_roas || bp.performance_benchmarks.roas_target || ''} highlight />
                   )}
                 </div>
               )}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 {[
-                  { label: 'CTR (Feed)', val: bp.performance_benchmarks?.expected_ctr_feed || bp.performance_benchmarks?.expected_ctr },
-                  { label: 'CTR (Reels)', val: bp.performance_benchmarks?.expected_ctr_reels },
-                  { label: 'CPC', val: bp.performance_benchmarks?.expected_cpc_inr },
-                  { label: 'CPM', val: bp.performance_benchmarks?.expected_cpm_inr },
-                  { label: 'CPA', val: bp.performance_benchmarks?.expected_cpa_inr },
-                  { label: 'Learning Phase', val: bp.performance_benchmarks?.learning_phase_duration },
+                  { key: 'CTR Feed', label: <span className="flex items-center justify-center">CTR (Feed)<InfoTooltip term="CTR" /></span>, val: bp.performance_benchmarks?.expected_ctr_feed || bp.performance_benchmarks?.expected_ctr },
+                  { key: 'CTR Reels', label: <span className="flex items-center justify-center">CTR (Reels)<InfoTooltip term="CTR" /></span>, val: bp.performance_benchmarks?.expected_ctr_reels },
+                  { key: 'CPC', label: <span className="flex items-center justify-center">CPC<InfoTooltip term="CPC" /></span>, val: bp.performance_benchmarks?.expected_cpc_inr },
+                  { key: 'CPM', label: <span className="flex items-center justify-center">CPM<InfoTooltip term="CPM" /></span>, val: bp.performance_benchmarks?.expected_cpm_inr },
+                  { key: 'CPA', label: <span className="flex items-center justify-center">CPA<InfoTooltip term="CPA" /></span>, val: bp.performance_benchmarks?.expected_cpa_inr },
+                  { key: 'Learning Phase', label: <span className="flex items-center justify-center">Learning Phase<InfoTooltip term="Learning Phase" /></span>, val: bp.performance_benchmarks?.learning_phase_duration },
                 ].filter((m) => m.val).map((m) => (
-                  <MetricBox key={m.label} label={m.label} value={m.val!} />
+                  <MetricBox key={m.key} label={m.label} value={m.val!} />
                 ))}
               </div>
               {bp.performance_benchmarks?.break_even_roas && (
                 <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/25 flex items-center justify-between">
                   <div>
-                    <div className="text-xs text-amber-400 font-bold uppercase tracking-wide mb-0.5">Break-Even ROAS</div>
+                    <div className="text-xs text-amber-400 font-bold uppercase tracking-wide mb-0.5 flex items-center">Break-Even ROAS<InfoTooltip term="Break Even ROAS" /></div>
                     <div className="text-xs text-text-muted">Don&apos;t scale below this number</div>
                   </div>
                   <div className="text-2xl font-black text-amber-300">{bp.performance_benchmarks.break_even_roas}</div>
@@ -1278,7 +1285,7 @@ export default function CampaignViewPage() {
           <div className="flex gap-2 mb-3">
             {['TOFU', 'MOFU', 'BOFU'].map((stage, i) => (
               <div key={stage} className={`flex-1 rounded-xl p-3 border text-center ${i === 0 ? 'bg-blue-500/10 border-blue-500/30' : i === 1 ? 'bg-orange-500/10 border-orange-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                <div className="text-xs font-black text-white">{stage}</div>
+                <div className="text-xs font-black text-white flex items-center justify-center">{stage}<InfoTooltip term={stage} /></div>
                 <div className={`text-xs mt-0.5 ${i === 0 ? 'text-blue-400' : i === 1 ? 'text-orange-400' : 'text-red-400'}`}>
                   {i === 0 ? 'Awareness' : i === 1 ? 'Consider' : 'Convert'}
                 </div>
@@ -1436,11 +1443,11 @@ export default function CampaignViewPage() {
           )}
 
           <div className="p-4 rounded-xl bg-[#0F0F1A] border border-[#1E1E3A] mb-3">
-            <div className="text-xs text-[#505070] mb-2">Lookalike Strategy</div>
+            <div className="text-xs text-[#505070] mb-2 flex items-center">Lookalike<InfoTooltip term="Lookalike Audience" /> Strategy</div>
             <p className="text-sm text-[#A0A0C0] leading-relaxed">{bp.targeting?.lookalike_strategy}</p>
           </div>
           <div className="p-4 rounded-xl bg-[#0F0F1A] border border-[#1E1E3A] mb-3">
-            <div className="text-xs text-[#505070] mb-2">Retargeting Strategy</div>
+            <div className="text-xs text-[#505070] mb-2 flex items-center">Retargeting<InfoTooltip term="Retargeting" /> Strategy</div>
             {bp.targeting?.retargeting_window_days && (
               <span className="inline-block mb-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-500/15 text-orange-400 border border-orange-500/25">
                 {bp.targeting.retargeting_window_days}-day window
@@ -1469,8 +1476,8 @@ export default function CampaignViewPage() {
                     set.audience_type === 'cold' ? 'border-t-blue-500' : set.audience_type === 'warm' ? 'border-t-orange-500' : 'border-t-red-500'
                   }`}>
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${AUDIENCE_COLORS[set.audience_type] || AUDIENCE_COLORS.cold}`}>
-                        {set.audience_type?.toUpperCase()}
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold border inline-flex items-center ${AUDIENCE_COLORS[set.audience_type] || AUDIENCE_COLORS.cold}`}>
+                        {set.audience_type?.toUpperCase()}<InfoTooltip term={AUDIENCE_TOOLTIP_TERMS[set.audience_type] || 'Cold Audience'} />
                       </span>
                       <span className="text-sm font-black gradient-text ml-auto">
                         {set.daily_budget_inr ? `${set.daily_budget_inr}/day` : set.budget_allocation}
@@ -1622,7 +1629,7 @@ export default function CampaignViewPage() {
           {bp.creative_direction?.ugc_brief && (
             <div className="mb-4 p-4 bg-[#0F0F1A] rounded-xl border border-[#7B2FBE]/20">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-xs text-accent font-bold uppercase tracking-wide">UGC Creator Brief</div>
+                <div className="text-xs text-accent font-bold uppercase tracking-wide flex items-center">UGC<InfoTooltip term="UGC" /> Creator Brief</div>
                 <CopyButton text={bp.creative_direction.ugc_brief} size={13} />
               </div>
               <p className="text-sm text-[#A0A0C0] leading-relaxed break-words">{bp.creative_direction.ugc_brief}</p>
@@ -1771,27 +1778,27 @@ export default function CampaignViewPage() {
               {bp.performance_benchmarks.category_average_roas && (
                 <div className="rounded-2xl bg-[#0F0F1A] p-4 border border-[#1E1E3A] text-center">
                   <div className="text-xl font-black text-white">{bp.performance_benchmarks.category_average_roas}</div>
-                  <div className="text-xs text-[#505070] mt-1">Category Avg ROAS</div>
+                  <div className="text-xs text-[#505070] mt-1 flex items-center justify-center">Category Avg ROAS<InfoTooltip term="ROAS" /></div>
                 </div>
               )}
               {(bp.performance_benchmarks.your_target_roas || bp.performance_benchmarks.roas_target) && (
                 <div className="rounded-2xl p-4 border border-[#7B2FBE]/30 bg-[#7B2FBE]/10 text-center">
                   <div className="text-xl font-black gradient-text">{bp.performance_benchmarks.your_target_roas || bp.performance_benchmarks.roas_target}</div>
-                  <div className="text-xs text-[#505070] mt-1">Your Target ROAS</div>
+                  <div className="text-xs text-[#505070] mt-1 flex items-center justify-center">Your Target ROAS<InfoTooltip term="ROAS" /></div>
                 </div>
               )}
             </div>
           )}
           <div className="grid grid-cols-2 gap-3 mb-3">
             {[
-              { label: 'CTR (Feed)', val: bp.performance_benchmarks?.expected_ctr_feed || bp.performance_benchmarks?.expected_ctr },
-              { label: 'CTR (Reels)', val: bp.performance_benchmarks?.expected_ctr_reels },
-              { label: 'CPC', val: bp.performance_benchmarks?.expected_cpc_inr },
-              { label: 'CPM', val: bp.performance_benchmarks?.expected_cpm_inr },
-              { label: 'CPA', val: bp.performance_benchmarks?.expected_cpa_inr },
-              { label: 'Learning Phase', val: bp.performance_benchmarks?.learning_phase_duration },
+              { key: 'CTR Feed', label: <span className="flex items-center justify-center">CTR (Feed)<InfoTooltip term="CTR" /></span>, val: bp.performance_benchmarks?.expected_ctr_feed || bp.performance_benchmarks?.expected_ctr },
+              { key: 'CTR Reels', label: <span className="flex items-center justify-center">CTR (Reels)<InfoTooltip term="CTR" /></span>, val: bp.performance_benchmarks?.expected_ctr_reels },
+              { key: 'CPC', label: <span className="flex items-center justify-center">CPC<InfoTooltip term="CPC" /></span>, val: bp.performance_benchmarks?.expected_cpc_inr },
+              { key: 'CPM', label: <span className="flex items-center justify-center">CPM<InfoTooltip term="CPM" /></span>, val: bp.performance_benchmarks?.expected_cpm_inr },
+              { key: 'CPA', label: <span className="flex items-center justify-center">CPA<InfoTooltip term="CPA" /></span>, val: bp.performance_benchmarks?.expected_cpa_inr },
+              { key: 'Learning Phase', label: <span className="flex items-center justify-center">Learning Phase<InfoTooltip term="Learning Phase" /></span>, val: bp.performance_benchmarks?.learning_phase_duration },
             ].filter((m) => m.val).map((m) => (
-              <div key={m.label} className="rounded-2xl bg-[#0F0F1A] p-4 border border-[#1E1E3A] text-center">
+              <div key={m.key} className="rounded-2xl bg-[#0F0F1A] p-4 border border-[#1E1E3A] text-center">
                 <div className="text-xl font-black text-white">{m.val}</div>
                 <div className="text-xs text-[#505070] mt-1">{m.label}</div>
               </div>
@@ -1800,7 +1807,7 @@ export default function CampaignViewPage() {
           {bp.performance_benchmarks?.break_even_roas && (
             <div className="p-4 rounded-2xl border border-amber-500/30 bg-amber-500/5 flex items-center justify-between">
               <div>
-                <div className="text-xs text-amber-400 font-bold uppercase tracking-wide mb-0.5">Break-Even ROAS</div>
+                <div className="text-xs text-amber-400 font-bold uppercase tracking-wide mb-0.5 flex items-center">Break-Even ROAS<InfoTooltip term="Break Even ROAS" /></div>
                 <div className="text-xs text-[#505070]">Don&apos;t scale below this</div>
               </div>
               <div className="text-2xl font-black text-amber-300">{bp.performance_benchmarks.break_even_roas}</div>
