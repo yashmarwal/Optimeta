@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MessageCircle, Send } from 'lucide-react';
+import { X, Send } from 'lucide-react';
 
 const KNOWLEDGE_BASE = [
   {
@@ -409,20 +409,95 @@ export function FAQAssistant() {
 
   return (
     <>
+      {/* Floating AI Button */}
       <AnimatePresence>
         {!open && (
           <motion.button
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-[#7B2FBE] to-[#C026D3] shadow-[0_4px_20px_rgba(123,47,190,0.5)] flex items-center justify-center text-white"
-            aria-label="Open help assistant"
+            className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-1.5 group"
+            aria-label="Open Optimeta AI Assistant"
           >
-            <MessageCircle size={22} />
-            <span className="absolute inset-0 rounded-full bg-gradient-to-br from-[#7B2FBE] to-[#C026D3] animate-ping opacity-20" />
+            {/* Label above button */}
+            <motion.span
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="text-[10px] font-semibold text-[#A0A0C0] tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#0F0F1A]/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-[#1E1E3A] whitespace-nowrap"
+            >
+              Optimeta AI
+            </motion.span>
+
+            {/* Main button */}
+            <div className="relative w-14 h-14">
+
+              {/* Outer rotating gradient ring */}
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: 'conic-gradient(from 0deg, #7B2FBE, #C026D3, #7B2FBE00, #7B2FBE)',
+                  padding: '2px',
+                }}
+              >
+                <div className="w-full h-full rounded-full bg-[#0A0A0F]" />
+              </motion.div>
+
+              {/* Pulse glow ring 1 */}
+              <motion.div
+                animate={{ scale: [1, 1.4, 1], opacity: [0.4, 0, 0.4] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute inset-0 rounded-full"
+                style={{ background: 'radial-gradient(circle, rgba(192,38,211,0.3) 0%, transparent 70%)' }}
+              />
+
+              {/* Pulse glow ring 2 */}
+              <motion.div
+                animate={{ scale: [1, 1.6, 1], opacity: [0.2, 0, 0.2] }}
+                transition={{ duration: 2.5, delay: 0.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute inset-0 rounded-full"
+                style={{ background: 'radial-gradient(circle, rgba(123,47,190,0.2) 0%, transparent 70%)' }}
+              />
+
+              {/* Inner button face */}
+              <div className="absolute inset-[2px] rounded-full bg-gradient-to-br from-[#0F0F1A] to-[#141428] flex items-center justify-center border border-[#7B2FBE]/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                <div className="relative flex items-center justify-center">
+
+                  {/* Outer O ring */}
+                  <motion.div
+                    animate={{ boxShadow: ['0 0 8px rgba(123,47,190,0.6)', '0 0 16px rgba(192,38,211,0.8)', '0 0 8px rgba(123,47,190,0.6)'] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                    className="w-8 h-8 rounded-full border-2 flex items-center justify-center"
+                    style={{
+                      borderColor: 'transparent',
+                      background: 'linear-gradient(#0F0F1A, #0F0F1A) padding-box, linear-gradient(135deg, #7B2FBE, #C026D3) border-box',
+                    }}
+                  >
+                    {/* Inner sparkle dot */}
+                    <motion.div
+                      animate={{ scale: [0.8, 1.1, 0.8], opacity: [0.7, 1, 0.7] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                      className="w-3 h-3 rounded-full"
+                      style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)', boxShadow: '0 0 8px rgba(192,38,211,0.8)' }}
+                    />
+                  </motion.div>
+
+                  {/* AI sparkle icon top right */}
+                  <motion.span
+                    animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5], rotate: [0, 180, 360] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                    className="absolute -top-1 -right-1 text-[8px] text-[#C026D3]"
+                  >
+                    ✦
+                  </motion.span>
+                </div>
+              </div>
+            </div>
           </motion.button>
         )}
       </AnimatePresence>
