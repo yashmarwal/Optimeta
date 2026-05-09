@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import DashboardTopBar from '@/components/dashboard/DashboardTopBar';
 import { DashboardLayoutSkeleton } from '@/components/ui/Skeleton';
+import { FAQAssistant } from '@/components/dashboard/FAQAssistant';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, authChecked } = useAuth();
@@ -30,6 +31,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+      <FAQAssistant />
     </div>
   );
 }

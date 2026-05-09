@@ -1,12 +1,12 @@
 'use client';
 
-import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 
 interface ScrollRevealProps {
   children: React.ReactNode;
   delay?: number;
-  direction?: 'up' | 'left' | 'right' | 'fade';
+  direction?: 'up' | 'fade';
   className?: string;
 }
 
@@ -16,36 +16,21 @@ export function ScrollReveal({
   direction = 'up',
   className = '',
 }: ScrollRevealProps) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, {
-    once: true,
-    margin: '-50px 0px -50px 0px',
+  const { ref, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: true,
   });
-
-  const variants = {
-    hidden: {
-      opacity: 0,
-      y: direction === 'up' ? 24 : 0,
-      x: direction === 'left' ? -24 : direction === 'right' ? 24 : 0,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      x: 0,
-      transition: {
-        duration: 0.6,
-        delay,
-        ease: [0.25, 0.46, 0.45, 0.94],
-      },
-    },
-  };
 
   return (
     <motion.div
       ref={ref}
-      initial="hidden"
-      animate={isInView ? 'visible' : 'hidden'}
-      variants={variants}
+      initial={{ opacity: 0, y: direction === 'up' ? 30 : 0 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: direction === 'up' ? 30 : 0 }}
+      transition={{
+        duration: 0.55,
+        delay,
+        ease: [0.25, 0.46, 0.45, 0.94],
+      }}
       className={className}
     >
       {children}
@@ -62,10 +47,9 @@ export function WordReveal({
   className?: string;
   delay?: number;
 }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, {
-    once: true,
-    margin: '-50px 0px',
+  const { ref, inView } = useInView({
+    threshold: 0.2,
+    triggerOnce: true,
   });
 
   const words = text.split(' ');
@@ -75,11 +59,11 @@ export function WordReveal({
       {words.map((word, i) => (
         <motion.span
           key={i}
-          initial={{ opacity: 0, y: 16 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{
-            duration: 0.5,
-            delay: delay + i * 0.08,
+            duration: 0.45,
+            delay: delay + i * 0.07,
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
           className="inline-block mr-[0.25em]"

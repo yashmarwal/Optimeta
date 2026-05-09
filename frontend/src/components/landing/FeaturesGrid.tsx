@@ -8,7 +8,7 @@ const features = [
   {
     icon: Brain,
     title: 'AI Campaign Architecture',
-    desc: 'Claude Sonnet AI analyzes your business and constructs a complete campaign structure with full funnel strategy tailored to your exact budget.',
+    desc: 'Our Advanced AI analyzes your business inputs and constructs a complete campaign structure with full funnel strategy — tailored to your exact budget, goals and Indian market.',
   },
   {
     icon: Target,
