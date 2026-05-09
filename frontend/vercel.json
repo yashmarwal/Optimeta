@@ -1,92 +1,11 @@
 {
   "headers": [
     {
-      "source": "/",
+      "source": "/about",
       "headers": [
         {
           "key": "X-Robots-Tag",
           "value": "index, follow"
-        }
-      ]
-    },
-    {
-      "source": "/pricing",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "index, follow"
-        }
-      ]
-    },
-    {
-      "source": "/blog",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "index, follow"
-        }
-      ]
-    },
-    {
-      "source": "/blog/(.*)",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "index, follow"
-        }
-      ]
-    },
-    {
-      "source": "/compare",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "index, follow"
-        }
-      ]
-    },
-    {
-      "source": "/terms",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "index, follow"
-        }
-      ]
-    },
-    {
-      "source": "/privacy",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "index, follow"
-        }
-      ]
-    },
-    {
-      "source": "/dashboard/(.*)",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow"
-        }
-      ]
-    },
-    {
-      "source": "/login",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow"
-        }
-      ]
-    },
-    {
-      "source": "/register",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex, nofollow"
         }
       ]
     }

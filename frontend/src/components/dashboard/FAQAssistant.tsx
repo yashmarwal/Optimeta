@@ -149,8 +149,170 @@ interface Message {
   time: string;
 }
 
-function getAnswer(query: string): string {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getAnswer(query: string, campaigns: any[]): string {
   const q = query.toLowerCase().trim();
+
+  // ── Campaign-specific queries ──────────────────────────────
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const campaignNameMatch = campaigns.find(c =>
+    q.includes(c.campaign_name?.toLowerCase().substring(0, 10)) ||
+    q.includes(c.business_inputs?.businessName?.toLowerCase())
+  );
+
+  if (
+    q.includes('my campaign') ||
+    q.includes('all campaign') ||
+    q.includes('list campaign') ||
+    q.includes('show campaign') ||
+    q.includes('campaigns i have') ||
+    q.includes('generated campaign')
+  ) {
+    if (campaigns.length === 0) {
+      return 'You have not generated any campaigns yet. Click "New Campaign" to create your first Meta ad campaign blueprint.';
+    }
+    const list = campaigns
+      .slice(0, 5)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((c: any, i: number) =>
+        `${i + 1}. ${c.campaign_name || c.business_inputs?.businessName + ' Campaign'} (${new Date(c.created_at).toLocaleDateString('en-IN')})`
+      )
+      .join('\n');
+    return `You have ${campaigns.length} campaign${campaigns.length > 1 ? 's' : ''}:\n\n${list}\n\nAsk me about any specific campaign for details.`;
+  }
+
+  if (
+    q.includes('latest campaign') ||
+    q.includes('last campaign') ||
+    q.includes('recent campaign') ||
+    q.includes('my last')
+  ) {
+    if (campaigns.length === 0) {
+      return 'You have not generated any campaigns yet. Click "New Campaign" to get started.';
+    }
+    const latest = campaigns[0];
+    const bp = latest.blueprint;
+    const inputs = latest.business_inputs;
+    return `Your latest campaign is "${latest.campaign_name}" for ${inputs?.businessName || 'your business'}.\n\nObjective: ${bp?.campaign_objective?.recommended || 'N/A'}\nDaily Budget: ₹${bp?.budget_strategy?.recommended_daily_budget_inr || 'N/A'}\nFunnel Stage: ${bp?.funnel_strategy?.stage || 'N/A'}\n\nAsk me for targeting, ad copies, or checklist details.`;
+  }
+
+  if (
+    (q.includes('targeting') || q.includes('audience') || q.includes('interests') || q.includes('behaviors')) &&
+    campaigns.length > 0
+  ) {
+    const campaign = campaignNameMatch || campaigns[0];
+    const bp = campaign.blueprint;
+    const targeting = bp?.targeting;
+    if (!targeting) {
+      return 'Targeting details not found for this campaign. Please open the full campaign blueprint to view targeting.';
+    }
+    const interests = targeting?.primary_audience?.interests?.slice(0, 5)?.join(', ') || 'N/A';
+    const behaviors = targeting?.primary_audience?.behaviors?.slice(0, 3)?.join(', ') || 'N/A';
+    return `Targeting for "${campaign.campaign_name}":\n\nAudience: ${targeting?.primary_audience?.age_range || ''} ${targeting?.primary_audience?.gender || ''}\nLocations: ${targeting?.primary_audience?.locations?.join(', ') || 'N/A'}\nTop Interests: ${interests}\nBehaviors: ${behaviors}\nApproach: ${targeting?.approach || 'N/A'}\n\nOpen the full blueprint for complete targeting combinations.`;
+  }
+
+  if (
+    (q.includes('ad copy') || q.includes('copies') || q.includes('ad text') || q.includes('headline') || q.includes('hook')) &&
+    campaigns.length > 0
+  ) {
+    const campaign = campaignNameMatch || campaigns[0];
+    const bp = campaign.blueprint;
+    const copies = bp?.ad_copies;
+    if (!copies || copies.length === 0) {
+      return 'Ad copies not found. Please open the full campaign blueprint to view your ad copies.';
+    }
+    const first = copies[0];
+    return `First ad copy for "${campaign.campaign_name}":\n\n🎯 Hook: ${first.hook}\n\nPrimary Text: ${first.primary_text?.substring(0, 120)}...\n\nHeadline: ${first.headline}\nCTA: ${first.cta}\nPlacement: ${first.placement}\n\nOpen the full blueprint to see all 3 ad copies.`;
+  }
+
+  if (
+    (q.includes('budget') || q.includes('spend') || q.includes('daily budget') || q.includes('how much')) &&
+    campaigns.length > 0 &&
+    q.includes('campaign')
+  ) {
+    const campaign = campaignNameMatch || campaigns[0];
+    const bp = campaign.blueprint;
+    const budget = bp?.budget_strategy;
+    if (!budget) {
+      return 'Budget details not found. Open the full blueprint to view budget strategy.';
+    }
+    return `Budget for "${campaign.campaign_name}":\n\nDaily Budget: ₹${budget.recommended_daily_budget_inr}\nMonthly Total: ₹${budget.total_monthly_inr}\n\nSplit:\n• Cold Prospecting: ${budget.split?.cold_prospecting}\n• Warm Retargeting: ${budget.split?.warm_retargeting}\n• Lookalike: ${budget.split?.lookalike}\n\nScaling: ${budget.scaling_logic}`;
+  }
+
+  if (
+    (q.includes('objective') || q.includes('goal') || q.includes('campaign type')) &&
+    campaigns.length > 0
+  ) {
+    const campaign = campaignNameMatch || campaigns[0];
+    const bp = campaign.blueprint;
+    const obj = bp?.campaign_objective;
+    if (!obj) {
+      return 'Objective details not found. Open the full blueprint for campaign details.';
+    }
+    return `Campaign objective for "${campaign.campaign_name}":\n\nRecommended: ${obj.recommended}\nIn Meta Ads Manager select: "${obj.meta_objective_name}"\n\nWhy: ${obj.reason}\n\nAvoid: ${obj.what_to_avoid}`;
+  }
+
+  if (
+    q.includes('checklist') ||
+    q.includes('launch') ||
+    q.includes('steps to launch') ||
+    q.includes('how to launch')
+  ) {
+    if (campaigns.length > 0) {
+      const campaign = campaignNameMatch || campaigns[0];
+      const bp = campaign.blueprint;
+      const checklist = bp?.launch_checklist;
+      if (checklist && checklist.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const steps = checklist.slice(0, 5).map((item: any) => `${item.step}. ${item.action} (${item.time_estimate})`).join('\n');
+        return `Launch checklist for "${campaign.campaign_name}":\n\n${steps}\n\nOpen the full blueprint to see all steps and check them off as you complete them.`;
+      }
+    }
+    return 'To launch your Meta campaign: 1. Install Meta Pixel on website 2. Set up Conversions API 3. Create campaign in Meta Ads Manager 4. Set up ad sets with recommended targeting 5. Upload creatives 6. Set budget and schedule 7. Review and publish 8. Monitor for 7 days without editing.';
+  }
+
+  if (
+    (q.includes('benchmark') || q.includes('expected roas') || q.includes('expected ctr') || q.includes('performance')) &&
+    campaigns.length > 0
+  ) {
+    const campaign = campaignNameMatch || campaigns[0];
+    const bp = campaign.blueprint;
+    const perf = bp?.performance_benchmarks;
+    if (!perf) {
+      return 'Performance benchmarks not found. Open the full blueprint for expected metrics.';
+    }
+    return `Expected performance for "${campaign.campaign_name}":\n\nTarget ROAS: ${perf.your_target_roas}\nExpected CTR (Feed): ${perf.expected_ctr_feed}\nExpected CTR (Reels): ${perf.expected_ctr_reels}\nExpected CPM: ₹${perf.expected_cpm_inr}\nExpected CPC: ₹${perf.expected_cpc_inr}\nLearning Phase: ${perf.learning_phase_duration}`;
+  }
+
+  if (
+    q.includes('7 days') ||
+    q.includes('seven days') ||
+    q.includes('first week') ||
+    q.includes('what to do after launch')
+  ) {
+    if (campaigns.length > 0) {
+      const campaign = campaignNameMatch || campaigns[0];
+      const bp = campaign.blueprint;
+      const plan = bp?.first_7_days_plan;
+      if (plan) {
+        return `First 7 days plan for "${campaign.campaign_name}":\n\nDay 1-3: ${plan.day_1_3}\n\nDay 4-7: ${plan.day_4_7}\n\nWhen to edit: ${plan.when_to_edit}\n\n✅ Green flags: ${plan.green_flags?.join(', ')}\n\n🚨 Red flags: ${plan.red_flags?.join(', ')}`;
+      }
+    }
+    return 'First 7 days after launching Meta ads: Day 1-3: Do NOT touch anything. Let Meta learn. Day 4-7: Check CPM and CTR only. If CTR below 0.5% after day 5, consider new creative. Never edit targeting or budget in first 7 days — it resets the learning phase.';
+  }
+
+  if (
+    q.includes('how many campaigns left') ||
+    q.includes('campaigns remaining') ||
+    q.includes('campaigns left') ||
+    q.includes('limit remaining')
+  ) {
+    return 'Check your campaigns remaining counter in the dashboard header — it shows how many blueprints you have left this month. Free: 1 lifetime. Pro: 5/month. Ultra: 10/month.';
+  }
+
+  // ── General knowledge base ─────────────────────────────────
+
   let bestMatch = null;
   let bestScore = 0;
 
@@ -169,26 +331,18 @@ function getAnswer(query: string): string {
 
   if (bestMatch && bestScore > 0) return bestMatch.answer;
 
-  return "I don't have a specific answer for that. For detailed help, email us at optimeta@outlook.com or check our blog at optimeta.tech/blog for Meta ads guides. You can also ask me about: ROAS, CTR, CPM, budget planning, TOFU/MOFU/BOFU, retargeting, UGC, or how to use Optimeta.";
+  return `I don't have a specific answer for that. ${campaigns.length > 0 ? `You can also ask me about your ${campaigns.length} generated campaign${campaigns.length > 1 ? 's' : ''} — targeting, ad copies, budget, checklist or performance benchmarks. ` : ''}For more help email optimeta@outlook.com`;
 }
-
-const SUGGESTIONS = [
-  'What is ROAS?',
-  'How does Optimeta work?',
-  'What is the minimum budget?',
-  'What is Learning Phase?',
-  'How to use COD in ads?',
-  'What is UGC?',
-  'How to cancel subscription?',
-  'What is Advantage+?',
-];
 
 export function FAQAssistant() {
   const [open, setOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [campaignsLoaded, setCampaignsLoaded] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       type: 'bot',
-      text: "Hi! I'm your Meta ads assistant. Ask me anything about Meta ads terms, Optimeta features, or campaign strategy.",
+      text: "Hi! I'm your Optimeta assistant. I can answer Meta ads questions and help you understand your generated campaigns. Ask me anything!",
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -198,12 +352,37 @@ export function FAQAssistant() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const token = localStorage.getItem('optimeta_token');
+        if (!token) return;
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/campaigns`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success && data.data) {
+          setCampaigns(data.data.campaigns ?? data.data);
+        }
+      } catch (e) {
+        console.error('Campaign fetch error:', e);
+      } finally {
+        setCampaignsLoaded(true);
+      }
+    };
+    fetchCampaigns();
+  }, []);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 300);
   }, [open]);
+
+  const suggestions = campaigns.length > 0
+    ? ['Show my campaigns', 'Latest campaign targeting', 'My last ad copies', 'Expected ROAS', 'First 7 days plan', 'What is ROAS?', 'Minimum budget?', 'What is Learning Phase?']
+    : ['How does Optimeta work?', 'What is ROAS?', 'What is Learning Phase?', 'Minimum budget?', 'What is UGC?', 'What is Advantage+?', 'How to cancel?', 'What is COD strategy?'];
 
   const sendMessage = (text?: string) => {
     const query = text || input.trim();
@@ -215,7 +394,7 @@ export function FAQAssistant() {
     setTyping(true);
 
     setTimeout(() => {
-      const answer = getAnswer(query);
+      const answer = getAnswer(query, campaigns);
       setMessages(prev => [
         ...prev,
         { type: 'bot', text: answer, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
@@ -265,7 +444,17 @@ export function FAQAssistant() {
                 </div>
                 <div>
                   <p className="text-white text-sm font-semibold leading-none">Optimeta Assistant</p>
-                  <p className="text-[#606080] text-xs mt-0.5">Meta ads help</p>
+                  <p className="text-[#606080] text-xs mt-0.5">
+                    {!campaignsLoaded && (
+                      <span className="animate-pulse">Loading your campaigns...</span>
+                    )}
+                    {campaignsLoaded && campaigns.length > 0 && (
+                      <span className="text-[#22c55e]">{campaigns.length} campaign{campaigns.length > 1 ? 's' : ''} loaded</span>
+                    )}
+                    {campaignsLoaded && campaigns.length === 0 && (
+                      <span>Meta ads help</span>
+                    )}
+                  </p>
                 </div>
               </div>
               <button
@@ -281,7 +470,7 @@ export function FAQAssistant() {
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${
+                    className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-line ${
                       msg.type === 'user'
                         ? 'bg-gradient-to-br from-[#7B2FBE] to-[#C026D3] text-white rounded-br-sm'
                         : 'bg-[#141428] text-[#A0A0C0] border border-[#1E1E3A] rounded-bl-sm'
@@ -314,7 +503,7 @@ export function FAQAssistant() {
             {/* Suggestions */}
             {messages.length <= 1 && (
               <div className="px-4 pb-2 flex flex-wrap gap-1.5 flex-shrink-0">
-                {SUGGESTIONS.map((s, i) => (
+                {suggestions.map((s, i) => (
                   <button
                     key={i}
                     onClick={() => sendMessage(s)}
@@ -333,7 +522,7 @@ export function FAQAssistant() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKey}
-                placeholder="Ask about Meta ads..."
+                placeholder="Ask about Meta ads or your campaigns..."
                 className="flex-1 bg-[#141428] border border-[#1E1E3A] rounded-xl px-3 py-2 text-sm text-white placeholder-[#606080] focus:outline-none focus:border-[#7B2FBE]/50 transition-colors"
               />
               <button
