@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 const DEFINITIONS: Record<string, string> = {
   'TOFU': 'Top of Funnel — People who have never heard of your brand. Cold audience. Focus: awareness and reach.',
@@ -35,13 +36,26 @@ interface InfoTooltipProps {
 }
 
 export function InfoTooltip({ term, className = '' }: InfoTooltipProps) {
-  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const definition = DEFINITIONS[term];
   if (!definition) return null;
+
+  const show = () => {
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    const halfWidth = 128; // half of w-64 (256px)
+    const left = Math.min(
+      Math.max(halfWidth + 8, rect.left + rect.width / 2),
+      window.innerWidth - halfWidth - 8
+    );
+    setPos({ top: rect.top - 8, left });
+  };
 
   return (
     <span className={`relative inline-flex items-center ${className}`}>
       <button
+        ref={buttonRef}
         className="
           w-4 h-4 rounded-full
           bg-[#7B2FBE]/20
@@ -55,27 +69,25 @@ export function InfoTooltip({ term, className = '' }: InfoTooltipProps) {
           cursor-pointer
           focus:outline-none
         "
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
-        onClick={() => setOpen(!open)}
+        onMouseEnter={show}
+        onMouseLeave={() => setPos(null)}
+        onClick={() => (pos ? setPos(null) : show())}
         aria-label={`What is ${term}?`}
       >
         i
       </button>
 
-      {open && (
-        <span className="
-          absolute bottom-6 left-1/2
-          -translate-x-1/2
-          z-50
-          w-64
-          bg-[#0F0F1A]
-          border border-[#7B2FBE]/40
-          rounded-xl
-          p-3
-          shadow-[0_0_20px_rgba(123,47,190,0.3)]
-          pointer-events-none
-        ">
+      {pos && createPortal(
+        <span
+          style={{
+            position: 'fixed',
+            top: pos.top,
+            left: pos.left,
+            transform: 'translate(-50%, -100%)',
+            zIndex: 99999,
+          }}
+          className="w-64 bg-[#0F0F1A] border border-[#7B2FBE]/40 rounded-xl p-3 shadow-[0_0_20px_rgba(123,47,190,0.3)] pointer-events-none"
+        >
           <span className="block text-[#7B2FBE] font-bold text-xs mb-1">
             {term}
           </span>
@@ -91,7 +103,8 @@ export function InfoTooltip({ term, className = '' }: InfoTooltipProps) {
             border-[#7B2FBE]/40
             rotate-45
           " />
-        </span>
+        </span>,
+        document.body
       )}
     </span>
   );

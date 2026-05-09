@@ -1,13 +1,86 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Play, Sparkles, TrendingUp, Banknote, MessageCircle, Target } from 'lucide-react';
-import { HeroDashboardAnimation } from '@/components/landing/HeroDashboardAnimation';
 
 const avatars = ['R', 'P', 'A', 'V', 'K'];
 
+function CountUp({
+  target,
+  prefix = '',
+  suffix = '',
+  decimals = 0,
+  duration = 1800,
+  start,
+}: {
+  target: number;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+  duration?: number;
+  start: boolean;
+}) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!start) return;
+    let startTime: number;
+    let animFrame: number;
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(parseFloat((eased * target).toFixed(decimals)));
+      if (progress < 1) animFrame = requestAnimationFrame(animate);
+    };
+    animFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animFrame);
+  }, [start, target, duration, decimals]);
+
+  const display =
+    decimals > 0
+      ? count.toLocaleString('en-IN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+      : count.toLocaleString('en-IN');
+
+  return <span>{prefix}{display}{suffix}</span>;
+}
+
+const topMetrics = [
+  { label: 'Total Ad Spend', target: 1669.33, prefix: '₹', decimals: 2, Icon: Banknote },
+  { label: 'Conversations Started', target: 322, prefix: '', decimals: 0, Icon: MessageCircle },
+  { label: 'Avg. Cost per Conversion', target: 5.91, prefix: '₹', decimals: 2, Icon: Target },
+];
+
+const trendCards = [
+  {
+    label: 'Reach Trend', target: 13, prefix: '', suffix: 'K', decimals: 0,
+    path: 'M0,28 L10,26 L20,25 L30,24 L40,26 L50,23 L60,20 L70,18 L80,10 L90,6 L100,2',
+  },
+  {
+    label: 'CPC Trend', target: 1.34, prefix: '₹', suffix: '', decimals: 2,
+    path: 'M0,18 L10,14 L20,18 L30,12 L40,16 L50,10 L60,16 L70,22 L80,16 L90,14 L100,18',
+  },
+  {
+    label: 'Spend Trend', target: 1.1, prefix: '₹', suffix: 'K', decimals: 1,
+    path: 'M0,26 L10,25 L20,24 L30,25 L40,24 L50,23 L60,22 L70,20 L80,14 L90,8 L100,2',
+  },
+];
+
 export default function Hero() {
+  const [animStart, setAnimStart] = useState(false);
+
+  useEffect(() => {
+    const played = sessionStorage.getItem('hero_animation_played');
+    if (played) { setAnimStart(true); return; }
+    const timer = setTimeout(() => {
+      setAnimStart(true);
+      sessionStorage.setItem('hero_animation_played', 'true');
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
       {/* Ambient blobs */}
@@ -116,142 +189,153 @@ export default function Hero() {
             className="hidden lg:flex flex-col items-center"
           >
             <figure>
-          <HeroDashboardAnimation>
-          <div className="animate-float">
-              <div className="glass-card p-2 glow-lg" style={{ borderRadius: '20px' }}>
-                <div className="rounded-2xl overflow-hidden" style={{ width: '520px', background: '#0F0F1A' }}>
+              <motion.div
+                initial={{ opacity: 0, filter: 'blur(12px)', scale: 0.97 }}
+                animate={animStart ? { opacity: 1, filter: 'blur(0px)', scale: 1 } : {}}
+                transition={{ duration: 1.0, ease: 'easeOut' }}
+              >
+                <div className="animate-float">
+                  <div className="glass-card p-2 glow-lg" style={{ borderRadius: '20px' }}>
+                    <div className="rounded-2xl overflow-hidden" style={{ width: '520px', background: '#0F0F1A' }}>
 
-                  {/* Browser chrome */}
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-white/8">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-red-500/70" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
-                      <div className="w-3 h-3 rounded-full bg-green-500/70" />
-                    </div>
-                    <div className="flex-1 mx-3 h-5 bg-white/5 rounded flex items-center px-3">
-                      <span className="text-[10px] text-text-muted">optimeta.tech/dashboard/campaign-blueprint/bulk-fabric-leads</span>
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 space-y-3">
-
-                    {/* Back link */}
-                    <div className="text-[10px] text-text-muted">← Back to Campaigns</div>
-
-                    {/* Title row */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="text-sm font-black text-white leading-tight">Tanish Creations — Bulk Fabric Leads</div>
-                        <div className="text-[10px] text-text-muted mt-0.5">Strategy & Performance Overview: Mar 27 – Apr 25, 2026</div>
+                      {/* Browser chrome */}
+                      <div className="flex items-center gap-2 px-4 py-3 border-b border-white/8">
+                        <div className="flex gap-1.5">
+                          <div className="w-3 h-3 rounded-full bg-red-500/70" />
+                          <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
+                          <div className="w-3 h-3 rounded-full bg-green-500/70" />
+                        </div>
+                        <div className="flex-1 mx-3 h-5 bg-white/5 rounded flex items-center px-3">
+                          <span className="text-[10px] text-text-muted">optimeta.tech/dashboard/campaign-blueprint/bulk-fabric-leads</span>
+                        </div>
                       </div>
-                      <div className="flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/30 whitespace-nowrap">
-                        ✓ Active & Scaling
+
+                      {/* Content */}
+                      <div className="p-4 space-y-3">
+
+                        {/* Back link */}
+                        <div className="text-[10px] text-text-muted">← Back to Campaigns</div>
+
+                        {/* Title row */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="text-sm font-black text-white leading-tight">Tanish Creations — Bulk Fabric Leads</div>
+                            <div className="text-[10px] text-text-muted mt-0.5">Strategy & Performance Overview: Mar 27 – Apr 25, 2026</div>
+                          </div>
+                          <div className="flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/30 whitespace-nowrap">
+                            ✓ Active & Scaling
+                          </div>
+                        </div>
+
+                        {/* Top metric cards */}
+                        <div className="grid grid-cols-3 gap-2">
+                          {topMetrics.map(({ label, target, prefix, decimals, Icon }) => (
+                            <div key={label} className="rounded-xl p-3 border border-white/8" style={{ background: '#161624' }}>
+                              <div className="flex items-start justify-between mb-1.5">
+                                <span className="text-[9px] text-text-muted leading-tight">{label}</span>
+                                <Icon size={13} className="text-white/20 flex-shrink-0 mt-0.5" />
+                              </div>
+                              <div className="text-base font-black" style={{ color: '#C026D3' }}>
+                                <CountUp target={target} prefix={prefix} decimals={decimals} start={animStart} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Trend cards with animated sparklines */}
+                        <div className="grid grid-cols-3 gap-2">
+                          {trendCards.map(({ label, target, prefix, suffix, decimals, path }, i) => (
+                            <div key={label} className="rounded-xl p-3 border border-white/8" style={{ background: '#161624' }}>
+                              <div className="text-[9px] text-text-muted mb-1">{label}</div>
+                              <div className="text-sm font-black text-white mb-2">
+                                <CountUp target={target} prefix={prefix} suffix={suffix} decimals={decimals} start={animStart} />
+                              </div>
+                              <svg viewBox="0 0 100 30" className="w-full h-8" preserveAspectRatio="none">
+                                <defs>
+                                  <linearGradient id={`g-spark-${i}`} x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#C026D3" stopOpacity="0.3" />
+                                    <stop offset="100%" stopColor="#C026D3" stopOpacity="0" />
+                                  </linearGradient>
+                                  <clipPath id={`clip-spark-${i}`}>
+                                    <motion.rect
+                                      x={0} y={0} height={30}
+                                      initial={{ width: 0 }}
+                                      animate={{ width: animStart ? 100 : 0 }}
+                                      transition={{ duration: 1.5, delay: 0.6 + i * 0.2, ease: 'easeInOut' }}
+                                    />
+                                  </clipPath>
+                                </defs>
+                                <path
+                                  d={`${path} L100,30 L0,30 Z`}
+                                  fill={`url(#g-spark-${i})`}
+                                  clipPath={`url(#clip-spark-${i})`}
+                                />
+                                <path
+                                  d={path}
+                                  fill="none"
+                                  stroke="#C026D3"
+                                  strokeWidth="1.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  clipPath={`url(#clip-spark-${i})`}
+                                />
+                              </svg>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Budget split */}
+                        <div className="rounded-xl p-3 border border-white/8" style={{ background: '#161624' }}>
+                          <div className="flex items-center gap-1.5 mb-2.5">
+                            <TrendingUp size={11} className="text-accent" />
+                            <span className="text-[10px] font-semibold text-white">Refined Budget Split</span>
+                          </div>
+                          {[
+                            { label: 'Awareness', pct: 20 },
+                            { label: 'Consideration', pct: 30 },
+                            { label: 'Conversion (Focus)', pct: 50 },
+                          ].map(({ label, pct }) => (
+                            <div key={label} className="flex items-center gap-2 mb-1.5 last:mb-0">
+                              <span className="text-[9px] text-text-muted w-28 flex-shrink-0">{label}</span>
+                              <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#7B2FBE,#C026D3)' }} />
+                              </div>
+                              <span className="text-[9px] text-text-muted w-6 text-right">{pct}%</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Ad angle cards */}
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { type: 'Pain-point ad:', copy: '"Struggling to find real bulk fabric buyers?"' },
+                            { type: 'Desire ad:', copy: '"Your bulk fabric inventory, sold at scale."' },
+                            { type: 'Trust ad:', copy: '"Over 15,000 textile businesses count on Tanish Creations\' leads."' },
+                          ].map(({ type, copy }) => (
+                            <div key={type} className="rounded-xl p-2.5 border border-white/8" style={{ background: '#161624' }}>
+                              <div className="flex items-center gap-1.5 mb-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#C026D3' }} />
+                                <span className="text-[9px] text-text-muted">{type}</span>
+                              </div>
+                              <p className="text-[9px] text-white leading-relaxed">{copy}</p>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="text-right">
+                          <span className="text-[9px] text-text-muted">Powered by Optimeta</span>
+                        </div>
+
                       </div>
                     </div>
-
-                    {/* Top metric cards */}
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { label: 'Total Ad Spend', value: '₹1,669.33', Icon: Banknote },
-                        { label: 'Conversations Started', value: '322', Icon: MessageCircle },
-                        { label: 'Avg. Cost per Conversion', value: '₹5.91', Icon: Target },
-                      ].map(({ label, value, Icon }) => (
-                        <div key={label} className="rounded-xl p-3 border border-white/8" style={{ background: '#161624' }}>
-                          <div className="flex items-start justify-between mb-1.5">
-                            <span className="text-[9px] text-text-muted leading-tight">{label}</span>
-                            <Icon size={13} className="text-white/20 flex-shrink-0 mt-0.5" />
-                          </div>
-                          <div className="text-base font-black" style={{ color: '#C026D3' }}>{value}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Trend cards with sparklines */}
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        {
-                          label: 'Reach Trend', value: '13K',
-                          path: 'M0,28 L10,26 L20,25 L30,24 L40,26 L50,23 L60,20 L70,18 L80,10 L90,6 L100,2',
-                        },
-                        {
-                          label: 'CPC Trend (All)', value: '₹1.34',
-                          path: 'M0,18 L10,14 L20,18 L30,12 L40,16 L50,10 L60,16 L70,22 L80,16 L90,14 L100,18',
-                        },
-                        {
-                          label: 'Spend Trend', value: '₹1.1K',
-                          path: 'M0,26 L10,25 L20,24 L30,25 L40,24 L50,23 L60,22 L70,20 L80,14 L90,8 L100,2',
-                        },
-                      ].map(({ label, value, path }) => (
-                        <div key={label} className="rounded-xl p-3 border border-white/8" style={{ background: '#161624' }}>
-                          <div className="text-[9px] text-text-muted mb-1">{label}</div>
-                          <div className="text-sm font-black text-white mb-2">{value}</div>
-                          <svg viewBox="0 0 100 30" className="w-full h-8" preserveAspectRatio="none">
-                            <defs>
-                              <linearGradient id={`g-${label}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#C026D3" stopOpacity="0.3" />
-                                <stop offset="100%" stopColor="#C026D3" stopOpacity="0" />
-                              </linearGradient>
-                            </defs>
-                            <path d={`${path} L100,30 L0,30 Z`} fill={`url(#g-${label})`} />
-                            <path d={path} fill="none" stroke="#C026D3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Budget split */}
-                    <div className="rounded-xl p-3 border border-white/8" style={{ background: '#161624' }}>
-                      <div className="flex items-center gap-1.5 mb-2.5">
-                        <TrendingUp size={11} className="text-accent" />
-                        <span className="text-[10px] font-semibold text-white">Refined Budget Split</span>
-                      </div>
-                      {[
-                        { label: 'Awareness', pct: 20 },
-                        { label: 'Consideration', pct: 30 },
-                        { label: 'Conversion (Focus)', pct: 50 },
-                      ].map(({ label, pct }) => (
-                        <div key={label} className="flex items-center gap-2 mb-1.5 last:mb-0">
-                          <span className="text-[9px] text-text-muted w-28 flex-shrink-0">{label}</span>
-                          <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#7B2FBE,#C026D3)' }} />
-                          </div>
-                          <span className="text-[9px] text-text-muted w-6 text-right">{pct}%</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Ad angle cards */}
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { type: 'Pain-point ad:', copy: '"Struggling to find real bulk fabric buyers?"' },
-                        { type: 'Desire ad:', copy: '"Your bulk fabric inventory, sold at scale."' },
-                        { type: 'Trust ad:', copy: '"Over 15,000 textile businesses count on Tanish Creations\' leads."' },
-                      ].map(({ type, copy }) => (
-                        <div key={type} className="rounded-xl p-2.5 border border-white/8" style={{ background: '#161624' }}>
-                          <div className="flex items-center gap-1.5 mb-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#C026D3' }} />
-                            <span className="text-[9px] text-text-muted">{type}</span>
-                          </div>
-                          <p className="text-[9px] text-white leading-relaxed">{copy}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Footer */}
-                    <div className="text-right">
-                      <span className="text-[9px] text-text-muted">Powered by Optimeta</span>
-                    </div>
-
                   </div>
                 </div>
-              </div>
-            </div>
-          </HeroDashboardAnimation>
-          </figure>
-            <figcaption className="sr-only">
-              Meta Ads Manager dashboard showing real campaign results from Optimeta users
-            </figcaption>
+              </motion.div>
+              <figcaption className="sr-only">
+                Meta Ads Manager dashboard showing real campaign results from Optimeta users
+              </figcaption>
+            </figure>
           </motion.div>
         </div>
       </div>
