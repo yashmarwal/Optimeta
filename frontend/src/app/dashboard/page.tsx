@@ -192,11 +192,11 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
               whileHover={{ y: -4 }}
-              className="glass-card p-6 gradient-border group transition-all duration-200 flex flex-col"
+              className="glass-card p-6 gradient-border group transition-all duration-200 flex flex-col w-full max-w-full overflow-hidden"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0 pr-2 overflow-hidden">
-                  <h3 className="font-bold text-white text-sm leading-tight line-clamp-2 mb-1 break-words">
+                  <h3 className="font-bold text-white text-sm leading-tight truncate max-w-full mb-1">
                     {campaign.campaignName || 'Unnamed Campaign'}
                   </h3>
                   <div className="flex gap-2 flex-wrap">
@@ -211,30 +211,30 @@ export default function DashboardPage() {
               </div>
 
               {campaign.executiveSummary && (
-                <p className="text-xs text-text-muted leading-relaxed mb-4 flex-1 line-clamp-3">
+                <p className="text-xs text-text-muted leading-relaxed mb-4 flex-1 line-clamp-2 break-words overflow-hidden w-full">
                   {campaign.executiveSummary}
                 </p>
               )}
 
-              <div className="flex items-center justify-between pt-4 border-t border-border-color">
+              <div className="flex items-center justify-between pt-4 border-t border-border-color w-full flex-wrap gap-2 min-w-0">
                 <span className="text-xs text-text-muted">
                   {new Date(campaign.createdAt).toLocaleDateString('en-IN', {
                     day: 'numeric', month: 'short', year: 'numeric'
                   })}
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleDelete(campaign.id)}
                     disabled={deletingId === campaign.id}
-                    className="p-2 rounded-lg text-text-muted hover:text-red-400 hover:bg-red-500/10 transition-all"
+                    className="p-2 rounded-lg text-text-muted hover:text-red-400 hover:bg-red-500/10 transition-all flex-shrink-0"
                   >
                     <Trash2 size={14} />
                   </motion.button>
                   <Link href={`/dashboard/campaigns/${campaign.id}`}>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/15 border border-primary/30 text-xs text-white hover:bg-primary/25 transition-all"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/15 border border-primary/30 text-xs text-white hover:bg-primary/25 transition-all flex-shrink-0"
                     >
                       <Eye size={12} />
                       View

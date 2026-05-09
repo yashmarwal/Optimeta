@@ -6,17 +6,30 @@ import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
+import { usePathname, useRouter } from 'next/navigation';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handler);
     return () => window.removeEventListener('scroll', handler);
   }, []);
+
+  const scrollToSection = (id: string) => {
+    if (pathname === '/') {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      router.push(`/#${id}`);
+    }
+  };
+
+  const navLinkClass = 'text-sm text-text-secondary hover:text-white transition-colors bg-transparent border-none cursor-pointer p-0';
 
   return (
     <motion.nav
@@ -37,8 +50,8 @@ export default function Navbar() {
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
-            <Link href="#features" className="text-sm text-text-secondary hover:text-white transition-colors">Features</Link>
-            <Link href="#how-it-works" className="text-sm text-text-secondary hover:text-white transition-colors">How it works</Link>
+            <button onClick={() => scrollToSection('features')} className={navLinkClass}>Features</button>
+            <button onClick={() => scrollToSection('how-it-works')} className={navLinkClass}>How it works</button>
             <Link href="/pricing" className="text-sm text-text-secondary hover:text-white transition-colors">Pricing</Link>
             <Link href="/blog" className="text-sm text-text-secondary hover:text-white transition-colors">Blog</Link>
           </div>
@@ -88,8 +101,18 @@ export default function Navbar() {
           className="md:hidden bg-bg-card border-b border-border-color px-4 pb-4"
         >
           <div className="flex flex-col gap-3 pt-4">
-            <Link href="#features" className="text-sm text-text-secondary py-2" onClick={() => setMenuOpen(false)}>Features</Link>
-            <Link href="#how-it-works" className="text-sm text-text-secondary py-2" onClick={() => setMenuOpen(false)}>How it works</Link>
+            <button
+              onClick={() => { scrollToSection('features'); setMenuOpen(false); }}
+              className="text-sm text-text-secondary py-2 text-left bg-transparent border-none cursor-pointer"
+            >
+              Features
+            </button>
+            <button
+              onClick={() => { scrollToSection('how-it-works'); setMenuOpen(false); }}
+              className="text-sm text-text-secondary py-2 text-left bg-transparent border-none cursor-pointer"
+            >
+              How it works
+            </button>
             <Link href="/pricing" className="text-sm text-text-secondary py-2" onClick={() => setMenuOpen(false)}>Pricing</Link>
             <Link href="/blog" className="text-sm text-text-secondary py-2" onClick={() => setMenuOpen(false)}>Blog</Link>
             {user ? (

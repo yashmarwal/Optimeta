@@ -1,7 +1,7 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { motion } from 'framer-motion';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
 
 const testimonials = [
   {
@@ -28,17 +28,10 @@ const testimonials = [
 ];
 
 export default function Testimonials() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-50px' });
-
   return (
-    <section ref={ref} className="py-24">
+    <section className="py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          className="text-center mb-16"
-        >
+        <ScrollReveal className="text-center mb-16">
           <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs text-accent font-medium mb-4">
             Testimonials
           </div>
@@ -46,39 +39,37 @@ export default function Testimonials() {
             Indian Brands<br />
             <span className="gradient-text">Love Optimeta</span>
           </h2>
-        </motion.div>
+        </ScrollReveal>
 
         <div className="grid md:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
-            <motion.div
-              key={t.name}
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.4, delay: i * 0.12 }}
-              whileHover={{ scale: 1.02, y: -4 }}
-              className="glass-card p-8 gradient-border transition-all duration-300 flex flex-col"
-            >
-              <div className="flex items-center gap-1 mb-5">
-                {[...Array(5)].map((_, j) => (
-                  <span key={j} className="text-yellow-400 text-sm">★</span>
-                ))}
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed mb-6 flex-1">
-                &quot;{t.quote}&quot;
-              </p>
-              <div className="flex items-center gap-4 pt-4 border-t border-border-color">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center font-bold text-white">
-                  {t.avatar}
+            <ScrollReveal key={t.name} delay={i * 0.12}>
+              <motion.div
+                whileHover={{ scale: 1.02, y: -4 }}
+                className="glass-card p-8 gradient-border transition-all duration-300 flex flex-col h-full"
+              >
+                <div className="flex items-center gap-1 mb-5">
+                  {[...Array(5)].map((_, j) => (
+                    <span key={j} className="text-yellow-400 text-sm">★</span>
+                  ))}
                 </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-white text-sm">{t.name}</div>
-                  <div className="text-xs text-text-muted">{t.role}</div>
+                <p className="text-text-secondary text-sm leading-relaxed mb-6 flex-1">
+                  &quot;{t.quote}&quot;
+                </p>
+                <div className="flex items-center gap-4 pt-4 border-t border-border-color">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center font-bold text-white">
+                    {t.avatar}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-white text-sm">{t.name}</div>
+                    <div className="text-xs text-text-muted">{t.role}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-bold gradient-text">{t.result}</div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-bold gradient-text">{t.result}</div>
-                </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

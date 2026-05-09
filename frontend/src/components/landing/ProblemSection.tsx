@@ -1,8 +1,8 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { motion } from 'framer-motion';
 import { AlertTriangle, DollarSign, Users } from 'lucide-react';
+import { ScrollReveal } from '@/components/ui/ScrollReveal';
 
 const problems = [
   {
@@ -23,18 +23,10 @@ const problems = [
 ];
 
 export default function ProblemSection() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-50px' });
-
   return (
-    <section ref={ref} className="py-24">
+    <section className="py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4 }}
-          className="text-center mb-16"
-        >
+        <ScrollReveal className="text-center mb-16">
           <div className="inline-block px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-medium mb-4">
             The Problem
           </div>
@@ -45,24 +37,22 @@ export default function ProblemSection() {
           <p className="text-text-secondary max-w-xl mx-auto">
             The Indian market demands a fundamentally different approach. Here&apos;s what&apos;s holding brands back.
           </p>
-        </motion.div>
+        </ScrollReveal>
 
         <div className="grid md:grid-cols-3 gap-6">
           {problems.map((p, i) => (
-            <motion.div
-              key={p.title}
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.4, delay: i * 0.12 }}
-              whileHover={{ scale: 1.02, y: -4 }}
-              className="glass-card p-8 gradient-border transition-all duration-300"
-            >
-              <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6">
-                <p.icon size={22} className="text-red-400" />
-              </div>
-              <h3 className="text-lg font-bold text-white mb-3">{p.title}</h3>
-              <p className="text-text-secondary text-sm leading-relaxed">{p.desc}</p>
-            </motion.div>
+            <ScrollReveal key={p.title} delay={i * 0.12}>
+              <motion.div
+                whileHover={{ scale: 1.02, y: -4 }}
+                className="glass-card p-8 gradient-border transition-all duration-300 h-full"
+              >
+                <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6">
+                  <p.icon size={22} className="text-red-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-3">{p.title}</h3>
+                <p className="text-text-secondary text-sm leading-relaxed">{p.desc}</p>
+              </motion.div>
+            </ScrollReveal>
           ))}
         </div>
       </div>
