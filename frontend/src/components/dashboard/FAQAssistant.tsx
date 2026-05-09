@@ -6,6 +6,38 @@ import { X, Send } from 'lucide-react';
 
 const KNOWLEDGE_BASE = [
   {
+    keywords: ['thank you', 'thanks', 'thankyou', 'thank u', 'ty', 'shukriya', 'dhanyawad'],
+    answer: "You're welcome! Happy to help. Feel free to ask anything else about your campaigns or Meta ads. 😊",
+  },
+  {
+    keywords: ['ok', 'okay', 'alright', 'got it', 'understood', 'noted', 'sure', 'fine'],
+    answer: "Great! Let me know if you need anything else. I'm here to help with your Meta ads campaigns. 👍",
+  },
+  {
+    keywords: ['anything else', 'what else', 'what can you do', 'what can you help', 'help me with'],
+    answer: 'I can help you with:\n\n📊 Your campaigns — targeting, ad copies, budget, checklist\n📈 Meta ads terms — ROAS, CTR, CPM, Learning Phase\n💡 Strategy — COD tips, UGC, retargeting\n⚙️ Optimeta — plans, features, how to use\n\nJust ask anything!',
+  },
+  {
+    keywords: ['good', 'great', 'awesome', 'perfect', 'excellent', 'nice', 'helpful', 'amazing'],
+    answer: "Glad I could help! 🎯 Anything else you'd like to know about your campaigns or Meta ads strategy?",
+  },
+  {
+    keywords: ['bye', 'goodbye', 'see you', 'take care', 'later'],
+    answer: 'Goodbye! Best of luck with your Meta campaigns. Feel free to come back anytime. 🚀',
+  },
+  {
+    keywords: ['who are you', 'what are you', 'are you ai', 'are you a bot', 'are you human'],
+    answer: "I'm the Optimeta Assistant — your Meta ads help guide. I can answer questions about your campaigns and Meta advertising strategy. For account or billing help, reach us at optimeta@outlook.com",
+  },
+  {
+    keywords: ['not helpful', 'wrong answer', 'incorrect', 'that is wrong', 'not right'],
+    answer: "I'm sorry about that! For more detailed help, please email us at optimeta@outlook.com — we respond within 24 hours. You can also open your full campaign blueprint for complete details.",
+  },
+  {
+    keywords: ['how are you', 'how r u', 'whats up', "what's up"],
+    answer: "I'm doing great and ready to help! 😊 Ask me about your Meta campaigns or any advertising questions.",
+  },
+  {
     keywords: ['what is optimeta', 'optimeta', 'platform', 'about optimeta'],
     answer: 'Optimeta is an AI-powered Meta ad campaign architect built for Indian brands. You answer questions about your business and we generate a complete Facebook & Instagram campaign blueprint — including targeting, budget, ad copies, creative direction and launch checklist.',
   },
@@ -149,6 +181,11 @@ interface Message {
   time: string;
 }
 
+function truncateName(name: string, maxLen = 30): string {
+  if (!name) return 'Your Campaign';
+  return name.length > maxLen ? name.substring(0, maxLen) + '...' : name;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getAnswer(query: string, campaigns: any[]): string {
   const q = query.toLowerCase().trim();
@@ -157,11 +194,14 @@ function getAnswer(query: string, campaigns: any[]): string {
 
   // Helper: get display name from campaign object (handles both camelCase list API and snake_case)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getName = (c: any, i?: number) =>
-    c.campaignName ||
-    c.campaign_name ||
-    (c.business_inputs?.businessName ? c.business_inputs.businessName + ' Campaign' : null) ||
-    `Campaign ${(i ?? 0) + 1}`;
+  const getName = (c: any, i?: number) => {
+    const raw =
+      c.campaignName ||
+      c.campaign_name ||
+      (c.business_inputs?.businessName ? c.business_inputs.businessName + ' Campaign' : null) ||
+      `Campaign ${(i ?? 0) + 1}`;
+    return truncateName(raw);
+  };
 
   // Helper: safe date formatting
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -192,8 +232,19 @@ function getAnswer(query: string, campaigns: any[]): string {
     const list = campaigns
       .slice(0, 5)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((c: any, i: number) => `${i + 1}. ${getName(c, i)} (${getDate(c)})`)
-      .join('\n');
+      .map((c: any, i: number) => {
+        const name = truncateName(getName(c, i), 28);
+        let dateStr = 'Recent';
+        try {
+          const dateVal = c.createdAt || c.created_at;
+          if (dateVal) {
+            const d = new Date(dateVal);
+            if (!isNaN(d.getTime())) dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+          }
+        } catch { dateStr = 'Recent'; }
+        return `${i + 1}. ${name}\n   📅 ${dateStr}`;
+      })
+      .join('\n\n');
     return `You have ${campaigns.length} campaign${campaigns.length > 1 ? 's' : ''}:\n\n${list}\n\nAsk me about any specific campaign for details.`;
   }
 
@@ -570,11 +621,12 @@ export function FAQAssistant() {
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-line ${
+                    className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed break-words overflow-hidden ${
                       msg.type === 'user'
                         ? 'bg-gradient-to-br from-[#7B2FBE] to-[#C026D3] text-white rounded-br-sm'
                         : 'bg-[#141428] text-[#A0A0C0] border border-[#1E1E3A] rounded-bl-sm'
                     }`}
+                    style={{ wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}
                   >
                     {msg.text}
                     <div className={`text-[10px] mt-1 ${msg.type === 'user' ? 'text-white/60 text-right' : 'text-[#606080]'}`}>
