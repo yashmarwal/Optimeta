@@ -11,6 +11,7 @@ import FAQSection from '@/components/landing/FAQSection';
 import FinalCTA from '@/components/landing/FinalCTA';
 import Footer from '@/components/landing/Footer';
 import Navbar from '@/components/landing/Navbar';
+import LandingInlineStats from '@/components/landing/LandingInlineStats';
 
 export const metadata: Metadata = {
   title: 'Optimeta — AI Meta Ad Architect for India',
@@ -60,31 +61,7 @@ export default function HomePage() {
       <Hero />
       <StatsBar />
 
-      <section className="py-8 px-4 max-w-4xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-          <div>
-            <p className="text-3xl font-black gradient-text">490M+</p>
-            <p className="text-text-muted text-sm mt-1">
-              Facebook users in India
-              <cite className="block text-xs text-[#606080] mt-1">Source: Meta Q1 2026</cite>
-            </p>
-          </div>
-          <div>
-            <p className="text-3xl font-black gradient-text">₹60-120</p>
-            <p className="text-text-muted text-sm mt-1">
-              Average CPM in metro cities
-              <cite className="block text-xs text-[#606080] mt-1">India Meta Ads Benchmark 2026</cite>
-            </p>
-          </div>
-          <div>
-            <p className="text-3xl font-black gradient-text">3.2x</p>
-            <p className="text-text-muted text-sm mt-1">
-              Average ROAS for Indian D2C brands
-              <cite className="block text-xs text-[#606080] mt-1">Optimeta Campaign Data 2026</cite>
-            </p>
-          </div>
-        </div>
-      </section>
+      <LandingInlineStats />
 
       <ProblemSection />
 

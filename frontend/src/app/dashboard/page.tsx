@@ -191,12 +191,12 @@ export default function DashboardPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              whileHover={{ scale: 1.02, y: -3 }}
+              whileHover={{ y: -4 }}
               className="glass-card p-6 gradient-border group transition-all duration-200 flex flex-col"
             >
               <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0 pr-2">
-                  <h3 className="font-bold text-white text-sm leading-tight line-clamp-2 mb-1">
+                <div className="flex-1 min-w-0 pr-2 overflow-hidden">
+                  <h3 className="font-bold text-white text-sm leading-tight line-clamp-2 mb-1 break-words">
                     {campaign.campaignName || 'Unnamed Campaign'}
                   </h3>
                   <div className="flex gap-2 flex-wrap">

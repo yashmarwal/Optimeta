@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Play, Sparkles, TrendingUp, Banknote, MessageCircle, Target } from 'lucide-react';
 
-const avatars = ['R', 'P', 'A', 'V', 'K'];
 
 function CountUp({
   target,
@@ -151,34 +150,6 @@ export default function Hero() {
               </Link>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-              className="flex items-center gap-3"
-            >
-              <div className="flex -space-x-2">
-                {avatars.map((a, i) => (
-                  <div
-                    key={i}
-                    className="w-9 h-9 rounded-full border-2 border-bg-dark flex items-center justify-center text-xs font-bold text-white"
-                    style={{ background: `linear-gradient(135deg, #7B2FBE, #C026D3)`, zIndex: avatars.length - i }}
-                  >
-                    {a}
-                  </div>
-                ))}
-              </div>
-              <div>
-                <div className="flex items-center gap-1 mb-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-yellow-400 text-xs">★</span>
-                  ))}
-                </div>
-                <p className="text-sm text-text-secondary">
-                  Trusted by <span className="text-white font-semibold">500+ Indian brands</span>
-                </p>
-              </div>
-            </motion.div>
           </div>
 
           {/* Right — UI Mockup */}

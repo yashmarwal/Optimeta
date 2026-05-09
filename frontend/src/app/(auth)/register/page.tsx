@@ -86,12 +86,12 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen min-h-[100dvh] w-full max-w-full overflow-x-hidden overflow-y-auto bg-bg-dark dot-grid flex items-center justify-center px-4 py-16">
+    <div className="relative min-h-[100dvh] w-full max-w-full overflow-x-hidden overflow-y-auto bg-bg-dark dot-grid flex items-center justify-center px-4 py-16">
       <Link href="/" className="fixed top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-text-muted hover:text-primary border border-transparent hover:border-primary/30 hover:bg-primary/10 transition-all">
         <ArrowLeft size={15} />
         Home
       </Link>
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/15 rounded-full blur-[100px]" />
         <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/10 rounded-full blur-[100px]" />
       </div>
