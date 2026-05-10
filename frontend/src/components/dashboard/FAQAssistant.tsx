@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send } from 'lucide-react';
+import { X, Send, Zap, ChevronRight } from 'lucide-react';
 
 const KNOWLEDGE_BASE = [
   {
@@ -27,7 +27,7 @@ const KNOWLEDGE_BASE = [
   },
   {
     keywords: ['who are you', 'what are you', 'are you ai', 'are you a bot', 'are you human'],
-    answer: "I'm the Optimeta Assistant — your Meta ads help guide. I can answer questions about your campaigns and Meta advertising strategy. For account or billing help, reach us at optimeta@outlook.com",
+    answer: "I'm Meta Mitra — your personal Meta ads expert by Optimeta. I can answer questions about your campaigns and Meta advertising strategy. For account or billing help, reach us at optimeta@outlook.com",
   },
   {
     keywords: ['not helpful', 'wrong answer', 'incorrect', 'that is wrong', 'not right'],
@@ -171,15 +171,9 @@ const KNOWLEDGE_BASE = [
   },
   {
     keywords: ['hello', 'hi', 'hey', 'namaste'],
-    answer: "Hello! I'm the Optimeta Help Assistant. I can help you with Meta ads terms, how to use Optimeta, plan details and campaign tips. What would you like to know?",
+    answer: "Hello! I'm Meta Mitra, your Optimeta AI assistant. I can help you with Meta ads terms, your campaigns, plan details and strategy tips. What would you like to know?",
   },
 ];
-
-interface Message {
-  type: 'user' | 'bot';
-  text: string;
-  time: string;
-}
 
 function truncateName(name: string, maxLen = 30): string {
   if (!name) return 'Your Campaign';
@@ -190,9 +184,6 @@ function truncateName(name: string, maxLen = 30): string {
 function getAnswer(query: string, campaigns: any[]): string {
   const q = query.toLowerCase().trim();
 
-  // ── Campaign-specific queries ──────────────────────────────
-
-  // Helper: get display name from campaign object (handles both camelCase list API and snake_case)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getName = (c: any, i?: number) => {
     const raw =
@@ -203,7 +194,6 @@ function getAnswer(query: string, campaigns: any[]): string {
     return truncateName(raw);
   };
 
-  // Helper: safe date formatting
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getDate = (c: any) => {
     try {
@@ -377,8 +367,6 @@ function getAnswer(query: string, campaigns: any[]): string {
     return 'Check your campaigns remaining counter in the dashboard header — it shows how many blueprints you have left this month. Free: 1 lifetime. Pro: 5/month. Ultra: 10/month.';
   }
 
-  // ── General knowledge base ─────────────────────────────────
-
   let bestMatch = null;
   let bestScore = 0;
 
@@ -400,92 +388,483 @@ function getAnswer(query: string, campaigns: any[]): string {
   return `I don't have a specific answer for that. ${campaigns.length > 0 ? `You can ask me about your ${campaigns.length} campaign${campaigns.length > 1 ? 's' : ''} — try "show my campaigns", "latest campaign", or "what is ROAS". ` : ''}For more help email optimeta@outlook.com`;
 }
 
+// ── Credit helpers ────────────────────────────────────────────
+const PLAN_CREDITS: Record<string, number> = {
+  free: 10,
+  pro: 100,
+  ultra: 300,
+};
+
+function calculateCreditCost(msg: string): number {
+  const len = msg.trim().length;
+  if (len < 50) return 0.5;
+  if (len < 150) return 1;
+  return 2;
+}
+
+function needsAI(message: string): boolean {
+  const q = message.toLowerCase();
+  const faqTerms = [
+    'what is roas', 'what is ctr',
+    'what is cpm', 'what is cpc',
+    'what is tofu', 'what is mofu',
+    'what is bofu', 'what is ugc',
+    'what is capi', 'what is asc',
+    'what is lookalike', 'what is retargeting',
+    'what is learning phase',
+    'what is advantage+',
+    'what is creative fatigue',
+    'what is cold audience',
+    'what is warm audience',
+    'how does optimeta work',
+    'how to use optimeta',
+    'what is optimeta',
+    'pro plan', 'ultra plan', 'free plan',
+    'how to cancel', 'how many campaigns',
+    'what is cod',
+    'show my campaigns', 'my campaigns',
+    'list campaigns', 'thank you',
+    'thanks', 'okay', 'ok', 'bye',
+    'hello', 'hi', 'hey',
+  ];
+  return !faqTerms.some(t => q.includes(t));
+}
+
+// ── Types ─────────────────────────────────────────────────────
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  time: string;
+  creditsUsed?: number;
+  fromCache?: boolean;
+}
+
+interface Credits {
+  credits_remaining: number;
+  credits_limit: number;
+  credits_used: number;
+  plan: string;
+}
+
+// ── Animated Orb ──────────────────────────────────────────────
+function AnimatedOrb({ thinking }: { thinking: boolean }) {
+  return (
+    <div className="relative w-16 h-16 flex items-center justify-center">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: thinking ? 1.5 : 4, repeat: Infinity, ease: 'linear' }}
+        className="absolute inset-0 rounded-full"
+        style={{
+          background: thinking
+            ? 'conic-gradient(from 0deg, #C026D3, #7B2FBE, #C026D300, #C026D3)'
+            : 'conic-gradient(from 0deg, #7B2FBE, #C026D3, #7B2FBE00, #7B2FBE)',
+          padding: '2px',
+        }}
+      >
+        <div className="w-full h-full rounded-full bg-[#0A0A0F]" />
+      </motion.div>
+
+      {thinking && (
+        <>
+          <motion.div
+            animate={{ scale: [1, 1.8, 1], opacity: [0.3, 0, 0.3] }}
+            transition={{ duration: 1.2, repeat: Infinity }}
+            className="absolute inset-0 rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(192,38,211,0.3) 0%, transparent 70%)' }}
+          />
+          <motion.div
+            animate={{ scale: [1, 2.2, 1], opacity: [0.2, 0, 0.2] }}
+            transition={{ duration: 1.2, delay: 0.3, repeat: Infinity }}
+            className="absolute inset-0 rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(123,47,190,0.2) 0%, transparent 70%)' }}
+          />
+        </>
+      )}
+
+      <motion.div
+        animate={thinking ? {
+          boxShadow: [
+            '0 0 12px rgba(192,38,211,0.6)',
+            '0 0 24px rgba(123,47,190,0.9)',
+            '0 0 12px rgba(192,38,211,0.6)',
+          ],
+        } : {
+          boxShadow: [
+            '0 0 8px rgba(123,47,190,0.4)',
+            '0 0 16px rgba(192,38,211,0.6)',
+            '0 0 8px rgba(123,47,190,0.4)',
+          ],
+        }}
+        transition={{ duration: thinking ? 0.8 : 2, repeat: Infinity }}
+        className="relative w-10 h-10 rounded-full flex items-center justify-center"
+        style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)' }}
+      >
+        <motion.span
+          animate={thinking ? { scale: [0.8, 1.2, 0.8] } : { scale: [0.9, 1.1, 0.9] }}
+          transition={{ duration: thinking ? 0.6 : 2, repeat: Infinity }}
+          className="text-white font-black text-lg leading-none"
+        >
+          M
+        </motion.span>
+        <motion.span
+          animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5], rotate: [0, 180, 360] }}
+          transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+          className="absolute -top-1 -right-1 text-[8px] text-[#C026D3]"
+        >
+          ✦
+        </motion.span>
+      </motion.div>
+    </div>
+  );
+}
+
+// ── Opening Screen ────────────────────────────────────────────
+function OpeningScreen({ onComplete }: { onComplete: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onComplete, 2200);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="absolute inset-0 flex flex-col items-center justify-center bg-[#0A0A0F] z-10 rounded-2xl overflow-hidden"
+    >
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(123,47,190,0.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(123,47,190,0.08) 1px, transparent 1px)
+          `,
+          backgroundSize: '32px 32px',
+        }}
+      />
+
+      <motion.div
+        initial={{ top: '-10%' }}
+        animate={{ top: '110%' }}
+        transition={{ duration: 1.5, ease: 'linear', repeat: Infinity }}
+        className="absolute left-0 right-0 h-px pointer-events-none"
+        style={{
+          background: 'linear-gradient(90deg, transparent, #7B2FBE, #C026D3, #7B2FBE, transparent)',
+          boxShadow: '0 0 12px rgba(192,38,211,0.6)',
+        }}
+      />
+
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.5, type: 'spring', stiffness: 200 }}
+        className="flex flex-col items-center gap-4 relative z-10"
+      >
+        <AnimatedOrb thinking={false} />
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="text-center"
+        >
+          <p className="text-white font-bold text-lg tracking-wide">Meta Mitra</p>
+          <p className="text-[#606080] text-xs mt-1">by Optimeta</p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="flex gap-1.5"
+        >
+          {[0, 1, 2].map(i => (
+            <motion.div
+              key={i}
+              animate={{ scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }}
+              transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.2 }}
+              className="w-1.5 h-1.5 rounded-full bg-[#7B2FBE]"
+            />
+          ))}
+        </motion.div>
+      </motion.div>
+
+      {(['top-4 left-4', 'top-4 right-4', 'bottom-4 left-4', 'bottom-4 right-4'] as const).map((pos, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 + i * 0.1 }}
+          className={`absolute ${pos} w-4 h-4`}
+          style={{
+            borderTop: i < 2 ? '1px solid rgba(123,47,190,0.4)' : 'none',
+            borderBottom: i >= 2 ? '1px solid rgba(123,47,190,0.4)' : 'none',
+            borderLeft: i % 2 === 0 ? '1px solid rgba(123,47,190,0.4)' : 'none',
+            borderRight: i % 2 === 1 ? '1px solid rgba(123,47,190,0.4)' : 'none',
+          }}
+        />
+      ))}
+    </motion.div>
+  );
+}
+
+// ── Credits Badge ─────────────────────────────────────────────
+function CreditsBadge({ credits }: { credits: Credits | null }) {
+  if (!credits) return null;
+  const pct = credits.credits_remaining / credits.credits_limit;
+  const color = pct > 0.3 ? '#22c55e' : pct > 0.1 ? '#f59e0b' : '#ef4444';
+
+  return (
+    <div className="flex items-center gap-1.5 bg-[#0A0A0F] border border-[#1E1E3A] rounded-full px-2.5 py-1">
+      <motion.div
+        animate={{ scale: [1, 1.2, 1] }}
+        transition={{ duration: 2, repeat: Infinity }}
+        className="w-1.5 h-1.5 rounded-full"
+        style={{ backgroundColor: color }}
+      />
+      <span className="text-[10px] font-semibold" style={{ color }}>
+        {credits.credits_remaining.toFixed(1)}
+      </span>
+      <span className="text-[10px] text-[#606080]">credits</span>
+    </div>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────
 export function FAQAssistant() {
   const [open, setOpen] = useState(false);
+  const [showOpening, setShowOpening] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [thinking, setThinking] = useState(false);
+  const [credits, setCredits] = useState<Credits | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [campaignsLoaded, setCampaignsLoaded] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      type: 'bot',
-      text: "Hi! I'm your Optimeta assistant. I can answer Meta ads questions and help you understand your generated campaigns. Ask me anything!",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    },
-  ]);
-  const [input, setInput] = useState('');
-  const [typing, setTyping] = useState(false);
+  const [history, setHistory] = useState<{ role: string; content: string }[]>([]);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const token = typeof window !== 'undefined' ? localStorage.getItem('optimeta_token') : null;
+
+  const fetchCredits = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat/credits`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) setCredits(data.data);
+    } catch (e) {
+      console.error('Credits fetch error:', e);
+    }
+  }, [token]);
 
   useEffect(() => {
-    const fetchCampaigns = async () => {
-      try {
-        const token = localStorage.getItem('optimeta_token');
-        if (!token) return;
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/campaigns`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-
-        const campaignList =
-          data.data?.campaigns ||
-          data.data ||
-          data.campaigns ||
-          [];
-
+    if (!token) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/campaigns`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.json())
+      .then(data => {
+        const list = data.data?.campaigns || data.data || [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const validCampaigns = (Array.isArray(campaignList) ? campaignList : []).filter((c: any) =>
+        setCampaigns((Array.isArray(list) ? list : []).filter((c: any) =>
           c && (c.campaignName || c.campaign_name || c.business_inputs?.businessName)
-        );
+        ));
+      })
+      .catch(() => {});
+  }, [token]);
 
-        setCampaigns(validCampaigns);
-      } catch (e) {
-        console.error('Campaign fetch error:', e);
-      } finally {
-        setCampaignsLoaded(true);
-      }
-    };
-    fetchCampaigns();
-  }, []);
+  useEffect(() => {
+    if (open) fetchCredits();
+  }, [open, fetchCredits]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, thinking]);
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 300);
-  }, [open]);
+    if (open && !showOpening) {
+      setTimeout(() => inputRef.current?.focus(), 300);
+    }
+  }, [open, showOpening]);
 
-  const suggestions = campaigns.length > 0
-    ? ['Show my campaigns', 'Latest campaign targeting', 'My last ad copies', 'Expected ROAS', 'First 7 days plan', 'What is ROAS?', 'Minimum budget?', 'What is Learning Phase?']
-    : ['How does Optimeta work?', 'What is ROAS?', 'What is Learning Phase?', 'Minimum budget?', 'What is UGC?', 'What is Advantage+?', 'How to cancel?', 'What is COD strategy?'];
+  const handleOpen = () => {
+    setShowOpening(true);
+    setOpen(true);
+    if (messages.length === 0) {
+      setTimeout(() => {
+        setMessages([{
+          id: '0',
+          role: 'assistant',
+          content: `Hey! I'm **Meta Mitra** — your personal Meta ads expert by Optimeta. 🚀\n\nI can help you with:\n• Your campaign targeting & strategy\n• Ad copy and creative direction\n• Budget planning and ROAS optimization\n• Meta ads terms and best practices\n\nWhat would you like to know?`,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        }]);
+      }, 2400);
+    }
+  };
 
-  const sendMessage = (text?: string) => {
-    const query = text || input.trim();
-    if (!query) return;
+  const sendMessage = async (text?: string) => {
+    const query = (text || input).trim();
+    if (!query || thinking) return;
 
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    setMessages(prev => [...prev, { type: 'user', text: query, time }]);
     setInput('');
-    setTyping(true);
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    setTimeout(() => {
-      const answer = getAnswer(query, campaigns);
-      setMessages(prev => [
-        ...prev,
-        { type: 'bot', text: answer, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: query, time };
+    setMessages(prev => [...prev, userMsg]);
+    setThinking(true);
+
+    const requiresAI = needsAI(query);
+
+    if (!requiresAI) {
+      setTimeout(() => {
+        const answer = getAnswer(query, campaigns);
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: answer,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          creditsUsed: 0,
+          fromCache: true,
+        }]);
+        setThinking(false);
+      }, 500);
+      return;
+    }
+
+    if (!token) {
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: 'Please log in to use the AI assistant.',
+        time,
+      }]);
+      setThinking(false);
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const campaignContext = campaigns.slice(0, 3).map((c: any) => {
+      const name = truncateName(
+        c.campaignName || c.campaign_name ||
+        (c.business_inputs?.businessName ? c.business_inputs.businessName + ' Campaign' : 'Unnamed Campaign')
+      );
+      const bp = c.blueprint;
+      return [
+        `Campaign: ${name}`,
+        `Objective: ${bp?.campaign_objective?.recommended || 'N/A'}`,
+        `Budget: ₹${bp?.budget_strategy?.recommended_daily_budget_inr || 'N/A'}/day`,
+        `Target: ${bp?.targeting?.primary_audience?.age_range || ''} ${bp?.targeting?.primary_audience?.gender || ''}`.trim(),
+      ].join('\n');
+    }).join('\n\n');
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          message: query,
+          history: history.slice(-3),
+          campaignContext,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        if (data.code === 'NO_CREDITS') {
+          setMessages(prev => [...prev, {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: `You've used all your credits for this month. ${
+              data.plan === 'free'
+                ? 'Upgrade to Pro for 100 credits/month!'
+                : data.plan === 'pro'
+                  ? 'Upgrade to Ultra for 300 credits/month!'
+                  : 'Your credits reset on your next billing date.'
+            }\n\nVisit /pricing to upgrade your plan.`,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          }]);
+          setThinking(false);
+          return;
+        }
+        throw new Error(data.message);
+      }
+
+      const assistantMsg: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: data.data.reply,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        creditsUsed: data.data.credits_used,
+      };
+
+      setMessages(prev => [...prev, assistantMsg]);
+      setHistory(prev => [
+        ...prev.slice(-4),
+        { role: 'user', content: query },
+        { role: 'assistant', content: data.data.reply },
       ]);
-      setTyping(false);
-    }, 600);
+
+      if (credits) {
+        setCredits(prev => prev ? {
+          ...prev,
+          credits_remaining: data.data.credits_remaining,
+          credits_used: prev.credits_limit - data.data.credits_remaining,
+        } : null);
+      }
+
+      if (data.data.low_credits) {
+        setTimeout(() => {
+          setMessages(prev => [...prev, {
+            id: Date.now().toString() + 'warn',
+            role: 'assistant',
+            content: `⚠️ You're running low on credits (${data.data.credits_remaining.toFixed(1)} remaining). Upgrade your plan to continue getting AI-powered Meta ads advice.`,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          }]);
+        }, 1000);
+      }
+    } catch {
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: "Sorry, I couldn't process that. Please try again in a moment.",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }]);
+    } finally {
+      setThinking(false);
+    }
   };
 
   const handleKey = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') sendMessage();
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
   };
+
+  const SUGGESTIONS = campaigns.length > 0 ? [
+    'Show my campaigns',
+    'Latest campaign targeting',
+    'My ad copies',
+    'Expected ROAS',
+    'First 7 days plan',
+  ] : [
+    'How does Optimeta work?',
+    'What is ROAS?',
+    'Minimum budget for India?',
+    'What is Learning Phase?',
+    'COD strategy for ads?',
+  ];
 
   return (
     <>
-      {/* Floating AI Button */}
+      {/* Floating orb button */}
       <AnimatePresence>
         {!open && (
           <motion.button
@@ -494,24 +873,20 @@ export function FAQAssistant() {
             exit={{ scale: 0, opacity: 0 }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setOpen(true)}
+            onClick={handleOpen}
             className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-1.5 group"
-            aria-label="Open Optimeta AI Assistant"
+            aria-label="Open Meta Mitra AI"
           >
-            {/* Label above button */}
             <motion.span
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="text-[10px] font-semibold text-[#A0A0C0] tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#0F0F1A]/80 backdrop-blur-sm px-2 py-0.5 rounded-full border border-[#1E1E3A] whitespace-nowrap"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+              className="text-[10px] font-semibold text-[#A0A0C0] tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-[#0F0F1A]/90 backdrop-blur-sm px-2 py-0.5 rounded-full border border-[#1E1E3A] whitespace-nowrap"
             >
-              Optimeta AI
+              Meta Mitra AI
             </motion.span>
 
-            {/* Main button */}
             <div className="relative w-14 h-14">
-
-              {/* Outer rotating gradient ring */}
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
@@ -523,50 +898,33 @@ export function FAQAssistant() {
               >
                 <div className="w-full h-full rounded-full bg-[#0A0A0F]" />
               </motion.div>
-
-              {/* Pulse glow ring 1 */}
               <motion.div
                 animate={{ scale: [1, 1.4, 1], opacity: [0.4, 0, 0.4] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                transition={{ duration: 2.5, repeat: Infinity }}
                 className="absolute inset-0 rounded-full"
                 style={{ background: 'radial-gradient(circle, rgba(192,38,211,0.3) 0%, transparent 70%)' }}
               />
-
-              {/* Pulse glow ring 2 */}
-              <motion.div
-                animate={{ scale: [1, 1.6, 1], opacity: [0.2, 0, 0.2] }}
-                transition={{ duration: 2.5, delay: 0.5, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute inset-0 rounded-full"
-                style={{ background: 'radial-gradient(circle, rgba(123,47,190,0.2) 0%, transparent 70%)' }}
-              />
-
-              {/* Inner button face */}
-              <div className="absolute inset-[2px] rounded-full bg-gradient-to-br from-[#0F0F1A] to-[#141428] flex items-center justify-center border border-[#7B2FBE]/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+              <div className="absolute inset-[2px] rounded-full bg-gradient-to-br from-[#0F0F1A] to-[#141428] flex items-center justify-center border border-[#7B2FBE]/20">
                 <div className="relative flex items-center justify-center">
-
-                  {/* Outer O ring */}
                   <motion.div
                     animate={{ boxShadow: ['0 0 8px rgba(123,47,190,0.6)', '0 0 16px rgba(192,38,211,0.8)', '0 0 8px rgba(123,47,190,0.6)'] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                    className="w-8 h-8 rounded-full border-2 flex items-center justify-center"
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center"
                     style={{
-                      borderColor: 'transparent',
                       background: 'linear-gradient(#0F0F1A, #0F0F1A) padding-box, linear-gradient(135deg, #7B2FBE, #C026D3) border-box',
+                      border: '2px solid transparent',
                     }}
                   >
-                    {/* Inner sparkle dot */}
                     <motion.div
                       animate={{ scale: [0.8, 1.1, 0.8], opacity: [0.7, 1, 0.7] }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
                       className="w-3 h-3 rounded-full"
                       style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)', boxShadow: '0 0 8px rgba(192,38,211,0.8)' }}
                     />
                   </motion.div>
-
-                  {/* AI sparkle icon top right */}
                   <motion.span
                     animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5], rotate: [0, 180, 360] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                    transition={{ duration: 3, repeat: Infinity, delay: 1 }}
                     className="absolute -top-1 -right-1 text-[8px] text-[#C026D3]"
                   >
                     ✦
@@ -578,94 +936,155 @@ export function FAQAssistant() {
         )}
       </AnimatePresence>
 
+      {/* Chat Panel */}
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed bottom-6 right-6 z-50 w-80 sm:w-96 h-[520px] flex flex-col bg-[#0F0F1A] border border-[#1E1E3A] rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.6),0_0_0_1px_rgba(123,47,190,0.2)]"
+            initial={{ clipPath: 'circle(0% at calc(100% - 44px) calc(100% - 44px))', opacity: 0 }}
+            animate={{ clipPath: 'circle(150% at calc(100% - 44px) calc(100% - 44px))', opacity: 1 }}
+            exit={{ clipPath: 'circle(0% at calc(100% - 44px) calc(100% - 44px))', opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="fixed bottom-6 right-6 z-50 w-[380px] sm:w-[420px] h-[600px] max-h-[85vh] flex flex-col bg-[#0A0A0F] border border-[#1E1E3A] rounded-2xl overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.8),0_0_0_1px_rgba(123,47,190,0.15)]"
+            style={{
+              backgroundImage: `
+                radial-gradient(ellipse at top right, rgba(123,47,190,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at bottom left, rgba(192,38,211,0.05) 0%, transparent 60%)
+              `,
+            }}
           >
+            {/* Opening animation overlay */}
+            <AnimatePresence>
+              {showOpening && <OpeningScreen onComplete={() => setShowOpening(false)} />}
+            </AnimatePresence>
+
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#7B2FBE]/20 to-[#C026D3]/20 border-b border-[#1E1E3A] flex-shrink-0">
+            <div
+              className="flex items-center justify-between px-4 py-3 border-b border-[#1E1E3A] flex-shrink-0 relative"
+              style={{ background: 'linear-gradient(135deg, rgba(123,47,190,0.1), rgba(192,38,211,0.05))' }}
+            >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7B2FBE] to-[#C026D3] flex items-center justify-center text-white text-sm font-bold">
-                  O
-                </div>
+                <AnimatedOrb thinking={thinking} />
                 <div>
-                  <p className="text-white text-sm font-semibold leading-none">Optimeta Assistant</p>
-                  <p className="text-[#606080] text-xs mt-0.5">
-                    {!campaignsLoaded && (
-                      <span className="animate-pulse">Loading your campaigns...</span>
-                    )}
-                    {campaignsLoaded && campaigns.length > 0 && (
-                      <span className="text-[#22c55e]">{campaigns.length} campaign{campaigns.length > 1 ? 's' : ''} loaded</span>
-                    )}
-                    {campaignsLoaded && campaigns.length === 0 && (
-                      <span>Meta ads help</span>
-                    )}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-white text-sm font-bold">Meta Mitra</p>
+                    <span className="text-[9px] bg-[#7B2FBE]/20 border border-[#7B2FBE]/30 text-[#7B2FBE] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide">
+                      AI
+                    </span>
+                  </div>
+                  <p className="text-[#606080] text-xs">Meta ads expert by Optimeta</p>
                 </div>
               </div>
-              <button
-                onClick={() => setOpen(false)}
-                className="w-7 h-7 rounded-full bg-[#1E1E3A] flex items-center justify-center text-[#606080] hover:text-white hover:bg-[#2E2E4A] transition-all"
-              >
-                <X size={14} />
-              </button>
+              <div className="flex items-center gap-2">
+                <CreditsBadge credits={credits} />
+                <button
+                  onClick={() => setOpen(false)}
+                  className="w-7 h-7 rounded-full bg-[#1E1E3A] flex items-center justify-center text-[#606080] hover:text-white hover:bg-[#2E2E4A] transition-all"
+                >
+                  <X size={14} />
+                </button>
+              </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3">
-              {messages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed break-words overflow-hidden ${
-                      msg.type === 'user'
-                        ? 'bg-gradient-to-br from-[#7B2FBE] to-[#C026D3] text-white rounded-br-sm'
-                        : 'bg-[#141428] text-[#A0A0C0] border border-[#1E1E3A] rounded-bl-sm'
-                    }`}
-                    style={{ wordBreak: 'break-word', overflowWrap: 'break-word', whiteSpace: 'pre-wrap' }}
-                  >
-                    {msg.text}
-                    <div className={`text-[10px] mt-1 ${msg.type === 'user' ? 'text-white/60 text-right' : 'text-[#606080]'}`}>
-                      {msg.time}
+            <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 scrollbar-hide">
+              {messages.map(msg => (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} items-end gap-2`}
+                >
+                  {msg.role === 'assistant' && (
+                    <div
+                      className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center mb-1"
+                      style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)' }}
+                    >
+                      <span className="text-white text-[9px] font-black">M</span>
+                    </div>
+                  )}
+
+                  <div className={`max-w-[78%] flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                    <div
+                      className={`rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                        msg.role === 'user'
+                          ? 'rounded-br-sm text-white'
+                          : 'rounded-bl-sm text-[#D0D0E8] border border-[#1E1E3A]'
+                      }`}
+                      style={{
+                        background: msg.role === 'user'
+                          ? 'linear-gradient(135deg, #7B2FBE, #C026D3)'
+                          : 'rgba(15,15,26,0.9)',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word',
+                        whiteSpace: 'pre-wrap',
+                        backdropFilter: 'blur(8px)',
+                      }}
+                    >
+                      {msg.content}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 mt-1 px-1">
+                      <span className="text-[10px] text-[#404060]">{msg.time}</span>
+                      {msg.creditsUsed !== undefined && msg.creditsUsed > 0 && (
+                        <span className="text-[10px] text-[#404060] flex items-center gap-0.5">
+                          <Zap size={8} />
+                          {msg.creditsUsed} cr
+                        </span>
+                      )}
+                      {msg.fromCache && (
+                        <span className="text-[10px] text-[#22c55e]">free</span>
+                      )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
 
-              {typing && (
-                <div className="flex justify-start">
-                  <div className="bg-[#141428] border border-[#1E1E3A] rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1">
+              {thinking && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-end gap-2"
+                >
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center"
+                    style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)' }}
+                  >
+                    <span className="text-white text-[9px] font-black">M</span>
+                  </div>
+                  <div className="bg-[#0F0F1A] border border-[#1E1E3A] rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5">
                     {[0, 1, 2].map(i => (
-                      <span
+                      <motion.div
                         key={i}
-                        className="w-1.5 h-1.5 rounded-full bg-[#7B2FBE] animate-bounce"
-                        style={{ animationDelay: `${i * 0.15}s` }}
+                        animate={{ y: [0, -4, 0], opacity: [0.4, 1, 0.4] }}
+                        transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+                        className="w-1.5 h-1.5 rounded-full bg-[#7B2FBE]"
                       />
                     ))}
                   </div>
+                </motion.div>
+              )}
+
+              {messages.length <= 1 && !thinking && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {SUGGESTIONS.map((s, i) => (
+                    <motion.button
+                      key={i}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.08 }}
+                      onClick={() => sendMessage(s)}
+                      className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full bg-[#0F0F1A] border border-[#1E1E3A] text-[#A0A0C0] hover:border-[#7B2FBE]/50 hover:text-white transition-all"
+                    >
+                      <ChevronRight size={10} />
+                      {s}
+                    </motion.button>
+                  ))}
                 </div>
               )}
+
               <div ref={messagesEndRef} />
             </div>
-
-            {/* Suggestions */}
-            {messages.length <= 1 && (
-              <div className="px-4 pb-2 flex flex-wrap gap-1.5 flex-shrink-0">
-                {suggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    onClick={() => sendMessage(s)}
-                    className="text-xs px-2.5 py-1 rounded-full bg-[#141428] border border-[#1E1E3A] text-[#A0A0C0] hover:border-[#7B2FBE]/50 hover:text-white transition-all whitespace-nowrap"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            )}
 
             {/* Input */}
             <div className="px-3 py-3 border-t border-[#1E1E3A] flex gap-2 flex-shrink-0 bg-[#0A0A0F]">
@@ -674,17 +1093,41 @@ export function FAQAssistant() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKey}
-                placeholder="Ask about Meta ads or your campaigns..."
-                className="flex-1 bg-[#141428] border border-[#1E1E3A] rounded-xl px-3 py-2 text-sm text-white placeholder-[#606080] focus:outline-none focus:border-[#7B2FBE]/50 transition-colors"
+                placeholder="Ask about Meta ads strategy..."
+                maxLength={500}
+                className="flex-1 bg-[#0F0F1A] border border-[#1E1E3A] rounded-xl px-3 py-2.5 text-sm text-white placeholder-[#404060] focus:outline-none focus:border-[#7B2FBE]/50 transition-colors"
               />
-              <button
+              <motion.button
+                whileTap={{ scale: 0.9 }}
                 onClick={() => sendMessage()}
-                disabled={!input.trim()}
-                className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7B2FBE] to-[#C026D3] flex items-center justify-center text-white disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_0_12px_rgba(123,47,190,0.4)] transition-all flex-shrink-0"
+                disabled={!input.trim() || thinking}
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                style={{
+                  background: input.trim() && !thinking
+                    ? 'linear-gradient(135deg, #7B2FBE, #C026D3)'
+                    : '#1E1E3A',
+                }}
               >
-                <Send size={14} />
-              </button>
+                <Send size={15} />
+              </motion.button>
             </div>
+
+            {/* Credit info footer */}
+            {credits && (
+              <div className="px-4 pb-2 flex items-center justify-between flex-shrink-0">
+                <span className="text-[10px] text-[#404060]">
+                  Simple questions are free • AI answers use credits
+                </span>
+                {credits.plan === 'free' && credits.credits_remaining < 3 && (
+                  <button
+                    onClick={() => { window.location.href = '/dashboard/upgrade?plan=pro'; }}
+                    className="text-[10px] text-[#7B2FBE] font-semibold hover:text-[#C026D3] transition-colors"
+                  >
+                    Upgrade →
+                  </button>
+                )}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

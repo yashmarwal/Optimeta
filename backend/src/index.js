@@ -17,6 +17,7 @@ const authRoutes = require('./routes/auth');
 const campaignRoutes = require('./routes/campaigns');
 const paymentRoutes = require('./routes/payments');
 const usageRoutes = require('./routes/usage');
+const chatRoutes = require('./routes/chat');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -67,6 +68,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/usage', usageRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -132,6 +134,9 @@ const runMigrations = async () => {
     alter table free_trial_fingerprints add column if not exists user_agent text;
     alter table free_trial_fingerprints add column if not exists screen_resolution text;
     alter table free_trial_fingerprints add column if not exists timezone text;
+
+    alter table profiles add column if not exists chat_credits_used numeric default 0;
+    alter table profiles add column if not exists chat_credits_reset_at timestamp with time zone;
 
     create index if not exists idx_fingerprint_hash on free_trial_fingerprints(fingerprint_hash);
     create index if not exists idx_fingerprint_ip on free_trial_fingerprints(ip_address);

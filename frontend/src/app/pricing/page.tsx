@@ -43,6 +43,7 @@ const COMPARISON = [
   { feature: 'Campaign History', free: '—', pro: '✓', ultra: '✓' },
   { feature: 'Priority Support', free: '—', pro: '✓', ultra: '✓' },
   { feature: 'Advanced Targeting Insights', free: '—', pro: '—', ultra: '✓' },
+  { feature: 'Meta Mitra AI Credits', free: '10 / month', pro: '100 / month', ultra: '300 / month' },
 ];
 
 export default function PricingPage() {
