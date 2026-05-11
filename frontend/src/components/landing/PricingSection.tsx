@@ -19,7 +19,6 @@ const plans = [
       'Targeting & ad angles',
       'Ad copy generation',
       'Launch checklist',
-      '10 Meta Mitra AI credits/month',
     ],
     excluded: ['PDF export', 'Campaign history'],
     cta: 'Get Started Free',
@@ -42,7 +41,6 @@ const plans = [
       'PDF export',
       'Campaign history',
       'Priority support',
-      '100 Meta Mitra AI credits/month',
     ],
     excluded: [],
     cta: 'Start Pro',
@@ -66,7 +64,6 @@ const plans = [
       'Campaign history',
       'Advanced targeting insights',
       'Priority support',
-      '300 Meta Mitra AI credits/month',
     ],
     excluded: [],
     cta: 'Start Ultra',
@@ -183,10 +180,6 @@ export default function PricingSection() {
             </ScrollReveal>
           ))}
         </div>
-
-        <p className="text-center text-xs text-text-muted mt-8 max-w-xl mx-auto">
-          * Simple Meta ads questions are always free. AI credits are used for personalized strategy and campaign-specific advice.
-        </p>
       </div>
     </section>
   );
