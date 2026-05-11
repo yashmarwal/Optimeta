@@ -334,10 +334,103 @@ const KNOWLEDGE_BASE = [
     answer:
       'Use specific brand interests (Nykaa, Myntra, Mamaearth) not generic categories. Always include "Engaged Shoppers" behavior for D2C. Broad targeting now beats hyper-niche — Meta AI handles discovery. Provide 8-10 relevant interests.',
   },
+  // Conversational
   {
-    keywords: ['hello', 'hi', 'hey', 'namaste'],
-    answer:
-      "Hello! I'm Optimeta AI — your Meta ads assistant. Ask me anything about Meta ads terms, campaign strategy, or how to use Optimeta.",
+    keywords: ['thank you', 'thanks', 'thankyou', 'thank u', 'ty', 'shukriya', 'dhanyawad'],
+    answer: "You're welcome! 😊 Happy to help with your Meta ads. Feel free to ask anything else!",
+  },
+  {
+    keywords: ['ok', 'okay', 'alright', 'got it', 'understood', 'noted', 'sure', 'fine', 'great', 'perfect', 'awesome', 'nice', 'cool'],
+    answer: 'Got it! Let me know if you have more questions about your campaigns or Meta ads strategy. 👍',
+  },
+  {
+    keywords: ['bye', 'goodbye', 'see you', 'take care', 'later', 'cya'],
+    answer: 'Goodbye! Best of luck with your Meta campaigns. Come back anytime you need help! 🚀',
+  },
+  {
+    keywords: ['hello', 'hi', 'hey', 'namaste', 'hii', 'helo', 'good morning', 'good evening', 'good afternoon'],
+    answer: "Hello! 👋 I'm Optimeta AI — your Meta ads expert. Ask me anything about your campaigns, targeting, budgets or Meta ads strategy!",
+  },
+  {
+    keywords: ['how are you', 'how r u', 'whats up', "what's up", 'kaise ho', 'how are'],
+    answer: "I'm doing great and ready to help! 😊 Ask me about your Meta campaigns or any advertising questions.",
+  },
+  {
+    keywords: ['who are you', 'what are you', 'are you ai', 'are you a bot', 'are you human', 'what is this'],
+    answer: "I'm Optimeta AI — a specialized Meta ads assistant built into the Optimeta platform. I can answer questions about Meta advertising strategy, help you understand your generated campaigns and guide you on best practices for Indian brands.",
+  },
+  {
+    keywords: ['not helpful', 'wrong', 'incorrect', 'that is wrong', 'bad answer', 'not right'],
+    answer: 'I apologize for that! For more detailed help please email optimeta@outlook.com — we respond within 24 hours. You can also open your full campaign blueprint for complete details.',
+  },
+  {
+    keywords: ['customer care', 'customer support', 'help desk', 'contact support', 'talk to human', 'speak to someone'],
+    answer: 'For support reach us at:\n📧 optimeta@outlook.com\n🌐 optimeta.tech\n\nWe respond within 24 hours. For billing issues mention your registered email in the message.',
+  },
+  {
+    keywords: ['refund', 'money back', 'cancel and refund', 'get my money back'],
+    answer: 'For refund queries please email optimeta@outlook.com with your registered email and payment details. Our team will review and respond within 24-48 hours.',
+  },
+  {
+    keywords: ['billing', 'invoice', 'payment history', 'receipt'],
+    answer: 'For billing details go to Dashboard → Settings → Subscription. You can view your current plan and billing date there. For invoices email optimeta@outlook.com',
+  },
+  // Meta Ads Setup
+  {
+    keywords: ['how to setup meta ads', 'how to start meta ads', 'how to run facebook ads', 'setup facebook ads', 'start meta ads', 'begin meta ads', 'meta ads for beginners', 'how to advertise on facebook', 'how to advertise on instagram'],
+    answer: 'How to set up Meta ads step by step:\n\n1️⃣ Create Meta Business Suite account at business.facebook.com\n2️⃣ Add your Facebook Page and Instagram account\n3️⃣ Set up Meta Pixel on your website\n4️⃣ Set up Conversions API (CAPI) for accurate tracking\n5️⃣ Create your Ad Account and add billing\n6️⃣ Use Optimeta to generate your campaign blueprint\n7️⃣ Go to Ads Manager and create your campaign\n8️⃣ Follow the launch checklist from your blueprint\n\nTip: Complete steps 1-5 before spending any money on ads!',
+  },
+  {
+    keywords: ['what is meta pixel', 'how to install pixel', 'pixel setup', 'install facebook pixel'],
+    answer: 'Meta Pixel is a code snippet you add to your website to track visitor actions.\n\nHow to install:\n1. Go to Events Manager in Meta Business Suite\n2. Click "Connect Data Sources" → Web\n3. Choose Meta Pixel → Get Started\n4. Enter your website URL\n5. Choose manual install or partner integration\n6. Copy the pixel code\n7. Paste it in your website <head> section\n8. Verify using Meta Pixel Helper Chrome extension\n\nFor Shopify: use the Meta app in Shopify App Store — no coding needed!',
+  },
+  {
+    keywords: ['what is meta business suite', 'business manager', 'meta business manager', 'facebook business manager'],
+    answer: 'Meta Business Suite (formerly Business Manager) is the central hub for managing your Facebook and Instagram business presence.\n\nIt includes:\n• Ad Accounts\n• Facebook Pages\n• Instagram Accounts\n• Pixels and tracking\n• Commerce Manager\n• Meta Ads Manager\n\nCreate it free at business.facebook.com',
+  },
+  {
+    keywords: ['how to create ad account', 'create facebook ad account', 'ad account setup', 'facebook ad account'],
+    answer: 'To create a Meta Ad Account:\n\n1. Go to business.facebook.com\n2. Settings → Accounts → Ad Accounts\n3. Click "Add" → "Create a new ad account"\n4. Name your account and select currency (INR)\n5. Add payment method (UPI, card, net banking)\n6. Assign yourself as admin\n\nNote: New ad accounts have spending limits initially. These increase as you build payment history.',
+  },
+  {
+    keywords: ['how to create campaign', 'create facebook campaign', 'create meta campaign', 'ads manager campaign'],
+    answer: 'To create a campaign in Meta Ads Manager:\n\n1. Go to adsmanager.facebook.com\n2. Click "Create" (green button)\n3. Choose campaign objective (use Optimeta blueprint recommendation)\n4. Name your campaign\n5. Set campaign budget (CBO recommended)\n6. Create Ad Set — set audience, placement, budget\n7. Upload your creative (image/video)\n8. Write ad copy from your Optimeta blueprint\n9. Review and Publish\n\nPro tip: Use your Optimeta blueprint for exact targeting, budget and copy!',
+  },
+  {
+    keywords: ['what is cbo', 'campaign budget optimization', 'cbo vs abo'],
+    answer: "CBO (Campaign Budget Optimization) = Set budget at campaign level, Meta distributes it across ad sets automatically.\n\nABO (Ad Set Budget Optimization) = Set budget for each ad set manually.\n\nFor India 2026: Use CBO when you have 2+ ad sets and trust Meta's algorithm. Use ABO when you want strict budget control per audience. Most experienced advertisers prefer CBO for efficiency.",
+  },
+  {
+    keywords: ['what is broad targeting', 'broad audience', 'no interest targeting', 'open targeting'],
+    answer: "Broad targeting = running ads with minimal audience restrictions and letting Meta's AI find buyers automatically.\n\nIn 2026, broad targeting often outperforms detailed interest targeting because:\n• Meta has better data than manual selections\n• Larger audience = cheaper CPM\n• Algorithm optimizes better with more data\n\nBest for: Brands spending ₹30,000+/month with good pixel data and creative assets.",
+  },
+  {
+    keywords: ['how to scale facebook ads', 'how to scale meta ads', 'scaling ads', 'increase budget'],
+    answer: 'How to scale Meta ads in India:\n\n📈 Vertical scaling (increase budget):\n• Increase by max 20% every 3-4 days\n• Bigger jumps reset learning phase\n• Best time: when ROAS is consistently above target\n\n📊 Horizontal scaling (duplicate):\n• Duplicate winning ad sets\n• Test new audiences\n• Test new creatives\n\n⚠️ Never edit a winning campaign — duplicate it instead!',
+  },
+  {
+    keywords: ['what is frequency', 'ad frequency', 'high frequency'],
+    answer: 'Frequency = average number of times one person has seen your ad.\n\nIdeal frequency:\n• Cold traffic: 1-2 (fresh impression)\n• Retargeting: 3-5 (repetition builds trust)\n• Warning zone: above 6 (creative fatigue)\n\nIf frequency rises above 4 on cold campaigns and CTR is dropping → add new creatives immediately.',
+  },
+  {
+    keywords: ['what is conversion window', 'attribution window', '7 day click', '1 day view'],
+    answer: "Attribution window = how long after seeing/clicking an ad Meta credits a conversion to that ad.\n\nDefault setting: 7-day click, 1-day view\nMeaning: If someone clicks your ad and buys within 7 days = counted as your ad's conversion.\n\nFor Indian D2C: 7-day click is recommended. Considered purchases (furniture, jewellery) may need 28-day click window.",
+  },
+  {
+    keywords: ['what is a/b test', 'split test', 'ab testing', 'how to test ads'],
+    answer: 'A/B testing = running two versions of an ad to see which performs better.\n\nWhat to test in order:\n1. Hook/opening line (most important)\n2. Creative format (Reel vs static)\n3. Headline\n4. Offer (10% off vs free shipping)\n5. Audience\n\nRules:\n• Test one variable at a time\n• Run for minimum 7 days\n• Need at least 50 results per variant\n• Kill loser, scale winner',
+  },
+  {
+    keywords: ['what is custom audience', 'custom audiences facebook', 'upload customer list'],
+    answer: 'Custom Audiences = audiences created from your own data.\n\nTypes:\n• Customer list (upload phone/email)\n• Website visitors (pixel-based)\n• App users\n• Video viewers\n• Instagram/Facebook engagers\n\nBest performing for India:\n1. Customer phone number list (WhatsApp numbers work!)\n2. Purchase event pixel audience\n3. Instagram profile engagers (last 90 days)',
+  },
+  {
+    keywords: ['what is value based lookalike', 'value lookalike', 'high value customers'],
+    answer: 'Value-based Lookalike = Meta creates an audience similar to your highest-value customers (those who spent the most).\n\nHow to create:\n1. Upload customer list with purchase values\n2. Go to Audiences in Ads Manager\n3. Create Lookalike → select value-based source\n4. Choose 1% (most similar)\n\nThis typically outperforms regular lookalikes by 30-50% in ROAS for Indian D2C brands.',
+  },
+  {
+    keywords: ['festive ads', 'diwali ads', 'festival season', 'eid ads', 'holi ads', 'festive campaign'],
+    answer: 'Festive season Meta ads strategy for India:\n\n📅 Start 2-3 weeks before the festival\n💰 Increase budget 40-60% during peak\n🎯 Add festive interests to targeting\n✍️ Use festive-themed creatives and copy\n🛍️ Create special offers (bundles, discounts)\n\nTop festive seasons for Indian D2C:\n• Diwali (Oct-Nov) — highest spends\n• Eid — fashion and gifting\n• Holi — beauty and fashion\n• Valentine\'s Day — gifting brands\n• Wedding season (Nov-Feb) — jewellery, fashion',
   },
 ];
 
@@ -729,17 +822,20 @@ export default function ChatPage() {
             <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-4 max-w-3xl w-full mx-auto"
               style={{ scrollbarWidth: 'none' }}
             >
-              {/* Empty state orb */}
+              {/* Empty state */}
               {messages.length <= 1 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col items-center justify-center py-8 gap-4"
+                  className="flex flex-col items-center justify-center py-12 gap-3"
                 >
-                  <GalaxyOrb phase="center" size={80} />
-                  <p className="text-[#606080] text-sm text-center">
+                  <motion.p
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                    className="text-[#606080] text-sm text-center max-w-xs"
+                  >
                     Ask me anything about Meta ads or your campaigns
-                  </p>
+                  </motion.p>
                 </motion.div>
               )}
 

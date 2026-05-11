@@ -20,6 +20,7 @@ export default function DashboardSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const onChatPage = pathname === '/dashboard/chat';
   const { user, setUser } = useAuth();
 
   const handleLogout = async () => {
@@ -104,12 +105,14 @@ export default function DashboardSidebar() {
       </div>
 
       {/* Mobile trigger */}
-      <button
-        className="lg:hidden fixed bottom-6 left-6 z-50 w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center glow shadow-xl"
-        onClick={() => setMobileOpen(true)}
-      >
-        <Menu size={20} className="text-white" />
-      </button>
+      {!onChatPage && (
+        <button
+          className="lg:hidden fixed bottom-6 left-6 z-50 w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center glow shadow-xl"
+          onClick={() => setMobileOpen(true)}
+        >
+          <Menu size={20} className="text-white" />
+        </button>
+      )}
 
       {/* Mobile drawer */}
       <AnimatePresence>
