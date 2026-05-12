@@ -32,6 +32,7 @@ export const categoryColors: Record<string, string> = {
   'Budget Planning': 'bg-green-500/20 text-green-400 border-green-500/30',
   'Campaign Strategy': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   'Creative Strategy': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  'Getting Started': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
 };
 
 export const blogArticles: BlogArticle[] = [
@@ -707,5 +708,206 @@ export const blogArticles: BlogArticle[] = [
     ],
     conclusion:
       "Creative is where Indian D2C brands win or lose on Meta. The brands growing profitably are producing 10-15 creatives per month and testing systematically. Optimeta gives you the complete creative direction — hooks, UGC briefs, do's and don'ts — in every campaign blueprint.",
+  },
+
+  {
+    slug: 'how-to-setup-meta-ads-account-india',
+    title: 'How to Set Up Your Meta Ads Account in India: Complete 2026 Guide',
+    description:
+      'Step-by-step guide to setting up Meta Business Suite, Ad Account, Meta Pixel and Conversions API for Indian brands. Everything you need before spending your first rupee on Facebook and Instagram ads.',
+    category: 'Getting Started',
+    readTime: '10 min read',
+    publishDate: 'May 10, 2026',
+    author: 'Optimeta Team',
+    metaTitle: 'How to Set Up Meta Ads Account India 2026 — Complete Guide',
+    metaDescription:
+      'Complete step-by-step guide to setting up Meta ads for Indian brands. Business Suite, Ad Account, Pixel, CAPI setup — everything before you spend your first rupee.',
+    keywords:
+      'meta ads setup india, facebook ads account setup india, how to start facebook ads india, meta business suite setup, meta pixel setup india',
+    intro: [
+      {
+        type: 'paragraph',
+        text: 'Before spending a single rupee on Meta ads, you need to set up your account correctly. Most Indian brands skip steps 4 and 5 — and then wonder why their results are poor.',
+      },
+      {
+        type: 'paragraph',
+        text: 'This guide covers everything from creating your Business Suite to verifying your pixel is working. Follow these steps in order and you will avoid the most costly beginner mistakes.',
+      },
+    ],
+    sections: [
+      {
+        heading: 'Step 1: Create Meta Business Suite',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Meta Business Suite is your central hub for all Meta advertising. Go to business.facebook.com and click "Create Account". Enter your business name, your name, and business email. This is different from your personal Facebook — it is a separate business account that houses all your assets.',
+          },
+          {
+            type: 'bullets',
+            items: [
+              'Use a business email, not Gmail',
+              'Add your mobile number for security',
+              'Enable two-factor authentication immediately',
+              'Add a colleague as admin backup — account lockouts are common',
+            ],
+          },
+        ],
+      },
+      {
+        heading: 'Step 2: Add Your Facebook Page and Instagram Account',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'In Business Suite go to Settings → Accounts → Pages → Add. You can add an existing page or create a new one. Then go to Instagram Accounts and connect your Instagram business profile.',
+          },
+          {
+            type: 'paragraph',
+            text: 'If you do not have a Facebook Page yet, create one first at facebook.com/pages/create. Choose the right category for your business — this affects how Meta categorizes your ads.',
+          },
+        ],
+      },
+      {
+        heading: 'Step 3: Create Your Ad Account',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Go to Settings → Accounts → Ad Accounts → Add → Create a New Ad Account. Name it clearly (e.g., "YourBrand - India Ads"). Select Indian Rupee (INR) as your currency — you cannot change this later. Set your time zone to India Standard Time.',
+          },
+          {
+            type: 'fix',
+            text: 'New ad accounts have lower spending limits initially. Meta increases these automatically as you build payment history. Do not try to spend ₹10,000 on day one — start with ₹500-1,000/day.',
+          },
+        ],
+      },
+      {
+        heading: 'Step 4: Add Payment Method',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Go to Billing in your Ad Account. Click Add Payment Method. Indian options: Credit/Debit card (Visa, Mastercard, Rupay), Net banking, UPI (via some cards).',
+          },
+          {
+            type: 'bullets',
+            items: [
+              'Use a dedicated business credit card for ads — easier accounting and float period',
+              'Add a backup payment method to prevent campaign interruptions',
+              'Keep the card details updated — expired card = account disabled',
+            ],
+          },
+        ],
+      },
+      {
+        heading: 'Step 5: Install Meta Pixel (Critical Step)',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'This is the most important step that most Indian brands skip. Go to Events Manager → Connect Data Sources → Web → Meta Pixel → Get Started.',
+          },
+          {
+            type: 'bullets',
+            items: [
+              'Shopify: Install the Meta Sales Channel from the Shopify App Store — connects automatically',
+              'WordPress: Use the PixelYourSite plugin or add pixel code manually to your theme header',
+              'Custom websites: Copy the pixel code and paste it in the <head> section of every page',
+              'Verify installation using the Meta Pixel Helper Chrome extension',
+            ],
+          },
+          {
+            type: 'pullquote',
+            text: 'Brands without Meta Pixel are running blind. Every campaign without pixel data is wasted money.',
+          },
+        ],
+      },
+      {
+        heading: 'Step 6: Set Up Conversions API (CAPI)',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Conversions API is server-side tracking that works alongside your pixel. After iOS 14, up to 40% of conversions are invisible to pixel tracking alone. CAPI fixes this.',
+          },
+          {
+            type: 'bullets',
+            items: [
+              'Shopify: The Meta Sales Channel includes CAPI automatically',
+              'Others: Events Manager → your pixel → Settings → Conversions API → Set up manually',
+              'Verify in Events Manager that you see both browser (pixel) and server (CAPI) events',
+              'Event Match Quality score should be above 6',
+            ],
+          },
+        ],
+      },
+      {
+        heading: 'Step 7: Set Up Product Catalog (For E-commerce)',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'If you sell products online, set up a catalog for Dynamic Ads and Advantage+ Shopping Campaigns.',
+          },
+          {
+            type: 'bullets',
+            items: [
+              'Commerce Manager → Create a Catalog → Upload products',
+              'Shopify: Sync automatically via Meta Sales Channel',
+              'Others: Upload a product feed CSV or use a feed management tool',
+              'Link your catalog to your Ad Account once created',
+            ],
+          },
+        ],
+      },
+      {
+        heading: 'Step 8: Generate Your Blueprint with Optimeta',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Before creating your first campaign, use Optimeta to generate a complete campaign blueprint. Answer questions about your business, product, target audience and budget. You will get the exact campaign objective, targeting interests, budget split, ad copies and launch checklist.',
+          },
+          {
+            type: 'paragraph',
+            text: 'This saves hours of research and prevents the most common beginner mistakes — wrong objective, wrong budget split, generic targeting.',
+          },
+        ],
+      },
+      {
+        heading: 'Step 9: Create Your First Campaign',
+        content: [
+          {
+            type: 'paragraph',
+            text: 'Go to Ads Manager at adsmanager.facebook.com. Click Create. Select the objective recommended in your Optimeta blueprint.',
+          },
+          {
+            type: 'bullets',
+            items: [
+              'Naming: [Brand]_[Objective]_[Date] e.g. FitFuel_Sales_May2026',
+              'Set up ad set using the exact targeting from your blueprint',
+              'Upload your creative and paste the ad copy from your blueprint',
+              'Do NOT edit your campaign for the first 7 days — Meta needs this time to exit learning phase',
+            ],
+          },
+        ],
+      },
+      {
+        heading: 'Common Mistakes Indian Brands Make',
+        content: [
+          {
+            type: 'bullets',
+            items: [
+              'Skipping Pixel installation — running blind without data',
+              'Using Boost Post instead of Ads Manager — expensive and inefficient',
+              'Editing campaigns in first 7 days — resets learning phase',
+              'Running too many ad sets for budget — spreads spend too thin',
+              'Not mentioning price in D2C ads — Indian buyers want to know before clicking',
+              'Ignoring COD as a trust signal — major conversion booster',
+              'Using generic copy — avoid "best quality, fast delivery"',
+            ],
+          },
+          {
+            type: 'fix',
+            text: 'Never boost posts for sales campaigns. Always use Ads Manager with the correct objective.',
+          },
+        ],
+      },
+    ],
+    conclusion:
+      'Setting up Meta ads correctly takes 2-4 hours the first time, but it pays off in every campaign you run after. Brands that skip steps 5 and 6 are paying 30-40% more per conversion than they should. Once your foundation is set, use Optimeta to generate your complete campaign blueprint and follow the launch checklist step by step.',
   },
 ];

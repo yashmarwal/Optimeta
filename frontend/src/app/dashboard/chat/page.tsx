@@ -377,12 +377,12 @@ const KNOWLEDGE_BASE = [
   },
   // Meta Ads Setup
   {
-    keywords: ['how to setup meta ads', 'how to start meta ads', 'how to run facebook ads', 'setup facebook ads', 'start meta ads', 'begin meta ads', 'meta ads for beginners', 'how to advertise on facebook', 'how to advertise on instagram'],
-    answer: 'How to set up Meta ads step by step:\n\n1️⃣ Create Meta Business Suite account at business.facebook.com\n2️⃣ Add your Facebook Page and Instagram account\n3️⃣ Set up Meta Pixel on your website\n4️⃣ Set up Conversions API (CAPI) for accurate tracking\n5️⃣ Create your Ad Account and add billing\n6️⃣ Use Optimeta to generate your campaign blueprint\n7️⃣ Go to Ads Manager and create your campaign\n8️⃣ Follow the launch checklist from your blueprint\n\nTip: Complete steps 1-5 before spending any money on ads!',
+    keywords: ['how to setup meta ads', 'how to start meta ads', 'how to run facebook ads', 'setup facebook ads', 'start meta ads', 'begin meta ads', 'meta ads for beginners', 'how to advertise on facebook', 'how to advertise on instagram', 'setup meta ads account', 'create meta ads account'],
+    answer: 'Complete Meta ads setup guide:\n\n1️⃣ Create Meta Business Suite\nGo to business.facebook.com → Create account\n\n2️⃣ Add your Facebook Page + Instagram\nSettings → Accounts → Pages/Instagram\n\n3️⃣ Create Ad Account\nSettings → Accounts → Ad Accounts → Create New\nSelect currency: INR\n\n4️⃣ Add Payment Method\nBilling → Add Payment (UPI/card/net banking)\n\n5️⃣ Install Meta Pixel\nEvents Manager → Connect Data Sources → Web\nInstall code on your website\n\n6️⃣ Set up Conversions API (CAPI)\nEvents Manager → Settings → Conversions API\nEssential for iOS tracking accuracy\n\n7️⃣ Generate Campaign with Optimeta\nUse your blueprint for targeting + copy\n\n8️⃣ Create Campaign in Ads Manager\nadsmanager.facebook.com\nFollow your Optimeta blueprint step by step\n\nTotal setup time: 2-4 hours for first time',
   },
   {
-    keywords: ['what is meta pixel', 'how to install pixel', 'pixel setup', 'install facebook pixel'],
-    answer: 'Meta Pixel is a code snippet you add to your website to track visitor actions.\n\nHow to install:\n1. Go to Events Manager in Meta Business Suite\n2. Click "Connect Data Sources" → Web\n3. Choose Meta Pixel → Get Started\n4. Enter your website URL\n5. Choose manual install or partner integration\n6. Copy the pixel code\n7. Paste it in your website <head> section\n8. Verify using Meta Pixel Helper Chrome extension\n\nFor Shopify: use the Meta app in Shopify App Store — no coding needed!',
+    keywords: ['what is meta pixel', 'how to install pixel', 'pixel setup', 'install facebook pixel', 'meta pixel setup'],
+    answer: 'Meta Pixel setup:\n\n1. Go to Events Manager in Meta Business Suite\n2. Click "Connect Data Sources" → Web\n3. Choose "Meta Pixel" → Get Started\n4. Enter your website URL\n5. Choose install method:\n   • Manual: copy code to website <head>\n   • Partner: use Shopify/WooCommerce app\n6. Verify using Meta Pixel Helper (Chrome extension)\n7. Test events using Test Events tool\n\nFor Shopify: Install Meta app from Shopify App Store — no coding needed!\n\nFor WordPress: Use PixelYourSite plugin',
   },
   {
     keywords: ['what is meta business suite', 'business manager', 'meta business manager', 'facebook business manager'],
@@ -393,8 +393,8 @@ const KNOWLEDGE_BASE = [
     answer: 'To create a Meta Ad Account:\n\n1. Go to business.facebook.com\n2. Settings → Accounts → Ad Accounts\n3. Click "Add" → "Create a new ad account"\n4. Name your account and select currency (INR)\n5. Add payment method (UPI, card, net banking)\n6. Assign yourself as admin\n\nNote: New ad accounts have spending limits initially. These increase as you build payment history.',
   },
   {
-    keywords: ['how to create campaign', 'create facebook campaign', 'create meta campaign', 'ads manager campaign'],
-    answer: 'To create a campaign in Meta Ads Manager:\n\n1. Go to adsmanager.facebook.com\n2. Click "Create" (green button)\n3. Choose campaign objective (use Optimeta blueprint recommendation)\n4. Name your campaign\n5. Set campaign budget (CBO recommended)\n6. Create Ad Set — set audience, placement, budget\n7. Upload your creative (image/video)\n8. Write ad copy from your Optimeta blueprint\n9. Review and Publish\n\nPro tip: Use your Optimeta blueprint for exact targeting, budget and copy!',
+    keywords: ['how to create campaign', 'create facebook campaign', 'create meta campaign', 'ads manager campaign', 'create ad campaign'],
+    answer: 'Create a Meta campaign:\n\n1. Go to Ads Manager (adsmanager.facebook.com)\n2. Click green "Create" button\n3. Select Objective (from your Optimeta blueprint)\n4. Name campaign: [Brand]_[Objective]_[Date]\n5. Set Campaign Budget Optimization (CBO) ON\n6. Enter daily budget from your blueprint\n7. Create Ad Set:\n   • Audience: use blueprint targeting\n   • Placements: Advantage+ Placements\n   • Schedule: Start immediately\n8. Create Ad:\n   • Upload creative (image/video)\n   • Paste primary text from blueprint\n   • Add headline and CTA\n9. Review everything\n10. Click Publish!\n\nDo NOT edit for first 7 days — let Meta learn',
   },
   {
     keywords: ['what is cbo', 'campaign budget optimization', 'cbo vs abo'],
@@ -431,6 +431,67 @@ const KNOWLEDGE_BASE = [
   {
     keywords: ['festive ads', 'diwali ads', 'festival season', 'eid ads', 'holi ads', 'festive campaign'],
     answer: 'Festive season Meta ads strategy for India:\n\n📅 Start 2-3 weeks before the festival\n💰 Increase budget 40-60% during peak\n🎯 Add festive interests to targeting\n✍️ Use festive-themed creatives and copy\n🛍️ Create special offers (bundles, discounts)\n\nTop festive seasons for Indian D2C:\n• Diwali (Oct-Nov) — highest spends\n• Eid — fashion and gifting\n• Holi — beauty and fashion\n• Valentine\'s Day — gifting brands\n• Wedding season (Nov-Feb) — jewellery, fashion',
+  },
+  // New entries
+  {
+    keywords: ['what is events manager', 'events manager', 'meta events', 'conversion events', 'standard events'],
+    answer: 'Events Manager is where you manage all your tracking.\n\nKey events for Indian D2C:\n• PageView — someone visits your site\n• ViewContent — product page viewed\n• AddToCart — added to cart\n• InitiateCheckout — started checkout\n• Purchase — completed order\n\nOptimize for Purchase (if 50+ events/month)\nOtherwise optimize for AddToCart or InitiateCheckout first\n\nAccess at: business.facebook.com → Events Manager',
+  },
+  {
+    keywords: ['what is ads manager', 'facebook ads manager', 'meta ads manager', 'how to use ads manager'],
+    answer: 'Meta Ads Manager is where you create, manage and monitor all your Facebook and Instagram ads.\n\nMain sections:\n• Campaigns — overall strategy and objective\n• Ad Sets — audience, budget, schedule\n• Ads — creative, copy, format\n\nKey metrics to watch:\n• ROAS — revenue per ₹1 spent\n• CTR — % clicking your ad\n• CPM — cost per 1000 impressions\n• CPA — cost per result\n• Frequency — how many times shown\n\nAccess: adsmanager.facebook.com',
+  },
+  {
+    keywords: ['what is business suite', 'meta business suite', 'facebook business suite'],
+    answer: 'Meta Business Suite is the central hub for managing your entire Meta presence.\n\nIncludes:\n• Ads Manager (create campaigns)\n• Events Manager (track conversions)\n• Commerce Manager (product catalog)\n• Pages (manage Facebook Page)\n• Inbox (messages from customers)\n• Insights (performance data)\n\nCreate free at: business.facebook.com',
+  },
+  {
+    keywords: ['ad account disabled', 'account disabled', 'ad account restricted', 'account banned', 'ads not approved', 'ad rejected'],
+    answer: "If your Meta ad account is disabled:\n\n1. Check the email Meta sent — it explains the reason\n2. Go to Account Quality in Business Suite\n3. Click \"Request Review\" if you believe it's a mistake\n4. Wait 24-48 hours for review\n\nCommon reasons in India:\n• Payment failure\n• Policy violation in ad content\n• Suspicious activity\n• New account spending too fast\n\nPrevention tips:\n• Warm up new accounts slowly (₹200/day first week)\n• Avoid restricted content (loans, crypto, weight loss claims)\n• Keep payment method updated\n• Don't edit campaigns too frequently",
+  },
+  {
+    keywords: ['what is commerce manager', 'product catalog', 'meta catalog', 'facebook shop', 'instagram shop'],
+    answer: 'Commerce Manager is where you manage your product catalog for Meta ads.\n\nWhy you need it:\n• Required for Advantage+ Shopping Campaigns\n• Enables Dynamic Product Ads\n• Powers Facebook and Instagram Shop\n\nSetup:\n1. Business Suite → Commerce Manager\n2. Create Catalog → Upload products\n3. Connect to your website/Shopify\n4. Link catalog to your Ad Account\n\nFor Shopify: Sync automatically via Meta Sales Channel app',
+  },
+  {
+    keywords: ['how to track roas', 'how to measure roas', 'check roas', 'roas tracking', 'measure results'],
+    answer: 'How to track ROAS in Meta Ads Manager:\n\n1. Open Ads Manager\n2. Click "Columns" → Customize Columns\n3. Add: Purchase ROAS, Cost per Purchase, Purchases\n4. Save as preset "ROAS View"\n\nROAS formula: Revenue ÷ Ad Spend\nExample: ₹15,000 sales ÷ ₹5,000 spend = 3x ROAS\n\nIndia benchmarks:\n• Fashion: 2.4x-4x target\n• Beauty: 2.8x-4.5x target\n• Jewellery: 2x-3.5x target\n• Health: 3x-5x target\n\nNote: Meta ROAS may differ from actual ROAS due to attribution. Cross-check with your website analytics.',
+  },
+  {
+    keywords: ['what is advantage plus audience', 'advantage plus targeting', 'advantage audience', 'meta advantage'],
+    answer: "Advantage+ Audience is Meta's AI-powered targeting that automatically finds your best customers.\n\nHow it works:\n• You provide \"audience suggestions\" (interests, demographics)\n• Meta's AI expands beyond your suggestions to find more buyers\n• It learns from your pixel data and purchase history\n\nWhen to use:\n• Budget above ₹1,000/day\n• Pixel has 50+ purchase events\n• You want Meta to do the heavy lifting\n\nTip: Still add 8-10 relevant interests as seeds — helps Meta start in the right direction",
+  },
+  {
+    keywords: ['what is dynamic ads', 'dynamic product ads', 'dpa', 'dynamic retargeting'],
+    answer: 'Dynamic Ads automatically show people products they viewed on your website.\n\nHow it works:\n1. User views Product A on your website\n2. Pixel records this\n3. Meta shows them an ad for Product A\n4. Personalized automatically — no manual work\n\nRequirements:\n• Meta Pixel installed\n• Product Catalog set up in Commerce Manager\n• Minimum 1,000 monthly website visitors\n\nBest for: E-commerce brands with 20+ products. Very high ROAS as it targets warm audience with relevant products.',
+  },
+  {
+    keywords: ['whatsapp ads', 'click to whatsapp', 'ctwa', 'whatsapp campaign', 'whatsapp lead generation'],
+    answer: 'Click-to-WhatsApp (CTWA) ads are extremely effective for Indian brands.\n\nHow to set up:\n1. Connect WhatsApp Business to Meta Business Suite\n2. Create campaign → Objective: Engagement or Leads\n3. Ad Type: Click to WhatsApp\n4. Write ad → CTA button opens WhatsApp chat\n5. Set up automated WhatsApp greeting\n\nWhy it works in India:\n• Indians prefer WhatsApp over forms\n• Higher conversion than website traffic\n• Build direct customer relationship\n• Works brilliantly for coaching, local businesses, D2C\n\nExpected CPL: ₹20-80 for most Indian niches',
+  },
+  {
+    keywords: ['instagram ads', 'instagram advertising', 'reels ads', 'story ads', 'instagram reel ads'],
+    answer: 'Instagram ad formats for Indian brands:\n\n📱 Reels Ads (BEST performing 2026)\n• 15-30 seconds vertical video\n• First 3 seconds must hook the viewer\n• UGC style outperforms studio\n• 3-5x higher CTR than static\n\n📸 Feed Ads\n• Square or portrait image/video\n• Good for retargeting warm audience\n• Best with offer/price visible\n\n⏱️ Story Ads\n• Full screen vertical (9:16)\n• 15 seconds max for video\n• Swipe up CTA\n• Good for offers and urgency\n\nRecommendation: Use Advantage+ Placements and let Meta decide where to show your ad for best results.',
+  },
+  {
+    keywords: ['how to write ad copy', 'ad copywriting', 'write facebook ad', 'write instagram ad', 'ad copy tips'],
+    answer: 'Ad copy formula for Indian brands:\n\nLine 1: Hook (stop the scroll)\n"Tired of [pain point]?" OR\n"₹499 for [big benefit]? Yes, really."\n\nLine 2: Introduce product\n"Meet [Product] — [one line description]"\n\nLine 3: Key benefits + proof\n"Used by 5,000+ Indian [customers]. [Benefit 1]. [Benefit 2]."\n\nLine 4: Price + offer\n"Just ₹[price]. Free shipping above ₹499."\n\nLine 5: Trust + CTA\n"Cash on Delivery available. Shop now →"\n\nTips:\n• Always mention price for D2C\n• COD increases CTR by 20-40%\n• Use numbers (5,000 customers, 7 days results)\n• Keep sentences short\n• Sound human, not corporate',
+  },
+  {
+    keywords: ['what is meta verified', 'verified badge facebook', 'verified badge instagram', 'blue tick meta'],
+    answer: "Meta Verified is a subscription for individuals and businesses to get verified badges.\n\nBenefits:\n• Blue verification badge\n• Proactive account protection\n• Account support access\n• Increased reach and visibility\n\nCost: Starting from ₹699/month\n\nFor advertising: Meta Verified does NOT directly improve ad performance. Focus your budget on actual ad spend rather than verification for better ROI.",
+  },
+  {
+    keywords: ['how to reduce ad cost', 'reduce cpm', 'lower cpc', 'cheaper ads', 'reduce ad spend', 'improve ad performance'],
+    answer: 'How to reduce Meta ad costs for Indian brands:\n\n1️⃣ Improve creative quality\nBetter hook = higher CTR = lower CPM\n\n2️⃣ Use Reels format\nReels typically have 30-50% lower CPM than feed\n\n3️⃣ Target Tier 2/3 cities\nCPM ₹30-70 vs ₹60-120 in metros\n\n4️⃣ Avoid peak competition times\nDiwali, wedding season = higher CPMs\n\n5️⃣ Use Advantage+ placements\nMeta finds cheapest placements automatically\n\n6️⃣ Improve landing page\nHigher conversion rate = better ROAS without reducing spend\n\n7️⃣ Use broad targeting\nLarger audience = more competition = lower CPM',
+  },
+  {
+    keywords: ['what is page post engagement', 'engagement campaign', 'post boost', 'boosting posts'],
+    answer: 'Page Post Engagement = campaign objective to get likes, comments, shares on your posts.\n\nShould you use it?\nFor D2C sales: NO — use Sales or Traffic instead\nFor brand building: Yes — builds social proof\nFor new page with 0 followers: Yes — get initial engagement\n\nBoosting posts vs Ads Manager:\nNever boost posts for sales — it uses inefficient targeting and wrong objective.\nAlways use Ads Manager for sales campaigns.\n\nBoosting is only useful for building social proof (likes/comments) on a new page.',
+  },
+  {
+    keywords: ['what is reach objective', 'reach campaign', 'brand awareness campaign', 'awareness objective'],
+    answer: 'Reach objective = show your ad to maximum unique people within your budget.\n\nWhen to use:\n• Launching in a new market/city\n• Pure brand awareness (not immediate sales)\n• Retargeting with very small audience\n\nWhen NOT to use:\n• If you want sales or leads\n• If you have pixel data\n• If budget is under ₹5,000/month\n\nFor Indian D2C: Sales objective almost always outperforms Reach/Awareness for revenue. Only use Reach if brand building is the explicit goal with no sales expectation.',
   },
 ];
 

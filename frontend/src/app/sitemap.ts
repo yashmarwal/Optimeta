@@ -57,6 +57,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
+      url: 'https://optimeta.tech/blog/how-to-setup-meta-ads-account-india',
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    },
+    {
       url: 'https://optimeta.tech/compare',
       lastModified: new Date(),
       changeFrequency: 'monthly',
