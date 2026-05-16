@@ -15,13 +15,6 @@ interface PaywallModalProps {
   onSuccess: () => void;
 }
 
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Razorpay: new (options: Record<string, any>) => { open(): void };
-  }
-}
-
 function loadRazorpayScript(): Promise<void> {
   return new Promise((resolve) => {
     if (typeof window !== 'undefined' && window.Razorpay) { resolve(); return; }
