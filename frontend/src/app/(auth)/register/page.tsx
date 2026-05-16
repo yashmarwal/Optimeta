@@ -113,7 +113,7 @@ export default function RegisterPage() {
           <p className="text-text-muted text-sm">
             {selectedPlan
               ? `Starting with the ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} plan`
-              : 'Start free — no credit card required'}
+              : 'Your first campaign blueprint for just ₹49'}
           </p>
         </div>
 
@@ -123,8 +123,8 @@ export default function RegisterPage() {
             <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 flex items-center gap-3">
               <Check size={16} className="text-accent flex-shrink-0" />
               <div>
-                <div className="text-sm font-semibold text-white">Free plan included</div>
-                <div className="text-xs text-text-muted">1 campaign blueprint — no card needed</div>
+                <div className="text-sm font-semibold text-white">₹49 for your first blueprint</div>
+                <div className="text-xs text-text-muted">Fill the form, generate your complete Meta ad campaign blueprint. Pay only ₹49 — no subscription needed.</div>
               </div>
             </div>
           )}
