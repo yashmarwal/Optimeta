@@ -57,11 +57,47 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/campaigns/generate — generate new campaign
-router.post('/generate', usageLimitMiddleware, async (req, res) => {
+router.post('/generate', async (req, res) => {
   try {
     console.log('=== GENERATE ROUTE HIT ===');
     console.log('User ID:', req.user?.id || req.userId);
     console.log('Body keys:', Object.keys(req.body));
+
+    const userId = req.user?.id || req.userId;
+
+    // Paywall check
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan, campaigns_used, first_campaign_paid')
+      .eq('id', userId)
+      .single();
+
+    const plan = profile?.plan || 'free';
+    const campaignsUsed = profile?.campaigns_used || 0;
+    const firstCampaignPaid = profile?.first_campaign_paid || false;
+
+    let canGenerate = false;
+    let paywallReason = null;
+
+    if (plan === 'starter' && campaignsUsed < 1) canGenerate = true;
+    else if (plan === 'pro' && campaignsUsed < 5) canGenerate = true;
+    else if (plan === 'ultra' && campaignsUsed < 10) canGenerate = true;
+    else if (plan === 'ultra') paywallReason = 'ultra_limit';
+    else if (plan === 'pro') paywallReason = 'pro_limit';
+    else if (plan === 'starter') paywallReason = 'starter_used';
+    else paywallReason = 'no_plan';
+
+    if (!canGenerate) {
+      return res.status(402).json({
+        success: false,
+        code: 'PAYWALL',
+        reason: paywallReason,
+        message: 'Payment required to generate campaign',
+        plan,
+        firstCampaignPaid,
+        campaignsUsed,
+      });
+    }
 
     const inputs = req.body;
 
@@ -75,8 +111,6 @@ router.post('/generate', usageLimitMiddleware, async (req, res) => {
     console.log('Calling AI service...');
     const blueprint = await generateCampaignBlueprint(inputs);
     console.log('Blueprint generated:', blueprint.campaign_name);
-
-    const userId = req.user?.id || req.userId;
 
     const { data: campaign, error } = await supabase
       .from('campaigns')
@@ -95,7 +129,7 @@ router.post('/generate', usageLimitMiddleware, async (req, res) => {
     }
 
     // Increment campaigns_used (fetch first to avoid race on raw SQL)
-    const { data: profile } = await supabase
+    const { data: usageProfile } = await supabase
       .from('profiles')
       .select('campaigns_used')
       .eq('id', userId)
@@ -103,7 +137,7 @@ router.post('/generate', usageLimitMiddleware, async (req, res) => {
 
     await supabase
       .from('profiles')
-      .update({ campaigns_used: (profile?.campaigns_used || 0) + 1 })
+      .update({ campaigns_used: (usageProfile?.campaigns_used || 0) + 1 })
       .eq('id', userId);
 
     console.log('Campaign saved:', campaign.id);

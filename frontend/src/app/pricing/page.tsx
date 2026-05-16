@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 };
 
 const COMPARISON = [
-  { feature: 'Campaign Blueprints', free: '1 lifetime', pro: '5 / month', ultra: '10 / month' },
+  { feature: 'Campaign Blueprints', free: '₹49 one-time', pro: '5 / month', ultra: '10 / month' },
   { feature: 'AI-Generated Strategy', free: '✓', pro: '✓', ultra: '✓' },
   { feature: 'Audience Targeting Clusters', free: '✓', pro: '✓', ultra: '✓' },
   { feature: 'Ad Copy Generation', free: '✓', pro: '✓', ultra: '✓' },
@@ -67,7 +67,7 @@ export default function PricingPage() {
                 <thead>
                   <tr className="border-b border-border-color">
                     <th className="text-left p-5 text-sm font-semibold text-text-secondary">Feature</th>
-                    <th className="text-center p-5 text-sm font-semibold text-text-secondary">Free</th>
+                    <th className="text-center p-5 text-sm font-semibold text-text-secondary">Starter</th>
                     <th className="text-center p-5 text-sm font-bold text-white bg-primary/10">Pro</th>
                     <th className="text-center p-5 text-sm font-semibold text-text-secondary">Ultra</th>
                   </tr>

@@ -244,10 +244,27 @@ router.post('/webhook', async (req, res) => {
       case 'subscription.cancelled': {
         // User keeps access until period_end — do NOT downgrade plan yet
         const sub = payload.subscription.entity;
+        const billingEnd = sub.current_end
+          ? new Date(sub.current_end * 1000).toISOString()
+          : addDays(now(), 30).toISOString();
+
+        const { data: dbSubCancelled } = await supabase
+          .from('subscriptions')
+          .select('user_id')
+          .eq('razorpay_subscription_id', sub.id)
+          .single();
+
         await supabase
           .from('subscriptions')
           .update({ status: 'cancelled', cancelled_at: now().toISOString() })
           .eq('razorpay_subscription_id', sub.id);
+
+        if (dbSubCancelled) {
+          await supabase
+            .from('profiles')
+            .update({ subscription_status: 'cancelled', billing_cycle_end: billingEnd })
+            .eq('id', dbSubCancelled.user_id);
+        }
         console.log(`[Webhook] Subscription cancelled: ${sub.id}`);
         break;
       }
@@ -270,7 +287,12 @@ router.post('/webhook', async (req, res) => {
         if (dbSub) {
           await supabase
             .from('profiles')
-            .update({ plan: 'free' })
+            .update({
+              plan: 'free',
+              subscription_status: 'expired',
+              campaigns_used: 0,
+              chat_credits_used: 0,
+            })
             .eq('id', dbSub.user_id);
         }
         console.log(`[Webhook] Subscription expired: ${sub.id}`);
@@ -423,7 +445,7 @@ router.post('/cancel', authMiddleware, async (req, res) => {
     // Try to find an active or payment_failed subscription record in DB
     const { data: sub } = await supabase
       .from('subscriptions')
-      .select('razorpay_subscription_id, status')
+      .select('razorpay_subscription_id, status, current_period_end')
       .eq('user_id', userId)
       .in('status', ['active', 'payment_failed'])
       .order('created_at', { ascending: false })
@@ -436,7 +458,7 @@ router.post('/cancel', authMiddleware, async (req, res) => {
         await razorpay.subscriptions.cancel(sub.razorpay_subscription_id, { cancel_at_cycle_end: true });
         console.log('[Payments] Razorpay subscription cancelled successfully');
       } catch (rzpErr) {
-        // Log and continue — still update DB and downgrade plan
+        // Log and continue — still update DB and store billing_cycle_end
         console.error('[Payments] Razorpay cancel failed:', rzpErr.message);
       }
 
@@ -445,9 +467,10 @@ router.post('/cancel', authMiddleware, async (req, res) => {
         .update({ status: 'cancelled', cancelled_at: now().toISOString() })
         .eq('razorpay_subscription_id', sub.razorpay_subscription_id);
 
+      const billingCycleEnd = sub.current_period_end || addDays(now(), 30).toISOString();
       await supabase
         .from('profiles')
-        .update({ plan: 'free' })
+        .update({ subscription_status: 'cancelled', billing_cycle_end: billingCycleEnd })
         .eq('id', userId);
 
       if (profile?.email) {
@@ -457,7 +480,7 @@ router.post('/cancel', authMiddleware, async (req, res) => {
 
       return res.json({
         success: true,
-        data: { message: 'Subscription cancelled. Your autopay has been stopped.' },
+        data: { message: 'Subscription cancelled. You have access until end of current billing period.' },
       });
     }
 
@@ -497,13 +520,13 @@ router.post('/cancel', authMiddleware, async (req, res) => {
       console.error('[Payments] Fallback Razorpay cancel error:', rzpError.message);
     }
 
-    // Always downgrade plan regardless of Razorpay result
+    // Store billing_cycle_end without downgrading plan yet
     await supabase
       .from('profiles')
-      .update({ plan: 'free' })
+      .update({ subscription_status: 'cancelled', billing_cycle_end: addDays(now(), 30).toISOString() })
       .eq('id', userId);
 
-    console.log('[Payments] Fallback cancel — user downgraded:', userId);
+    console.log('[Payments] Fallback cancel — billing_cycle_end stored for user:', userId);
 
     if (profile?.email) {
       sendCancellationEmail(profile.email, profile.full_name)
@@ -517,6 +540,74 @@ router.post('/cancel', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('[Payments] cancel error:', err);
     return res.status(500).json({ success: false, message: err.message || 'Cancellation failed.' });
+  }
+});
+
+// POST /api/payments/starter — create one-time ₹49 order
+router.post('/starter', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_campaign_paid, plan')
+      .eq('id', userId)
+      .single();
+
+    if (profile?.first_campaign_paid || (profile?.plan && profile.plan !== 'free')) {
+      return res.status(409).json({ success: false, message: 'You have already unlocked your first campaign.' });
+    }
+
+    const order = await razorpay.orders.create({
+      amount: 4900,
+      currency: 'INR',
+      receipt: `starter_${userId.slice(0, 8)}_${Date.now()}`,
+      notes: { user_id: userId, type: 'starter' },
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        orderId: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        key: process.env.RAZORPAY_KEY_ID,
+      },
+    });
+  } catch (err) {
+    console.error('[Payments] starter order error:', err);
+    return res.status(500).json({ success: false, message: err.message || 'Failed to create order.' });
+  }
+});
+
+// POST /api/payments/starter/verify — verify ₹49 payment
+router.post('/starter/verify', authMiddleware, async (req, res) => {
+  try {
+    const { order_id, payment_id, signature } = req.body;
+    const userId = req.userId;
+
+    if (!order_id || !payment_id || !signature) {
+      return res.status(400).json({ success: false, message: 'Missing payment verification fields.' });
+    }
+
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(`${order_id}|${payment_id}`)
+      .digest('hex');
+
+    if (expectedSignature !== signature) {
+      return res.status(400).json({ success: false, message: 'Payment verification failed — invalid signature.' });
+    }
+
+    await supabase
+      .from('profiles')
+      .update({ first_campaign_paid: true, plan: 'starter', campaigns_used: 0 })
+      .eq('id', userId);
+
+    return res.json({ success: true, data: { message: 'Payment verified. You can now generate your campaign.' } });
+  } catch (err) {
+    console.error('[Payments] starter/verify error:', err);
+    return res.status(500).json({ success: false, message: 'Payment verification failed.' });
   }
 });
 

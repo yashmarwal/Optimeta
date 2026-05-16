@@ -135,6 +135,11 @@ const runMigrations = async () => {
 
     alter table profiles add column if not exists chat_credits_used numeric default 0;
     alter table profiles add column if not exists chat_credits_reset_at timestamp with time zone;
+    alter table profiles add column if not exists first_campaign_paid boolean default false;
+    alter table profiles add column if not exists billing_cycle_end timestamp with time zone;
+    alter table profiles add column if not exists subscription_status text;
+    alter table profiles drop constraint if exists profiles_plan_check;
+    alter table profiles add constraint profiles_plan_check check (plan in ('free', 'starter', 'pro', 'ultra'));
 
     create index if not exists idx_fingerprint_hash on free_trial_fingerprints(fingerprint_hash);
     create index if not exists idx_fingerprint_ip on free_trial_fingerprints(ip_address);

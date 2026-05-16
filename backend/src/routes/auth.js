@@ -179,6 +179,17 @@ router.get('/me', async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found.' });
     }
 
+    // Auto-downgrade if cancelled subscription billing period has ended
+    const nowDate = new Date();
+    const cycleEnd = profile.billing_cycle_end ? new Date(profile.billing_cycle_end) : null;
+    if (profile.subscription_status === 'cancelled' && cycleEnd && nowDate > cycleEnd && profile.plan !== 'free') {
+      await supabase
+        .from('profiles')
+        .update({ plan: 'free', campaigns_used: 0, chat_credits_used: 0 })
+        .eq('id', profile.id);
+      profile.plan = 'free';
+    }
+
     return res.json({
       success: true,
       data: {
@@ -190,6 +201,7 @@ router.get('/me', async (req, res) => {
           campaignsUsed: profile.campaigns_used,
           billingCycleStart: profile.billing_cycle_start,
           createdAt: profile.created_at,
+          firstCampaignPaid: profile.first_campaign_paid || false,
         },
       },
     });

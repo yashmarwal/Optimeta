@@ -8,20 +8,20 @@ import { ScrollReveal } from '@/components/ui/ScrollReveal';
 
 const plans = [
   {
-    name: 'Free',
+    name: 'Starter',
     icon: Zap,
-    price: '₹0',
-    period: 'forever',
-    description: 'Perfect to try Optimeta',
+    price: '₹49',
+    period: 'one-time',
+    description: 'Try Optimeta risk-free',
     features: [
-      '1 campaign lifetime',
-      'Basic blueprint',
+      '1 campaign blueprint',
+      'Full AI-generated strategy',
       'Targeting & ad angles',
       'Ad copy generation',
       'Launch checklist',
     ],
     excluded: ['PDF export', 'Campaign history'],
-    cta: 'Get Started Free',
+    cta: 'Get First Blueprint',
     href: '/register',
     highlighted: false,
     badge: null,
@@ -78,8 +78,8 @@ export default function PricingSection() {
   const router = useRouter();
 
   const handleCTAClick = (plan: typeof plans[0]) => {
-    if (plan.name === 'Free') {
-      router.push(user ? '/dashboard' : '/register');
+    if (plan.name === 'Starter') {
+      router.push(user ? '/dashboard/new' : '/register');
       return;
     }
     if (user) {
@@ -90,7 +90,7 @@ export default function PricingSection() {
   };
 
   const getLabel = (plan: typeof plans[0]) => {
-    if (plan.name === 'Free') return user ? 'Go to Dashboard' : plan.cta;
+    if (plan.name === 'Starter') return user ? 'Generate First Blueprint' : plan.cta;
     if (user && user.plan === plan.name.toLowerCase()) return 'Current Plan';
     if (user) return `Upgrade to ${plan.name}`;
     return plan.cta;

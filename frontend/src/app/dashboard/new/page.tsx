@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, ArrowLeft, CheckCircle, Sparkles, Building2, Package, Target, Eye, Rocket, TrendingUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
+import { PaywallModal } from '@/components/dashboard/PaywallModal';
 
 interface BusinessInputs {
   // Step 1 — Business
@@ -69,6 +70,9 @@ export default function NewCampaignPage() {
   const [progressWidth, setProgressWidth] = useState(0);
   const [usageInfo, setUsageInfo] = useState<{ remaining: number; limit: number } | null>(null);
   const [draftSaved, setDraftSaved] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [paywallReason, setPaywallReason] = useState<string | null>(null);
+  const [firstCampaignPaid, setFirstCampaignPaid] = useState(false);
   const router = useRouter();
 
   const [inputs, setInputs] = useState<BusinessInputs>({
@@ -127,7 +131,16 @@ export default function NewCampaignPage() {
       setGenerating(false);
       localStorage.removeItem('generation_in_progress');
       localStorage.removeItem('generation_inputs');
-      const apiMsg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+
+      const errAny = err as { response?: { status?: number; data?: { message?: string; reason?: string; firstCampaignPaid?: boolean } } };
+      if (errAny?.response?.status === 402) {
+        setPaywallReason(errAny.response.data?.reason || null);
+        setFirstCampaignPaid(errAny.response.data?.firstCampaignPaid || false);
+        setPaywallOpen(true);
+        return;
+      }
+
+      const apiMsg = errAny?.response?.data?.message;
       toast.error(apiMsg || 'Generation failed. Please try again.');
     }
   };
@@ -405,6 +418,14 @@ export default function NewCampaignPage() {
       {draftSaved && (
         <p className="text-center text-xs text-green-400/70 mt-2">✓ Draft auto-saved</p>
       )}
+
+      <PaywallModal
+        isOpen={paywallOpen}
+        onClose={() => setPaywallOpen(false)}
+        reason={paywallReason}
+        firstCampaignPaid={firstCampaignPaid}
+        onSuccess={handleGenerate}
+      />
     </div>
   );
 }
