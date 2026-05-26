@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef }
-  from 'react';
-import { motion, AnimatePresence }
-  from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface FeatureCard {
   icon: React.ReactNode;
@@ -16,13 +14,13 @@ export function FlipFeatureCards({
 }: {
   cards: FeatureCard[];
 }) {
-  const [currentIndex, setCurrentIndex] =
-    useState(0);
-  const [direction, setDirection] =
-    useState<'forward' | 'backward'>('forward');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
   const locked = useRef(false);
   const touchStartY = useRef(0);
   const scrollEndTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hijackActive = useRef(false);  // true = scroll hijack is on
+  const snapDisabled = useRef(false);  // true = don't re-snap after boundary exit
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const navigate = (dir: 'forward' | 'backward') => {
@@ -35,33 +33,64 @@ export function FlipFeatureCards({
   };
 
   useEffect(() => {
-    const isCentered = () => {
-      const section = sectionRef.current;
-      if (!section) return false;
-      const rect = section.getBoundingClientRect();
+    const getRect = () =>
+      sectionRef.current?.getBoundingClientRect() ?? null;
+
+    const isCentered = (rect: DOMRect) => {
       const mid = window.innerHeight / 2;
-      // Section spans the viewport centre
-      return rect.top <= mid && rect.bottom >= mid;
+      return rect.top < mid && rect.bottom > mid;
+    };
+
+    const snapToCenter = (rect: DOMRect) => {
+      const sectionMid = rect.top + rect.height / 2;
+      const vMid = window.innerHeight / 2;
+      const target = window.scrollY + (sectionMid - vMid);
+      window.scrollTo({ top: Math.round(target), behavior: 'smooth' });
+    };
+
+    // Scroll listener — detects section entering center even during fast scroll,
+    // then snaps the page and enables hijack mode.
+    const onPageScroll = () => {
+      if (snapDisabled.current) return;
+      const rect = getRect();
+      if (!rect) return;
+
+      if (isCentered(rect)) {
+        if (!hijackActive.current) {
+          hijackActive.current = true;
+          snapToCenter(rect);
+        }
+      } else {
+        hijackActive.current = false;
+      }
     };
 
     const onWheel = (e: WheelEvent) => {
-      if (!isCentered()) return;
+      if (!hijackActive.current) return;
 
-      // At boundary — let page scroll naturally
-      if (e.deltaY > 0 && currentIndex >= cards.length - 1) return;
-      if (e.deltaY < 0 && currentIndex <= 0) return;
+      // At boundary — release hijack and let page scroll naturally
+      if (e.deltaY > 0 && currentIndex >= cards.length - 1) {
+        hijackActive.current = false;
+        snapDisabled.current = true;
+        setTimeout(() => { snapDisabled.current = false; }, 1500);
+        return;
+      }
+      if (e.deltaY < 0 && currentIndex <= 0) {
+        hijackActive.current = false;
+        snapDisabled.current = true;
+        setTimeout(() => { snapDisabled.current = false; }, 1500);
+        return;
+      }
 
-      // Hijack scroll
       e.preventDefault();
       e.stopPropagation();
 
-      // Navigate only once per scroll gesture
+      // One card per scroll gesture (debounce unlock on scroll end)
       if (!locked.current) {
         locked.current = true;
         navigate(e.deltaY > 0 ? 'forward' : 'backward');
       }
 
-      // Unlock after scroll gesture ends (debounce)
       if (scrollEndTimer.current) clearTimeout(scrollEndTimer.current);
       scrollEndTimer.current = setTimeout(() => {
         locked.current = false;
@@ -73,22 +102,16 @@ export function FlipFeatureCards({
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      if (!isCentered()) return;
-
+      if (!hijackActive.current) return;
       const diff = touchStartY.current - e.touches[0].clientY;
       if (diff > 0 && currentIndex >= cards.length - 1) return;
       if (diff < 0 && currentIndex <= 0) return;
-
       if (Math.abs(diff) > 10) e.preventDefault();
     };
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (!isCentered()) return;
-      if (locked.current) return;
-
-      const diff =
-        touchStartY.current - e.changedTouches[0].clientY;
-
+      if (!hijackActive.current || locked.current) return;
+      const diff = touchStartY.current - e.changedTouches[0].clientY;
       if (Math.abs(diff) < 40) return;
 
       if (diff > 0 && currentIndex < cards.length - 1) {
@@ -102,12 +125,14 @@ export function FlipFeatureCards({
       }
     };
 
+    window.addEventListener('scroll', onPageScroll, { passive: true });
     window.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: false });
     window.addEventListener('touchend', onTouchEnd, { passive: false });
 
     return () => {
+      window.removeEventListener('scroll', onPageScroll);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
