@@ -273,16 +273,6 @@ export default function CampaignViewPage() {
   const [exporting, setExporting] = useState(false);
   const [allChecked, setAllChecked] = useState(false);
   const [mode, setMode] = useState<'blueprint' | 'execution'>('blueprint');
-  const [isFlipping, setIsFlipping] = useState(false);
-
-  const handleModeSwitch = (newMode: 'blueprint' | 'execution') => {
-    if (newMode === mode || isFlipping) return;
-    setIsFlipping(true);
-    setTimeout(() => {
-      setMode(newMode);
-      setIsFlipping(false);
-    }, 400);
-  };
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
@@ -411,29 +401,27 @@ export default function CampaignViewPage() {
         </div>
 
         {/* ── Mode Toggle ── */}
-        <div className="w-full flex justify-center mb-6">
-          <div className="flex items-center gap-2 p-1 rounded-2xl bg-[#0F0F1A] border border-[#1E1E3A]">
-            <button
-              onClick={() => handleModeSwitch('blueprint')}
-              className="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-200"
-              style={{
-                background: mode === 'blueprint' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
-                color: mode === 'blueprint' ? '#ffffff' : '#606080',
-              }}
-            >
-              📋 Blueprint
-            </button>
-            <button
-              onClick={() => handleModeSwitch('execution')}
-              className="px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-200"
-              style={{
-                background: mode === 'execution' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
-                color: mode === 'execution' ? '#ffffff' : '#606080',
-              }}
-            >
-              🚀 Execution Mode
-            </button>
-          </div>
+        <div className="flex items-center gap-2 p-1 rounded-2xl w-fit bg-[#0F0F1A] border border-[#1E1E3A] mb-6">
+          <button
+            onClick={() => setMode('blueprint')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+            style={{
+              background: mode === 'blueprint' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
+              color: mode === 'blueprint' ? '#ffffff' : '#606080',
+            }}
+          >
+            📋 Blueprint
+          </button>
+          <button
+            onClick={() => setMode('execution')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+            style={{
+              background: mode === 'execution' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
+              color: mode === 'execution' ? '#ffffff' : '#606080',
+            }}
+          >
+            🚀 Execution Mode
+          </button>
         </div>
         {mode === 'execution' && (
           <p className="text-[#606080] text-xs mb-4 flex items-center gap-1.5">
@@ -464,29 +452,7 @@ export default function CampaignViewPage() {
           {/* Main content */}
           <div className="flex-1 min-w-0">
 
-            {/* 3D flip card — blueprint on front, execution on back */}
-            <div style={{ perspective: '1200px', width: '100%' }}>
-              <div
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  transformStyle: 'preserve-3d',
-                  transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                  transform: mode === 'execution' ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                  minHeight: '400px',
-                }}
-              >
-            {/* FRONT — Blueprint */}
-            <div
-              style={{
-                position: mode === 'blueprint' ? 'relative' : 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden' as any,
-              }}
-            >
+            {mode === 'blueprint' && (<>
             {/* Optimisation Diagnosis Card */}
             {bp.optimisation_diagnosis && (
               <motion.div
@@ -1193,29 +1159,14 @@ export default function CampaignViewPage() {
               )}
             </SectionCard>
 
-            </div>
-
-            {/* BACK — Execution Mode */}
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden' as any,
-                transform: 'rotateY(180deg)',
-              }}
-            >
+            </>)}
+            {mode === 'execution' && (
               <ExecutionMode
                 blueprint={campaign.blueprint as any}
                 campaignName={campaign.campaign_name || bp.campaign_name}
                 campaignId={campaign.id}
               />
-            </div>
-
-              </div>
-            </div>
+            )}
 
           </div>
         </div>
@@ -1248,29 +1199,27 @@ export default function CampaignViewPage() {
         </div>
 
         {/* ── Mode Toggle (Mobile) ── */}
-        <div className="w-full flex justify-center mt-3">
-          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#0F0F1A] border border-[#1E1E3A]">
-            <button
-              onClick={() => handleModeSwitch('blueprint')}
-              className="px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200"
-              style={{
-                background: mode === 'blueprint' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
-                color: mode === 'blueprint' ? '#ffffff' : '#606080',
-              }}
-            >
-              📋 Blueprint
-            </button>
-            <button
-              onClick={() => handleModeSwitch('execution')}
-              className="px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200"
-              style={{
-                background: mode === 'execution' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
-                color: mode === 'execution' ? '#ffffff' : '#606080',
-              }}
-            >
-              🚀 Execution
-            </button>
-          </div>
+        <div className="flex items-center gap-1.5 p-1 rounded-2xl w-fit bg-[#0F0F1A] border border-[#1E1E3A] mx-4 mt-3">
+          <button
+            onClick={() => setMode('blueprint')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
+            style={{
+              background: mode === 'blueprint' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
+              color: mode === 'blueprint' ? '#ffffff' : '#606080',
+            }}
+          >
+            📋 Blueprint
+          </button>
+          <button
+            onClick={() => setMode('execution')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
+            style={{
+              background: mode === 'execution' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
+              color: mode === 'execution' ? '#ffffff' : '#606080',
+            }}
+          >
+            🚀 Execution
+          </button>
         </div>
 
         {mode === 'blueprint' && (<>
