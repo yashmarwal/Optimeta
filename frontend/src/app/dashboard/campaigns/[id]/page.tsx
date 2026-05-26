@@ -404,22 +404,18 @@ export default function CampaignViewPage() {
         <div className="w-full flex justify-center mb-6">
           <div className="flex items-center gap-2 p-1 rounded-2xl bg-[#0F0F1A] border border-[#1E1E3A]">
             {(['blueprint', 'execution'] as const).map((m) => (
-              <button
+              <motion.button
                 key={m}
                 onClick={() => setMode(m)}
-                className="relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap z-10"
-                style={{ color: mode === m ? '#ffffff' : '#606080' }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap"
+                animate={{
+                  color: mode === m ? '#ffffff' : '#606080',
+                  background: mode === m ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
+                }}
+                transition={{ duration: 0.2 }}
               >
-                {mode === m && (
-                  <motion.div
-                    layoutId="activeTabDesktop"
-                    className="absolute inset-0 rounded-xl"
-                    style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)', zIndex: -1 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  />
-                )}
                 {m === 'blueprint' ? '📋 Blueprint' : '🚀 Execution Mode'}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
@@ -456,10 +452,10 @@ export default function CampaignViewPage() {
             {mode === 'blueprint' ? (
             <motion.div
               key="blueprint"
-              initial={{ opacity: 0, x: -30, filter: 'blur(4px)' }}
-              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, x: 30, filter: 'blur(4px)' }}
-              transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
             >
             {/* Optimisation Diagnosis Card */}
             {bp.optimisation_diagnosis && (
@@ -1171,10 +1167,10 @@ export default function CampaignViewPage() {
             ) : (
             <motion.div
               key="execution"
-              initial={{ opacity: 0, x: 30, filter: 'blur(4px)' }}
-              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, x: -30, filter: 'blur(4px)' }}
-              transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
             >
               <ExecutionMode
                 blueprint={campaign.blueprint as any}
@@ -1219,22 +1215,18 @@ export default function CampaignViewPage() {
         <div className="w-full flex justify-center mt-3">
           <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#0F0F1A] border border-[#1E1E3A]">
             {(['blueprint', 'execution'] as const).map((m) => (
-              <button
+              <motion.button
                 key={m}
                 onClick={() => setMode(m)}
-                className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap z-10"
-                style={{ color: mode === m ? '#ffffff' : '#606080' }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap"
+                animate={{
+                  color: mode === m ? '#ffffff' : '#606080',
+                  background: mode === m ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
+                }}
+                transition={{ duration: 0.2 }}
               >
-                {mode === m && (
-                  <motion.div
-                    layoutId="activeTabMobile"
-                    className="absolute inset-0 rounded-xl"
-                    style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)', zIndex: -1 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  />
-                )}
                 {m === 'blueprint' ? '📋 Blueprint' : '🚀 Execution'}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>

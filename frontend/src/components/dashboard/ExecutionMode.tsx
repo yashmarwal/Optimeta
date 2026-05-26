@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle2, Circle, ChevronDown,
@@ -882,80 +883,98 @@ export function ExecutionMode({
         </button>
       </div>
 
-      {/* Celebration modal */}
-      <AnimatePresence>
-        {showCelebration && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
-            onClick={() => setShowCelebration(false)}
-          >
-
+      {/* Celebration modal — rendered via portal on document.body to cover full screen including sidebar */}
+      {typeof window !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showCelebration && (
             <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.5, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-              className="bg-[#0F0F1A] border border-[#7B2FBE]/40 rounded-2xl p-8 max-w-sm w-full text-center"
-              onClick={e => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowCelebration(false)}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                width: '100vw',
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(0,0,0,0.85)',
+                backdropFilter: 'blur(12px)',
+                zIndex: 99999,
+                padding: '16px',
+              }}
             >
               <motion.div
-                animate={{ y: [0, -8, 0], rotate: [-5, 5, -5, 5, 0] }}
-                transition={{ duration: 1, repeat: 2 }}
-                className="text-6xl mb-4"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.5, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                className="bg-[#0F0F1A] border border-[#7B2FBE]/40 rounded-2xl p-8 max-w-sm w-full text-center"
+                style={{ position: 'relative', margin: '0 auto' }}
+                onClick={e => e.stopPropagation()}
               >
-                🏆
-              </motion.div>
+                <motion.div
+                  animate={{ y: [0, -8, 0], rotate: [-5, 5, -5, 5, 0] }}
+                  transition={{ duration: 1, repeat: 2 }}
+                  className="text-6xl mb-4"
+                >
+                  🏆
+                </motion.div>
 
-              <motion.h2
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-white font-black text-2xl mb-2"
-              >
-                Campaign Ready!
-              </motion.h2>
+                <motion.h2
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-white font-black text-2xl mb-2"
+                >
+                  Campaign Ready!
+                </motion.h2>
 
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="text-[#A0A0C0] text-sm mb-6 leading-relaxed"
-              >
-                You have completed all {totalSteps} steps. Your Meta ad campaign is set up and running.
-                Now monitor it for 7 days without editing.
-              </motion.p>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                  className="text-[#A0A0C0] text-sm mb-6 leading-relaxed"
+                >
+                  You have completed all {totalSteps} steps. Your Meta ad campaign is set up and running.
+                  Now monitor it for 7 days without editing.
+                </motion.p>
 
-              <div className="bg-[#7B2FBE]/10 border border-[#7B2FBE]/20 rounded-xl p-3 mb-4 text-left">
-                <p className="text-[#7B2FBE] text-xs font-bold mb-2 uppercase tracking-wider">
-                  Your targets to watch
-                </p>
-                <div className="flex flex-col gap-1">
-                  <span className="text-[#A0A0C0] text-xs">
-                    Target ROAS: {blueprint.performance_benchmarks?.your_target_roas || '3x+'}
-                  </span>
-                  <span className="text-[#A0A0C0] text-xs">
-                    Expected CTR: {blueprint.performance_benchmarks?.expected_ctr_feed || '1.5-3%'}
-                  </span>
-                  <span className="text-[#A0A0C0] text-xs">
-                    Expected CPM: ₹{blueprint.performance_benchmarks?.expected_cpm_inr || '60-120'}
-                  </span>
+                <div className="bg-[#7B2FBE]/10 border border-[#7B2FBE]/20 rounded-xl p-3 mb-4 text-left">
+                  <p className="text-[#7B2FBE] text-xs font-bold mb-2 uppercase tracking-wider">
+                    Your targets to watch
+                  </p>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[#A0A0C0] text-xs">
+                      Target ROAS: {blueprint.performance_benchmarks?.your_target_roas || '3x+'}
+                    </span>
+                    <span className="text-[#A0A0C0] text-xs">
+                      Expected CTR: {blueprint.performance_benchmarks?.expected_ctr_feed || '1.5-3%'}
+                    </span>
+                    <span className="text-[#A0A0C0] text-xs">
+                      Expected CPM: ₹{blueprint.performance_benchmarks?.expected_cpm_inr || '60-120'}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <button
-                onClick={() => setShowCelebration(false)}
-                className="w-full py-3 rounded-xl font-semibold text-white text-sm"
-                style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)' }}
-              >
-                Go crush it! 🚀
-              </button>
+                <button
+                  onClick={() => setShowCelebration(false)}
+                  className="w-full py-3 rounded-xl font-semibold text-white text-sm"
+                  style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)' }}
+                >
+                  Go crush it! 🚀
+                </button>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
