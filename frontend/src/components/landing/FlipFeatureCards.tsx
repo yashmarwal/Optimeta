@@ -52,9 +52,10 @@ export function FlipFeatureCards({
       if (!section) return;
 
       const rect = section.getBoundingClientRect();
+
       const inView =
-        rect.top <= window.innerHeight * 0.3 &&
-        rect.bottom >= window.innerHeight * 0.7;
+        rect.top < window.innerHeight &&
+        rect.bottom > 0;
 
       if (!inView) return;
 
@@ -67,15 +68,43 @@ export function FlipFeatureCards({
         return;
       }
 
-      if (Math.abs(e.deltaY) > 20) {
-        e.preventDefault();
-        if (e.deltaY > 0) next();
-        else prev();
-      }
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (e.deltaY > 0) next();
+      else prev();
     };
 
     const onTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0].clientY;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      const section = sectionRef.current;
+      if (!section) return;
+
+      const rect = section.getBoundingClientRect();
+      const inView =
+        rect.top < window.innerHeight &&
+        rect.bottom > 0;
+
+      if (!inView) return;
+
+      const diff =
+        touchStartY.current - e.touches[0].clientY;
+
+      if (diff > 0 &&
+          currentIndex >= cards.length - 1) {
+        return;
+      }
+
+      if (diff < 0 && currentIndex <= 0) {
+        return;
+      }
+
+      if (Math.abs(diff) > 10) {
+        e.preventDefault();
+      }
     };
 
     const onTouchEnd = (e: TouchEvent) => {
@@ -84,8 +113,8 @@ export function FlipFeatureCards({
 
       const rect = section.getBoundingClientRect();
       const inView =
-        rect.top <= window.innerHeight * 0.3 &&
-        rect.bottom >= window.innerHeight * 0.7;
+        rect.top < window.innerHeight &&
+        rect.bottom > 0;
 
       if (!inView) return;
 
@@ -93,26 +122,27 @@ export function FlipFeatureCards({
         touchStartY.current -
         e.changedTouches[0].clientY;
 
-      if (Math.abs(diff) < 50) return;
+      if (Math.abs(diff) < 40) return;
 
-      if (diff > 0) {
-        if (currentIndex >= cards.length - 1)
-          return;
-        e.preventDefault();
+      if (diff > 0 &&
+          currentIndex < cards.length - 1) {
         next();
-      } else {
-        if (currentIndex <= 0) return;
-        e.preventDefault();
+      } else if (diff < 0 && currentIndex > 0) {
         prev();
       }
     };
 
-    window.addEventListener('wheel', onWheel, {
-      passive: false,
-    });
+    window.addEventListener(
+      'wheel', onWheel,
+      { passive: false }
+    );
     window.addEventListener(
       'touchstart', onTouchStart,
       { passive: true }
+    );
+    window.addEventListener(
+      'touchmove', onTouchMove,
+      { passive: false }
     );
     window.addEventListener(
       'touchend', onTouchEnd,
@@ -121,12 +151,9 @@ export function FlipFeatureCards({
 
     return () => {
       window.removeEventListener('wheel', onWheel);
-      window.removeEventListener(
-        'touchstart', onTouchStart
-      );
-      window.removeEventListener(
-        'touchend', onTouchEnd
-      );
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
     };
   }, [currentIndex, cards.length]);
 
