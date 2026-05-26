@@ -22,57 +22,50 @@ export function FlipFeatureCards({
     useState<'forward' | 'backward'>('forward');
   const locked = useRef(false);
   const touchStartY = useRef(0);
+  const scrollEndTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  const next = () => {
-    if (locked.current) return;
-    if (currentIndex >= cards.length - 1) return;
-    locked.current = true;
-    setDirection('forward');
-    setCurrentIndex(i => i + 1);
-    setTimeout(() => {
-      locked.current = false;
-    }, 700);
-  };
-
-  const prev = () => {
-    if (locked.current) return;
-    if (currentIndex <= 0) return;
-    locked.current = true;
-    setDirection('backward');
-    setCurrentIndex(i => i - 1);
-    setTimeout(() => {
-      locked.current = false;
-    }, 700);
+  const navigate = (dir: 'forward' | 'backward') => {
+    setDirection(dir);
+    setCurrentIndex(i =>
+      dir === 'forward'
+        ? Math.min(i + 1, cards.length - 1)
+        : Math.max(i - 1, 0)
+    );
   };
 
   useEffect(() => {
-    const onWheel = (e: WheelEvent) => {
+    const isCentered = () => {
       const section = sectionRef.current;
-      if (!section) return;
-
+      if (!section) return false;
       const rect = section.getBoundingClientRect();
+      const mid = window.innerHeight / 2;
+      // Section spans the viewport centre
+      return rect.top <= mid && rect.bottom >= mid;
+    };
 
-      const inView =
-        rect.top < window.innerHeight &&
-        rect.bottom > 0;
+    const onWheel = (e: WheelEvent) => {
+      if (!isCentered()) return;
 
-      if (!inView) return;
+      // At boundary — let page scroll naturally
+      if (e.deltaY > 0 && currentIndex >= cards.length - 1) return;
+      if (e.deltaY < 0 && currentIndex <= 0) return;
 
-      if (e.deltaY > 0 &&
-          currentIndex >= cards.length - 1) {
-        return;
-      }
-
-      if (e.deltaY < 0 && currentIndex <= 0) {
-        return;
-      }
-
+      // Hijack scroll
       e.preventDefault();
       e.stopPropagation();
 
-      if (e.deltaY > 0) next();
-      else prev();
+      // Navigate only once per scroll gesture
+      if (!locked.current) {
+        locked.current = true;
+        navigate(e.deltaY > 0 ? 'forward' : 'backward');
+      }
+
+      // Unlock after scroll gesture ends (debounce)
+      if (scrollEndTimer.current) clearTimeout(scrollEndTimer.current);
+      scrollEndTimer.current = setTimeout(() => {
+        locked.current = false;
+      }, 900);
     };
 
     const onTouchStart = (e: TouchEvent) => {
@@ -80,80 +73,46 @@ export function FlipFeatureCards({
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      const section = sectionRef.current;
-      if (!section) return;
+      if (!isCentered()) return;
 
-      const rect = section.getBoundingClientRect();
-      const inView =
-        rect.top < window.innerHeight &&
-        rect.bottom > 0;
+      const diff = touchStartY.current - e.touches[0].clientY;
+      if (diff > 0 && currentIndex >= cards.length - 1) return;
+      if (diff < 0 && currentIndex <= 0) return;
 
-      if (!inView) return;
-
-      const diff =
-        touchStartY.current - e.touches[0].clientY;
-
-      if (diff > 0 &&
-          currentIndex >= cards.length - 1) {
-        return;
-      }
-
-      if (diff < 0 && currentIndex <= 0) {
-        return;
-      }
-
-      if (Math.abs(diff) > 10) {
-        e.preventDefault();
-      }
+      if (Math.abs(diff) > 10) e.preventDefault();
     };
 
     const onTouchEnd = (e: TouchEvent) => {
-      const section = sectionRef.current;
-      if (!section) return;
-
-      const rect = section.getBoundingClientRect();
-      const inView =
-        rect.top < window.innerHeight &&
-        rect.bottom > 0;
-
-      if (!inView) return;
+      if (!isCentered()) return;
+      if (locked.current) return;
 
       const diff =
-        touchStartY.current -
-        e.changedTouches[0].clientY;
+        touchStartY.current - e.changedTouches[0].clientY;
 
       if (Math.abs(diff) < 40) return;
 
-      if (diff > 0 &&
-          currentIndex < cards.length - 1) {
-        next();
+      if (diff > 0 && currentIndex < cards.length - 1) {
+        locked.current = true;
+        navigate('forward');
+        setTimeout(() => { locked.current = false; }, 700);
       } else if (diff < 0 && currentIndex > 0) {
-        prev();
+        locked.current = true;
+        navigate('backward');
+        setTimeout(() => { locked.current = false; }, 700);
       }
     };
 
-    window.addEventListener(
-      'wheel', onWheel,
-      { passive: false }
-    );
-    window.addEventListener(
-      'touchstart', onTouchStart,
-      { passive: true }
-    );
-    window.addEventListener(
-      'touchmove', onTouchMove,
-      { passive: false }
-    );
-    window.addEventListener(
-      'touchend', onTouchEnd,
-      { passive: false }
-    );
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd, { passive: false });
 
     return () => {
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
+      if (scrollEndTimer.current) clearTimeout(scrollEndTimer.current);
     };
   }, [currentIndex, cards.length]);
 
@@ -162,17 +121,10 @@ export function FlipFeatureCards({
   return (
     <div
       ref={sectionRef}
-      style={{
-        position: 'relative',
-        width: '100%',
-        padding: '24px 16px 24px',
-      }}
+      style={{ position: 'relative', width: '100%' }}
     >
       {/* Heading */}
-      <div style={{
-        textAlign: 'center',
-        marginBottom: '16px',
-      }}>
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <span style={{
           display: 'inline-block',
           fontSize: '11px',
@@ -184,13 +136,13 @@ export function FlipFeatureCards({
           border: '1px solid rgba(123,47,190,0.4)',
           padding: '4px 12px',
           borderRadius: '20px',
-          marginBottom: '12px',
+          marginBottom: '10px',
         }}>
           Features
         </span>
         <h2 style={{
           color: '#ffffff',
-          fontSize: '28px',
+          fontSize: '26px',
           fontWeight: 900,
           lineHeight: 1.2,
           margin: 0,
@@ -207,133 +159,93 @@ export function FlipFeatureCards({
         </h2>
       </div>
 
-      {/* Card with perspective */}
-      <div style={{
-        perspective: '1000px',
-        width: '100%',
-      }}>
-        <AnimatePresence
-          mode="wait"
-          initial={false}
-        >
+      {/* Card */}
+      <div style={{ perspective: '1000px', width: '100%' }}>
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={currentIndex}
             initial={
               direction === 'forward'
-                ? { rotateX: 80, opacity: 0, scale: 0.9 }
-                : { rotateX: -80, opacity: 0, scale: 0.9 }
+                ? { rotateX: 75, opacity: 0, scale: 0.92 }
+                : { rotateX: -75, opacity: 0, scale: 0.92 }
             }
-            animate={{
-              rotateX: 0,
-              opacity: 1,
-              scale: 1,
-            }}
+            animate={{ rotateX: 0, opacity: 1, scale: 1 }}
             exit={
               direction === 'forward'
-                ? { rotateX: -80, opacity: 0, scale: 0.9 }
-                : { rotateX: 80, opacity: 0, scale: 0.9 }
+                ? { rotateX: -75, opacity: 0, scale: 0.92 }
+                : { rotateX: 75, opacity: 0, scale: 0.92 }
             }
-            transition={{
-              duration: 0.65,
-              ease: [0.25, 0.46, 0.45, 0.94],
-            }}
-            style={{
-              transformOrigin: 'center center',
-              transformStyle: 'preserve-3d',
-            }}
+            transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ transformOrigin: 'center center', transformStyle: 'preserve-3d' }}
           >
             <div style={{
               background: currentIndex === 0
                 ? 'linear-gradient(135deg, rgba(123,47,190,0.2), rgba(192,38,211,0.1))'
                 : '#0F0F1A',
-              border: `1px solid ${
-                currentIndex === 0
-                  ? 'rgba(123,47,190,0.4)'
-                  : '#1E1E3A'
-              }`,
+              border: `1px solid ${currentIndex === 0 ? 'rgba(123,47,190,0.4)' : '#1E1E3A'}`,
               borderRadius: '20px',
-              padding: '36px 28px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-              minHeight: '340px',
+              padding: '28px 24px',
+              boxShadow: '0 16px 48px rgba(0,0,0,0.45)',
+              minHeight: '300px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
             }}>
-
               <div>
-                {/* Icon */}
                 <div style={{
-                  width: '64px',
-                  height: '64px',
+                  width: '56px',
+                  height: '56px',
                   borderRadius: '14px',
                   background: 'linear-gradient(135deg, rgba(123,47,190,0.25), rgba(192,38,211,0.25))',
                   border: '1px solid rgba(123,47,190,0.4)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '30px',
-                  marginBottom: '24px',
+                  fontSize: '26px',
+                  marginBottom: '18px',
                 }}>
                   {card.icon}
                 </div>
 
-                {/* Title */}
                 <h3 style={{
                   color: '#ffffff',
                   fontWeight: 800,
-                  fontSize: '24px',
-                  marginBottom: '12px',
+                  fontSize: '20px',
                   lineHeight: 1.3,
-                  margin: '0 0 12px 0',
+                  margin: '0 0 10px 0',
                 }}>
                   {card.title}
                 </h3>
 
-                {/* Description */}
                 <p style={{
                   color: '#A0A0C0',
-                  fontSize: '15px',
-                  lineHeight: 1.8,
+                  fontSize: '14px',
+                  lineHeight: 1.75,
                   margin: 0,
                 }}>
                   {card.description}
                 </p>
               </div>
 
-              {/* Bottom */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                marginTop: '24px',
+                marginTop: '20px',
               }}>
-                <span style={{
-                  color: '#404060',
-                  fontSize: '12px',
-                }}>
+                <span style={{ color: '#404060', fontSize: '12px' }}>
                   {currentIndex + 1} / {cards.length}
                 </span>
-
                 {currentIndex < cards.length - 1 ? (
                   <motion.span
-                    animate={{ y: [0, 4, 0] }}
-                    transition={{
-                      duration: 1.2,
-                      repeat: Infinity,
-                    }}
-                    style={{
-                      color: '#606080',
-                      fontSize: '12px',
-                    }}
+                    animate={{ y: [0, 3, 0] }}
+                    transition={{ duration: 1.4, repeat: Infinity }}
+                    style={{ color: '#606080', fontSize: '12px' }}
                   >
                     Swipe up ↑
                   </motion.span>
                 ) : (
-                  <span style={{
-                    color: '#22c55e',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                  }}>
+                  <span style={{ color: '#22c55e', fontSize: '12px', fontWeight: 600 }}>
                     All features ✓
                   </span>
                 )}
@@ -343,61 +255,47 @@ export function FlipFeatureCards({
         </AnimatePresence>
       </div>
 
-      {/* Navigation buttons for tap */}
+      {/* Prev / dots / Next */}
       <div style={{
         display: 'flex',
         gap: '8px',
-        marginTop: '12px',
+        marginTop: '14px',
         justifyContent: 'center',
+        alignItems: 'center',
       }}>
         <button
-          onClick={prev}
+          onClick={() => {
+            if (locked.current || currentIndex === 0) return;
+            locked.current = true;
+            navigate('backward');
+            setTimeout(() => { locked.current = false; }, 700);
+          }}
           disabled={currentIndex === 0}
           style={{
-            background: currentIndex === 0
-              ? '#1E1E3A'
-              : 'rgba(123,47,190,0.2)',
+            background: currentIndex === 0 ? '#1E1E3A' : 'rgba(123,47,190,0.2)',
             border: '1px solid',
-            borderColor: currentIndex === 0
-              ? '#1E1E3A'
-              : 'rgba(123,47,190,0.4)',
+            borderColor: currentIndex === 0 ? '#1E1E3A' : 'rgba(123,47,190,0.4)',
             borderRadius: '10px',
-            padding: '8px 16px',
-            color: currentIndex === 0
-              ? '#404060'
-              : '#A0A0C0',
+            padding: '7px 14px',
+            color: currentIndex === 0 ? '#404060' : '#A0A0C0',
             fontSize: '13px',
-            cursor: currentIndex === 0
-              ? 'not-allowed'
-              : 'pointer',
+            cursor: currentIndex === 0 ? 'not-allowed' : 'pointer',
             opacity: currentIndex === 0 ? 0.4 : 1,
           }}
         >
           ← Prev
         </button>
 
-        {/* Dots */}
-        <div style={{
-          display: 'flex',
-          gap: '5px',
-          alignItems: 'center',
-          padding: '0 4px',
-        }}>
+        <div style={{ display: 'flex', gap: '5px', alignItems: 'center', padding: '0 4px' }}>
           {cards.map((_, i) => (
             <motion.button
               key={i}
               onClick={() => {
                 if (locked.current) return;
-                setDirection(
-                  i > currentIndex
-                    ? 'forward'
-                    : 'backward'
-                );
                 locked.current = true;
+                setDirection(i > currentIndex ? 'forward' : 'backward');
                 setCurrentIndex(i);
-                setTimeout(() => {
-                  locked.current = false;
-                }, 700);
+                setTimeout(() => { locked.current = false; }, 700);
               }}
               animate={{
                 width: i === currentIndex ? 18 : 6,
@@ -406,9 +304,7 @@ export function FlipFeatureCards({
               style={{
                 height: '6px',
                 borderRadius: '3px',
-                background: i === currentIndex
-                  ? '#C026D3'
-                  : '#606080',
+                background: i === currentIndex ? '#C026D3' : '#606080',
                 border: 'none',
                 cursor: 'pointer',
                 padding: 0,
@@ -418,7 +314,12 @@ export function FlipFeatureCards({
         </div>
 
         <button
-          onClick={next}
+          onClick={() => {
+            if (locked.current || currentIndex === cards.length - 1) return;
+            locked.current = true;
+            navigate('forward');
+            setTimeout(() => { locked.current = false; }, 700);
+          }}
           disabled={currentIndex === cards.length - 1}
           style={{
             background: currentIndex === cards.length - 1
@@ -426,14 +327,11 @@ export function FlipFeatureCards({
               : 'linear-gradient(135deg, #7B2FBE, #C026D3)',
             border: 'none',
             borderRadius: '10px',
-            padding: '8px 16px',
+            padding: '7px 14px',
             color: '#ffffff',
             fontSize: '13px',
-            cursor: currentIndex === cards.length - 1
-              ? 'not-allowed'
-              : 'pointer',
-            opacity: currentIndex === cards.length - 1
-              ? 0.4 : 1,
+            cursor: currentIndex === cards.length - 1 ? 'not-allowed' : 'pointer',
+            opacity: currentIndex === cards.length - 1 ? 0.4 : 1,
           }}
         >
           Next →

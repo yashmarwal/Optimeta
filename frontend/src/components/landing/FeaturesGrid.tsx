@@ -40,7 +40,7 @@ const features = [
 
 export default function FeaturesGrid() {
   return (
-    <section id="features" className="py-24">
+    <section id="features" className="py-8 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal className="hidden md:block text-center mb-16">
           <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs text-accent font-medium mb-4">
@@ -56,7 +56,7 @@ export default function FeaturesGrid() {
         </ScrollReveal>
 
         {/* Mobile — flip cards */}
-        <div className="md:hidden mt-8">
+        <div className="md:hidden">
           <FlipFeatureCards
             cards={[
               { icon: <span>🧠</span>, title: 'AI Campaign Architecture', description: 'Advanced AI analyzes your business inputs and constructs a complete campaign structure with full funnel strategy — tailored to your exact budget, goals and Indian market.' },
