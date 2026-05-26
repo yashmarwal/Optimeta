@@ -13,6 +13,7 @@ import api from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { CampaignViewSkeleton } from '@/components/ui/Skeleton';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { ExecutionMode } from '@/components/dashboard/ExecutionMode';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -271,6 +272,7 @@ export default function CampaignViewPage() {
   const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
   const [exporting, setExporting] = useState(false);
   const [allChecked, setAllChecked] = useState(false);
+  const [mode, setMode] = useState<'blueprint' | 'execution'>('blueprint');
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
@@ -398,8 +400,39 @@ export default function CampaignViewPage() {
           </div>
         </div>
 
+        {/* ── Mode Toggle ── */}
+        <div className="flex items-center gap-2 p-1 rounded-2xl w-fit bg-[#0F0F1A] border border-[#1E1E3A] mb-6">
+          <button
+            onClick={() => setMode('blueprint')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+            style={{
+              background: mode === 'blueprint' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
+              color: mode === 'blueprint' ? '#ffffff' : '#606080',
+            }}
+          >
+            📋 Blueprint
+          </button>
+          <button
+            onClick={() => setMode('execution')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+            style={{
+              background: mode === 'execution' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
+              color: mode === 'execution' ? '#ffffff' : '#606080',
+            }}
+          >
+            🚀 Execution Mode
+          </button>
+        </div>
+        {mode === 'execution' && (
+          <p className="text-[#606080] text-xs mb-4 flex items-center gap-1.5">
+            <span>⚡</span>
+            Follow steps in order to set up your campaign in Meta Ads Manager. Your progress is saved automatically.
+          </p>
+        )}
+
         <div className="flex gap-6">
           {/* Sidebar nav */}
+          {mode === 'blueprint' && (
           <div className="hidden lg:block w-52 flex-shrink-0">
             <div className="sticky top-24 glass-card p-3 space-y-0.5">
               {NAV_SECTIONS.map((s) => (
@@ -414,10 +447,12 @@ export default function CampaignViewPage() {
               ))}
             </div>
           </div>
+          )}
 
           {/* Main content */}
           <div className="flex-1 min-w-0">
 
+            {mode === 'blueprint' && (<>
             {/* Optimisation Diagnosis Card */}
             {bp.optimisation_diagnosis && (
               <motion.div
@@ -1124,6 +1159,15 @@ export default function CampaignViewPage() {
               )}
             </SectionCard>
 
+            </>)}
+            {mode === 'execution' && (
+              <ExecutionMode
+                blueprint={campaign.blueprint as any}
+                campaignName={campaign.campaign_name || bp.campaign_name}
+                campaignId={campaign.id}
+              />
+            )}
+
           </div>
         </div>
       </div>
@@ -1154,6 +1198,31 @@ export default function CampaignViewPage() {
           </div>
         </div>
 
+        {/* ── Mode Toggle (Mobile) ── */}
+        <div className="flex items-center gap-1.5 p-1 rounded-2xl w-fit bg-[#0F0F1A] border border-[#1E1E3A] mx-4 mt-3">
+          <button
+            onClick={() => setMode('blueprint')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
+            style={{
+              background: mode === 'blueprint' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
+              color: mode === 'blueprint' ? '#ffffff' : '#606080',
+            }}
+          >
+            📋 Blueprint
+          </button>
+          <button
+            onClick={() => setMode('execution')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
+            style={{
+              background: mode === 'execution' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
+              color: mode === 'execution' ? '#ffffff' : '#606080',
+            }}
+          >
+            🚀 Execution
+          </button>
+        </div>
+
+        {mode === 'blueprint' && (<>
         {/* Mobile pill nav */}
         <div style={{ WebkitOverflowScrolling: 'touch' }} className="flex overflow-x-auto gap-2 py-3 px-4 scrollbar-hide sticky top-[52px] bg-[#0A0A0F]/95 backdrop-blur-md z-40 border-b border-[#1E1E3A]/50 w-full">
           {MOBILE_PILLS.map((s) => (
@@ -1814,6 +1883,21 @@ export default function CampaignViewPage() {
             </div>
           )}
         </div>
+
+        </>)}
+        {mode === 'execution' && (
+          <div className="px-4 pt-4 pb-8">
+            <p className="text-[#606080] text-xs mb-4 flex items-center gap-1.5">
+              <span>⚡</span>
+              Follow steps in order to set up your campaign in Meta Ads Manager. Your progress is saved automatically.
+            </p>
+            <ExecutionMode
+              blueprint={campaign.blueprint as any}
+              campaignName={campaign.campaign_name || bp.campaign_name}
+              campaignId={campaign.id}
+            />
+          </div>
+        )}
 
       </div>
     </div>

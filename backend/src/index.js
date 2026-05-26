@@ -41,6 +41,7 @@ const allowedOrigins = [
   'https://optimeta.tech',
   'https://www.optimeta.tech',
   'http://localhost:3000',
+  'http://localhost:3001',
 ];
 if (process.env.FRONTEND_URL) allowedOrigins.push(process.env.FRONTEND_URL);
 

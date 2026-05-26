@@ -1,9 +1,20 @@
 const { Resend } = require('resend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-init: only instantiate when a key is present so the server starts without crashing
+let _resend = null;
+function getResend() {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('RESEND_API_KEY not set — email sending disabled');
+    return null;
+  }
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
 
 const sendWelcomeEmail = async (toEmail, fullName) => {
   try {
+    const resend = getResend();
+    if (!resend) return false;
     const firstName = fullName?.split(' ')[0] || 'there';
 
     await resend.emails.send({
@@ -119,6 +130,8 @@ const sendWelcomeEmail = async (toEmail, fullName) => {
 
 const sendPaymentFailedEmail = async (toEmail, fullName, isCancelled = false, retryCount = 1) => {
   try {
+    const resend = getResend();
+    if (!resend) return false;
     const firstName = fullName?.split(' ')[0] || 'there';
 
     const subject = isCancelled
@@ -216,6 +229,8 @@ const sendPaymentFailedEmail = async (toEmail, fullName, isCancelled = false, re
 
 const sendCancellationEmail = async (toEmail, fullName) => {
   try {
+    const resend = getResend();
+    if (!resend) return false;
     const firstName = fullName?.split(' ')[0] || 'there';
 
     await resend.emails.send({
