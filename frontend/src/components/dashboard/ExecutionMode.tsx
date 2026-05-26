@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle2, Circle, ChevronDown,
@@ -875,22 +876,37 @@ export function ExecutionMode({
         </button>
       </div>
 
-      {/* Celebration modal */}
-      <AnimatePresence>
-        {showCelebration && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
-            onClick={() => setShowCelebration(false)}
-          >
+      {/* Celebration modal — portal on document.body so it covers full viewport including sidebar */}
+      {typeof window !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {showCelebration && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowCelebration(false)}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                width: '100vw',
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(0,0,0,0.75)',
+                backdropFilter: 'blur(6px)',
+                zIndex: 99999,
+                padding: '16px',
+                boxSizing: 'border-box',
+              }}
+            >
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.5, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 200, damping: 15 }}
               className="bg-[#0F0F1A] border border-[#7B2FBE]/40 rounded-2xl p-8 max-w-sm w-full text-center"
+              style={{ margin: '0 auto' }}
               onClick={e => e.stopPropagation()}
             >
               <motion.div
@@ -945,9 +961,11 @@ export function ExecutionMode({
                 Go crush it! 🚀
               </button>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
