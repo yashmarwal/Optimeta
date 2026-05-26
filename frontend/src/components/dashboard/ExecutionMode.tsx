@@ -449,7 +449,7 @@ export function ExecutionMode({
         setShowCelebration(true);
       }, 600);
     }
-  }, [completed, totalSteps]);
+  }, [completed, totalSteps, showCelebration]);
 
   const toggleStep = (stepId: string) => {
     setCompleted(prev => {

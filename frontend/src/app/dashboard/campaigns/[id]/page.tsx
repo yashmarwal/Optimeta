@@ -404,18 +404,17 @@ export default function CampaignViewPage() {
         <div className="w-full flex justify-center mb-6">
           <div className="flex items-center gap-2 p-1 rounded-2xl bg-[#0F0F1A] border border-[#1E1E3A]">
             {(['blueprint', 'execution'] as const).map((m) => (
-              <motion.button
+              <button
                 key={m}
                 onClick={() => setMode(m)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap"
-                animate={{
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-200"
+                style={{
+                  background: mode === m ? '#7B2FBE' : 'transparent',
                   color: mode === m ? '#ffffff' : '#606080',
-                  background: mode === m ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
                 }}
-                transition={{ duration: 0.2 }}
               >
                 {m === 'blueprint' ? '📋 Blueprint' : '🚀 Execution Mode'}
-              </motion.button>
+              </button>
             ))}
           </div>
         </div>
@@ -1215,18 +1214,17 @@ export default function CampaignViewPage() {
         <div className="w-full flex justify-center mt-3">
           <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#0F0F1A] border border-[#1E1E3A]">
             {(['blueprint', 'execution'] as const).map((m) => (
-              <motion.button
+              <button
                 key={m}
                 onClick={() => setMode(m)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap"
-                animate={{
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200"
+                style={{
+                  background: mode === m ? '#7B2FBE' : 'transparent',
                   color: mode === m ? '#ffffff' : '#606080',
-                  background: mode === m ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
                 }}
-                transition={{ duration: 0.2 }}
               >
                 {m === 'blueprint' ? '📋 Blueprint' : '🚀 Execution'}
-              </motion.button>
+              </button>
             ))}
           </div>
         </div>
