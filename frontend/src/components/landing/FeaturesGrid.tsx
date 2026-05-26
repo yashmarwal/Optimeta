@@ -42,7 +42,7 @@ export default function FeaturesGrid() {
   return (
     <section id="features" className="py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ScrollReveal className="text-center mb-16">
+        <ScrollReveal className="hidden md:block text-center mb-16">
           <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs text-accent font-medium mb-4">
             Features
           </div>
