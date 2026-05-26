@@ -403,26 +403,24 @@ export default function CampaignViewPage() {
         {/* ── Mode Toggle ── */}
         <div className="flex justify-center mb-6">
           <div className="flex items-center gap-2 p-1 rounded-2xl w-fit bg-[#0F0F1A] border border-[#1E1E3A]">
-            <button
-              onClick={() => setMode('blueprint')}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-              style={{
-                background: mode === 'blueprint' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
-                color: mode === 'blueprint' ? '#ffffff' : '#606080',
-              }}
-            >
-              📋 Blueprint
-            </button>
-            <button
-              onClick={() => setMode('execution')}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-              style={{
-                background: mode === 'execution' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
-                color: mode === 'execution' ? '#ffffff' : '#606080',
-              }}
-            >
-              🚀 Execution Mode
-            </button>
+            {(['blueprint', 'execution'] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className="relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap z-10"
+                style={{ color: mode === m ? '#ffffff' : '#606080' }}
+              >
+                {mode === m && (
+                  <motion.div
+                    layoutId="activeTabDesktop"
+                    className="absolute inset-0 rounded-xl"
+                    style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)', zIndex: -1 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                )}
+                {m === 'blueprint' ? '📋 Blueprint' : '🚀 Execution Mode'}
+              </button>
+            ))}
           </div>
         </div>
         {mode === 'execution' && (
@@ -454,7 +452,8 @@ export default function CampaignViewPage() {
           {/* Main content */}
           <div className="flex-1 min-w-0">
 
-            {mode === 'blueprint' && (<>
+            <AnimatePresence mode="wait">
+            {mode === 'blueprint' ? (<motion.div key="blueprint" initial={{ opacity: 0, x: -30, filter: 'blur(4px)' }} animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }} exit={{ opacity: 0, x: 30, filter: 'blur(4px)' }} transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}><>
             {/* Optimisation Diagnosis Card */}
             {bp.optimisation_diagnosis && (
               <motion.div
@@ -1161,14 +1160,14 @@ export default function CampaignViewPage() {
               )}
             </SectionCard>
 
-            </>)}
-            {mode === 'execution' && (
+            </></motion.div>) : (<motion.div key="execution" initial={{ opacity: 0, x: 30, filter: 'blur(4px)' }} animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }} exit={{ opacity: 0, x: -30, filter: 'blur(4px)' }} transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}>
               <ExecutionMode
                 blueprint={campaign.blueprint as any}
                 campaignName={campaign.campaign_name || bp.campaign_name}
                 campaignId={campaign.id}
               />
-            )}
+            </motion.div>)}
+            </AnimatePresence>
 
           </div>
         </div>
@@ -1203,30 +1202,29 @@ export default function CampaignViewPage() {
         {/* ── Mode Toggle (Mobile) ── */}
         <div className="flex justify-center mt-3 px-4">
         <div className="flex items-center gap-1.5 p-1 rounded-2xl w-fit bg-[#0F0F1A] border border-[#1E1E3A]">
-          <button
-            onClick={() => setMode('blueprint')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
-            style={{
-              background: mode === 'blueprint' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
-              color: mode === 'blueprint' ? '#ffffff' : '#606080',
-            }}
-          >
-            📋 Blueprint
-          </button>
-          <button
-            onClick={() => setMode('execution')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
-            style={{
-              background: mode === 'execution' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
-              color: mode === 'execution' ? '#ffffff' : '#606080',
-            }}
-          >
-            🚀 Execution
-          </button>
+          {(['blueprint', 'execution'] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap z-10"
+              style={{ color: mode === m ? '#ffffff' : '#606080' }}
+            >
+              {mode === m && (
+                <motion.div
+                  layoutId="activeTabMobile"
+                  className="absolute inset-0 rounded-xl"
+                  style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)', zIndex: -1 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+              )}
+              {m === 'blueprint' ? '📋 Blueprint' : '🚀 Execution'}
+            </button>
+          ))}
         </div>
         </div>
 
-        {mode === 'blueprint' && (<>
+        <AnimatePresence mode="wait">
+        {mode === 'blueprint' ? (<motion.div key="m-blueprint" initial={{ opacity: 0, x: -30, filter: 'blur(4px)' }} animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }} exit={{ opacity: 0, x: 30, filter: 'blur(4px)' }} transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}><>
         {/* Mobile pill nav */}
         <div style={{ WebkitOverflowScrolling: 'touch' }} className="flex overflow-x-auto gap-2 py-3 px-4 scrollbar-hide sticky top-[52px] bg-[#0A0A0F]/95 backdrop-blur-md z-40 border-b border-[#1E1E3A]/50 w-full">
           {MOBILE_PILLS.map((s) => (
@@ -1888,8 +1886,7 @@ export default function CampaignViewPage() {
           )}
         </div>
 
-        </>)}
-        {mode === 'execution' && (
+        </></motion.div>) : (<motion.div key="m-execution" initial={{ opacity: 0, x: 30, filter: 'blur(4px)' }} animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }} exit={{ opacity: 0, x: -30, filter: 'blur(4px)' }} transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}>
           <div className="px-4 pt-4 pb-8">
             <p className="text-[#606080] text-xs mb-4 flex items-center gap-1.5">
               <span>⚡</span>
@@ -1901,7 +1898,8 @@ export default function CampaignViewPage() {
               campaignId={campaign.id}
             />
           </div>
-        )}
+        </motion.div>)}
+        </AnimatePresence>
 
       </div>
     </div>
