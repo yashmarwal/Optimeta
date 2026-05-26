@@ -401,27 +401,29 @@ export default function CampaignViewPage() {
         </div>
 
         {/* ── Mode Toggle ── */}
-        <div className="flex items-center gap-2 p-1 rounded-2xl w-fit bg-[#0F0F1A] border border-[#1E1E3A] mb-6">
-          <button
-            onClick={() => setMode('blueprint')}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-            style={{
-              background: mode === 'blueprint' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
-              color: mode === 'blueprint' ? '#ffffff' : '#606080',
-            }}
-          >
-            📋 Blueprint
-          </button>
-          <button
-            onClick={() => setMode('execution')}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-            style={{
-              background: mode === 'execution' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
-              color: mode === 'execution' ? '#ffffff' : '#606080',
-            }}
-          >
-            🚀 Execution Mode
-          </button>
+        <div className="flex justify-center mb-6">
+          <div className="flex items-center gap-2 p-1 rounded-2xl w-fit bg-[#0F0F1A] border border-[#1E1E3A]">
+            <button
+              onClick={() => setMode('blueprint')}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+              style={{
+                background: mode === 'blueprint' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
+                color: mode === 'blueprint' ? '#ffffff' : '#606080',
+              }}
+            >
+              📋 Blueprint
+            </button>
+            <button
+              onClick={() => setMode('execution')}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+              style={{
+                background: mode === 'execution' ? 'linear-gradient(135deg, #7B2FBE, #C026D3)' : 'transparent',
+                color: mode === 'execution' ? '#ffffff' : '#606080',
+              }}
+            >
+              🚀 Execution Mode
+            </button>
+          </div>
         </div>
         {mode === 'execution' && (
           <p className="text-[#606080] text-xs mb-4 flex items-center gap-1.5">
@@ -1199,7 +1201,8 @@ export default function CampaignViewPage() {
         </div>
 
         {/* ── Mode Toggle (Mobile) ── */}
-        <div className="flex items-center gap-1.5 p-1 rounded-2xl w-fit bg-[#0F0F1A] border border-[#1E1E3A] mx-4 mt-3">
+        <div className="flex justify-center mt-3 px-4">
+        <div className="flex items-center gap-1.5 p-1 rounded-2xl w-fit bg-[#0F0F1A] border border-[#1E1E3A]">
           <button
             onClick={() => setMode('blueprint')}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
@@ -1220,6 +1223,7 @@ export default function CampaignViewPage() {
           >
             🚀 Execution
           </button>
+        </div>
         </div>
 
         {mode === 'blueprint' && (<>
