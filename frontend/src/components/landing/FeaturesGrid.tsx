@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Brain, Target, PieChart, MessageSquare, Palette, FileDown } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { FlipFeatureCards } from '@/components/landing/FlipFeatureCards';
 
 const features = [
   {
@@ -54,7 +55,22 @@ export default function FeaturesGrid() {
           </p>
         </ScrollReveal>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Mobile — flip cards */}
+        <div className="md:hidden mt-8">
+          <FlipFeatureCards
+            cards={[
+              { icon: <span>🧠</span>, title: 'AI Campaign Architecture', description: 'Advanced AI analyzes your business inputs and constructs a complete campaign structure with full funnel strategy — tailored to your exact budget, goals and Indian market.' },
+              { icon: <span>🎯</span>, title: 'Audience Targeting Clusters', description: 'Get 10 hyper-specific interests, behavioral targeting, lookalike strategies, and exclusion lists — all India-optimized.' },
+              { icon: <span>💰</span>, title: 'Budget Split Logic', description: 'Data-driven daily budget recommendation with awareness/consideration/conversion percentage splits and scaling logic.' },
+              { icon: <span>✍️</span>, title: 'Performance Ad Copy', description: '3 complete ad copies with primary text, headline, sub-headline, and CTA — written specifically for Feed, Reel and Story placement.' },
+              { icon: <span>🎨</span>, title: 'Creative Direction', description: "Visual style guide, color palette, content formats, 5 scroll-stopping hooks, and a DO/DON'T creative checklist." },
+              { icon: <span>📄</span>, title: 'Blueprint Export (PDF)', description: 'Export your complete campaign blueprint as a beautifully formatted PDF. Share with your team or freelancer.' },
+            ]}
+          />
+        </div>
+
+        {/* Desktop — original grid */}
+        <div className="hidden md:grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((f, i) => (
             <ScrollReveal key={f.title} delay={i * 0.08}>
               <motion.div
