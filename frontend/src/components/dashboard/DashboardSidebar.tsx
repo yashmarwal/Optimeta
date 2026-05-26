@@ -122,7 +122,7 @@ export default function DashboardSidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+              className="fixed inset-0 bg-black/60 z-[9998] lg:hidden"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
@@ -130,7 +130,7 @@ export default function DashboardSidebar() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.25 }}
-              className="fixed left-0 top-0 bottom-0 w-72 bg-bg-card border-r border-border-color z-50 lg:hidden"
+              className="fixed left-0 top-0 bottom-0 w-72 bg-bg-card border-r border-border-color z-[9999] lg:hidden"
             >
               <button
                 onClick={() => setMobileOpen(false)}
