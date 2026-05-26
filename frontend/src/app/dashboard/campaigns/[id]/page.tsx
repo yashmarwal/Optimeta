@@ -401,7 +401,8 @@ export default function CampaignViewPage() {
         </div>
 
         {/* ── Mode Toggle ── */}
-        <div className="flex items-center gap-2 p-1 rounded-2xl w-fit bg-[#0F0F1A] border border-[#1E1E3A] mb-6">
+        <div className="flex justify-center mb-6">
+        <div className="flex items-center gap-2 p-1 rounded-2xl bg-[#0F0F1A] border border-[#1E1E3A]">
           <button
             onClick={() => setMode('blueprint')}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
@@ -422,6 +423,7 @@ export default function CampaignViewPage() {
           >
             🚀 Execution Mode
           </button>
+        </div>
         </div>
         {mode === 'execution' && (
           <p className="text-[#606080] text-xs mb-4 flex items-center gap-1.5">
