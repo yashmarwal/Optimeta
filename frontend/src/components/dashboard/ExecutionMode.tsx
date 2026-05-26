@@ -889,212 +889,69 @@ export function ExecutionMode({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center px-4"
-            style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)' }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
             onClick={() => setShowCelebration(false)}
           >
-            {/* Particle burst */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {[...Array(20)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ x: '50vw', y: '50vh', opacity: 1, scale: 0 }}
-                  animate={{
-                    x: `${Math.random() * 100}vw`,
-                    y: `${Math.random() * 100}vh`,
-                    opacity: 0,
-                    scale: Math.random() * 2 + 0.5,
-                  }}
-                  transition={{
-                    duration: Math.random() * 2 + 1,
-                    delay: Math.random() * 0.5,
-                    ease: 'easeOut',
-                  }}
-                  className="absolute w-2 h-2 rounded-full"
-                  style={{
-                    background: i % 3 === 0 ? '#7B2FBE' : i % 3 === 1 ? '#C026D3' : '#ffffff',
-                    boxShadow: `0 0 6px ${i % 2 === 0 ? '#7B2FBE' : '#C026D3'}`,
-                  }}
-                />
-              ))}
-            </div>
 
             <motion.div
-              initial={{ scale: 0.5, opacity: 0, y: 40 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 180, damping: 16, delay: 0.1 }}
-              className="relative w-full max-w-sm rounded-3xl overflow-hidden border border-[#7B2FBE]/40"
-              style={{
-                background: 'linear-gradient(135deg, #0F0F1A 0%, #0A0A1A 100%)',
-                boxShadow: '0 0 80px rgba(123,47,190,0.4), 0 0 160px rgba(192,38,211,0.2)',
-              }}
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+              className="bg-[#0F0F1A] border border-[#7B2FBE]/40 rounded-2xl p-8 max-w-sm w-full text-center"
               onClick={e => e.stopPropagation()}
             >
-              {/* Top gradient band */}
-              <div className="h-1 w-full" style={{ background: 'linear-gradient(90deg, #7B2FBE, #C026D3, #7B2FBE)' }} />
-
-              {/* Grid background */}
-              <div
-                className="absolute inset-0 pointer-events-none opacity-20"
-                style={{
-                  backgroundImage: `linear-gradient(rgba(123,47,190,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(123,47,190,0.3) 1px, transparent 1px)`,
-                  backgroundSize: '32px 32px',
-                }}
-              />
-
-              {/* Scan line */}
               <motion.div
-                animate={{ top: ['-10%', '110%'] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                className="absolute left-0 right-0 h-px pointer-events-none z-10"
-                style={{ background: 'linear-gradient(90deg, transparent, rgba(192,38,211,0.6), transparent)' }}
-              />
+                animate={{ y: [0, -8, 0], rotate: [-5, 5, -5, 5, 0] }}
+                transition={{ duration: 1, repeat: 2 }}
+                className="text-6xl mb-4"
+              >
+                🏆
+              </motion.div>
 
-              {/* Content */}
-              <div className="relative z-10 px-8 py-8 flex flex-col items-center text-center">
+              <motion.h2
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-white font-black text-2xl mb-2"
+              >
+                Campaign Ready!
+              </motion.h2>
 
-                {/* Animated orb */}
-                <motion.div
-                  animate={{
-                    scale: [1, 1.1, 1],
-                    boxShadow: [
-                      '0 0 20px rgba(123,47,190,0.5), 0 0 40px rgba(192,38,211,0.3)',
-                      '0 0 40px rgba(192,38,211,0.8), 0 0 80px rgba(123,47,190,0.5)',
-                      '0 0 20px rgba(123,47,190,0.5), 0 0 40px rgba(192,38,211,0.3)',
-                    ],
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="w-24 h-24 rounded-full flex items-center justify-center mb-6 relative"
-                  style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)' }}
-                >
-                  {/* Rotating ring */}
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                    className="absolute inset-[-4px] rounded-full"
-                    style={{ background: 'conic-gradient(from 0deg, #7B2FBE, #C026D3, transparent, #7B2FBE)', padding: '2px' }}
-                  >
-                    <div className="w-full h-full rounded-full bg-[#0A0A0F]" />
-                  </motion.div>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-[#A0A0C0] text-sm mb-6 leading-relaxed"
+              >
+                You have completed all {totalSteps} steps. Your Meta ad campaign is set up and running.
+                Now monitor it for 7 days without editing.
+              </motion.p>
 
-                  <motion.span
-                    animate={{ rotate: [-5, 5, -5, 0], scale: [1, 1.1, 1] }}
-                    transition={{ duration: 0.8, repeat: 3 }}
-                    className="text-4xl relative z-10"
-                  >
-                    🏆
-                  </motion.span>
-
-                  {(['top-0 right-0', 'bottom-0 left-0', 'top-0 left-2'] as const).map((pos, i) => (
-                    <motion.span
-                      key={i}
-                      animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5], rotate: [0, 180, 360] }}
-                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.5 }}
-                      className={`absolute ${pos} text-xs text-[#C026D3]`}
-                    >
-                      ✦
-                    </motion.span>
-                  ))}
-                </motion.div>
-
-                {/* Title */}
-                <motion.h2
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="font-black text-3xl mb-1 tracking-tight"
-                  style={{
-                    background: 'linear-gradient(135deg, #ffffff, #C026D3)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  Campaign Live!
-                </motion.h2>
-
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="text-[#606080] text-sm mb-2 uppercase tracking-widest font-semibold"
-                >
-                  All {totalSteps} steps completed
-                </motion.p>
-
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                  className="text-[#A0A0C0] text-sm leading-relaxed mb-6"
-                >
-                  Your Meta ad campaign is set up and running. Now monitor for 7 days without touching anything.
-                </motion.p>
-
-                {/* Benchmarks */}
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
-                  className="w-full rounded-2xl p-4 mb-6 border border-[#7B2FBE]/20"
-                  style={{ background: 'rgba(123,47,190,0.08)' }}
-                >
-                  <p className="text-[#7B2FBE] text-xs font-bold uppercase tracking-widest mb-3">
-                    Watch these metrics
-                  </p>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { label: 'Target ROAS', value: blueprint.performance_benchmarks?.your_target_roas || '3x+', color: '#22c55e' },
-                      { label: 'CTR Target', value: blueprint.performance_benchmarks?.expected_ctr_feed || '1.5%+', color: '#7B2FBE' },
-                      { label: 'Max CPM', value: `₹${blueprint.performance_benchmarks?.expected_cpm_inr || '120'}`, color: '#C026D3' },
-                    ].map((metric, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.8 + i * 0.1 }}
-                        className="text-center"
-                      >
-                        <p className="font-black text-lg leading-none mb-1" style={{ color: metric.color }}>
-                          {metric.value}
-                        </p>
-                        <p className="text-[#606080] text-[10px]">{metric.label}</p>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-
-                {/* CTA */}
-                <motion.button
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.9 }}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => setShowCelebration(false)}
-                  className="w-full py-3.5 rounded-2xl font-bold text-white text-sm flex items-center justify-center gap-2"
-                  style={{
-                    background: 'linear-gradient(135deg, #7B2FBE, #C026D3)',
-                    boxShadow: '0 8px 24px rgba(192,38,211,0.4)',
-                  }}
-                >
-                  <Rocket size={16} />
-                  Go crush it! 🚀
-                </motion.button>
-
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.0 }}
-                  className="text-[#404060] text-xs mt-3"
-                >
-                  Tap anywhere to close
-                </motion.p>
+              <div className="bg-[#7B2FBE]/10 border border-[#7B2FBE]/20 rounded-xl p-3 mb-4 text-left">
+                <p className="text-[#7B2FBE] text-xs font-bold mb-2 uppercase tracking-wider">
+                  Your targets to watch
+                </p>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[#A0A0C0] text-xs">
+                    Target ROAS: {blueprint.performance_benchmarks?.your_target_roas || '3x+'}
+                  </span>
+                  <span className="text-[#A0A0C0] text-xs">
+                    Expected CTR: {blueprint.performance_benchmarks?.expected_ctr_feed || '1.5-3%'}
+                  </span>
+                  <span className="text-[#A0A0C0] text-xs">
+                    Expected CPM: ₹{blueprint.performance_benchmarks?.expected_cpm_inr || '60-120'}
+                  </span>
+                </div>
               </div>
 
-              {/* Bottom gradient band */}
-              <div className="h-0.5 w-full" style={{ background: 'linear-gradient(90deg, #7B2FBE, #C026D3, #7B2FBE)' }} />
+              <button
+                onClick={() => setShowCelebration(false)}
+                className="w-full py-3 rounded-xl font-semibold text-white text-sm"
+                style={{ background: 'linear-gradient(135deg, #7B2FBE, #C026D3)' }}
+              >
+                Go crush it! 🚀
+              </button>
             </motion.div>
           </motion.div>
         )}
