@@ -32,7 +32,7 @@ export function FlipFeatureCards({
     setCurrentIndex(i => i + 1);
     setTimeout(() => {
       locked.current = false;
-    }, 500);
+    }, 700);
   };
 
   const prev = () => {
@@ -43,7 +43,7 @@ export function FlipFeatureCards({
     setCurrentIndex(i => i - 1);
     setTimeout(() => {
       locked.current = false;
-    }, 500);
+    }, 700);
   };
 
   useEffect(() => {
@@ -165,13 +165,13 @@ export function FlipFeatureCards({
       style={{
         position: 'relative',
         width: '100%',
-        padding: '40px 16px 32px',
+        padding: '24px 16px 24px',
       }}
     >
       {/* Heading */}
       <div style={{
         textAlign: 'center',
-        marginBottom: '24px',
+        marginBottom: '16px',
       }}>
         <span style={{
           display: 'inline-block',
@@ -234,8 +234,8 @@ export function FlipFeatureCards({
                 : { rotateX: 80, opacity: 0, scale: 0.9 }
             }
             transition={{
-              duration: 0.4,
-              ease: [0.4, 0, 0.2, 1],
+              duration: 0.65,
+              ease: [0.25, 0.46, 0.45, 0.94],
             }}
             style={{
               transformOrigin: 'center center',
@@ -252,9 +252,9 @@ export function FlipFeatureCards({
                   : '#1E1E3A'
               }`,
               borderRadius: '20px',
-              padding: '28px 24px',
+              padding: '36px 28px',
               boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-              minHeight: '260px',
+              minHeight: '340px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
@@ -263,16 +263,16 @@ export function FlipFeatureCards({
               <div>
                 {/* Icon */}
                 <div style={{
-                  width: '52px',
-                  height: '52px',
+                  width: '64px',
+                  height: '64px',
                   borderRadius: '14px',
                   background: 'linear-gradient(135deg, rgba(123,47,190,0.25), rgba(192,38,211,0.25))',
                   border: '1px solid rgba(123,47,190,0.4)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '24px',
-                  marginBottom: '20px',
+                  fontSize: '30px',
+                  marginBottom: '24px',
                 }}>
                   {card.icon}
                 </div>
@@ -281,7 +281,7 @@ export function FlipFeatureCards({
                 <h3 style={{
                   color: '#ffffff',
                   fontWeight: 800,
-                  fontSize: '20px',
+                  fontSize: '24px',
                   marginBottom: '12px',
                   lineHeight: 1.3,
                   margin: '0 0 12px 0',
@@ -292,8 +292,8 @@ export function FlipFeatureCards({
                 {/* Description */}
                 <p style={{
                   color: '#A0A0C0',
-                  fontSize: '14px',
-                  lineHeight: 1.7,
+                  fontSize: '15px',
+                  lineHeight: 1.8,
                   margin: 0,
                 }}>
                   {card.description}
@@ -347,7 +347,7 @@ export function FlipFeatureCards({
       <div style={{
         display: 'flex',
         gap: '8px',
-        marginTop: '16px',
+        marginTop: '12px',
         justifyContent: 'center',
       }}>
         <button
@@ -381,7 +381,7 @@ export function FlipFeatureCards({
           display: 'flex',
           gap: '5px',
           alignItems: 'center',
-          padding: '0 8px',
+          padding: '0 4px',
         }}>
           {cards.map((_, i) => (
             <motion.button
@@ -397,7 +397,7 @@ export function FlipFeatureCards({
                 setCurrentIndex(i);
                 setTimeout(() => {
                   locked.current = false;
-                }, 500);
+                }, 700);
               }}
               animate={{
                 width: i === currentIndex ? 18 : 6,
